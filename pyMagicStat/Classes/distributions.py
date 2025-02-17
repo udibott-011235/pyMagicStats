@@ -331,11 +331,24 @@ class PoissonDistribution(Distribution, DistributionTest):
             observed = np.array([obs.get(k, 0) for k in k_vals])
             expected = np.array([exp[k] for k in k_vals])
 
+            expected *= observed.sum() / expected.sum()
+
             chi_stat, p_value = stats.chisquare(f_obs=observed, f_exp=expected)
             result_bool = p_value > 0.05 
-            self.update_type('Poisson', result_bool)
+            self.type = {
+                'Poisson': {
+                    'Fit': np.bool_(result_bool),
+                    'Normal_approx': None,
+                    'Methods': {
+                        'Test': 'Chi-square test',
+                        'p_value': p_value,
+                        'chi_stat': chi_stat
+                    }
+                }
+            }                 
+            
             txt =f"Chi-square test: chi2 {chi_stat:.2f}, p = {p_value:.4f}"
-            return output_format(bool_result=result_bool, txt=txt)
+            return output_format(bool_result=result_bool, txt=txt, p_value=p_value)
 
         except Exception as e: 
             raise TypeError(f"Error in PoissonDistribution fit_test: {str(e)}")
@@ -344,7 +357,8 @@ class PoissonDistribution(Distribution, DistributionTest):
         if not self.type.get('Poisson', False):
             return output_format(bool_result=False, txt="Not Poisson")
         is_normal = self.lam >= 30
-        self.update_type('Normal_approx', is_normal)
+        self.type['Poisson']['Normal_approx'] = np.bool_(is_normal)
+        
         return output_format(
             bool_result=self.type.get('Normal_approx', False),
             txt="Can be treated as normal" if self.type.get('Normal_approx', False) else "Cannot be treated as normal"
@@ -376,53 +390,93 @@ class LognormalDistribution(Distribution, DistributionTest):
     def fit_test(self):
         try:
             if len(self.data) == 0:
-                return output_format({'bool_result': False, 'txt': 'no data available'})
+                return output_format({'bool_result': False, 'txt': 'no data available'})     
             
-            result = positive_values_test(self.data)
-            if not result:
-                return output_format(bool_result=False, txt='Data contains no positive values, which are required for Lognormal distribution')
-        
-            # Aplicar prueba de normalidad a log(data)
+            if np.any(self.data <= 0):
+                return output_format({'bool_result': False, 'txt': 'Data contains non-positive values'})
+            
+            # Aplicar prueba de noirmalidad a log(data)
             log_data = np.log(self.data)
-            shapiro_log = stats.shapiro(log_data)
-            shapiro_result = shapiro_log.pvalue > 0.05
+            if np.any(np.isnan(log_data)) or np.any(np.isinf(log_data)):
+                return output_format({'bool_result': False, 'txt': 'Numerical instability in log transformation'}) 
+            #apply normality test to log data
+            anderson_test = stats.anderson(log_data, dist='norm')
+            sharpiro_test = stats.shapiro(log_data)
+            ks_test = stats.kstest(log_data, 'norm', args=(np.mean(log_data), np.std(log_data)))
+       
+            # get the p-values
+            anderson_p_value = anderson_test.significance_level[np.argmin(np.abs(anderson_test.statistic - anderson_test.critical_values))] / 100
+            shapiro_p_value = sharpiro_test.pvalue
+            ks_p_value = ks_test.pvalue
 
-            # Adicionalmente, podríamos usar el test Anderson-Darling en los valores log-transformados
-            anderson_log = stats.anderson(log_data, dist='norm')
-            anderson_result = anderson_log.statistic < anderson_log.critical_values[2]
+            # Fisher combined p-value
+            combined_static = -2 * (np.log(anderson_p_value) + np.log(shapiro_p_value) + np.log(ks_p_value))
+            combined_p_value = 1 - stats.chi2.cdf(combined_static, df=6)
+            result_bool = combined_p_value > 0.05
 
-            # Combinación de los resultados
-            combined_result = shapiro_result and anderson_result
-
-            result_dict = output_format(bool_result=combined_result, txt=f'Lognormal Distribution fit result: {combined_result}')
-            result_dict.update({
-                "Shapiro_log_transformed": {
-                    "p_value": shapiro_log.pvalue,
-                    "bool_result": shapiro_result,
-                    "txt": "Shapiro test on log-transformed data"
-                },
-                "Anderson_Darling_log_transformed": {
-                    "statistic": anderson_log.statistic,
-                    "critical_value": anderson_log.critical_values[2],
-                    "bool_result": anderson_result,
-                    "txt": "Anderson-Darling test on log-transformed data"
+            self.type = {
+                'Lognormal': {
+                    'Fit': np.bool_(result_bool),
+                    'Normal_approx': None,
+                    'Methods': {
+                        'Anderson-Darling': {
+                            'Statistic': np.float64(anderson_test.statistic),
+                            'p_value': np.float64(anderson_p_value),
+                            'Decision': anderson_p_value > 0.05
+                        },
+                        'Shapiro-Wilk': {
+                            'Statistic': np.float64(sharpiro_test.statistic),
+                            'p_value': np.float64(shapiro_p_value),
+                            'Decision': shapiro_p_value > 0.05
+                     },
+                        'Kolmogorov-Smirnov': {
+                            'Statistic': np.float64(ks_test.statistic),
+                            'p_value': np.float64(ks_p_value),
+                            'Decision': ks_p_value > 0.05
+                     },
+                        'Combined': {
+                            'Statistic': np.float64(combined_static),
+                            'p_value': np.float64(combined_p_value),
+                            'Decision': result_bool
+                        }
+                    }
                 }
-            })
-            return result_dict
-        
+            }
+            
+            txt = f"Combined p-value: {combined_p_value:.4f} (Anderson: {anderson_p_value:.4f}, Shapiro: {shapiro_p_value:.4f}, KS: {ks_p_value:.4f})"
+            return output_format(bool_result=result_bool, txt=txt)
+
         except Exception as e:
             raise TypeError(f"Error in LognormalDistribution fit_test: {str(e)}")
-      
-       
-    
+
     def normal_approximation(self):
-        if not self.type.get('Lognormal', False):
-            return output_format(bool_result=False, txt='Not Lognormal')
-        is_normal = np.log(self.data).mean() > 0 
-        self.update_type('Normal_approx', is_normal)
+        if 'Lognormal' not in self.type or not self.type['Lognormal']['Fit']:
+            return output_format(bool_result=False, txt="Not Lognormal")
+        
+        log_data = np.log(self.data)
+        #Normal evaluation of log(X)
+        anderson_result = self.type['Lognormal']['Methods']['Anderson-Darling']['Decision']
+        shapiro_result = self.type['Lognormal']['Methods']['Shapiro-Wilk']['Decision']
+        ks_result = self.type['Lognormal']['Methods']['Kolmogorov-Smirnov']['Decision'] 
+
+        normal_test_passed = anderson_result and shapiro_result and ks_result
+
+        #evaluate skewness & curtosis
+        skewness = stats.skew(log_data)
+        kurtosis = stats.kurtosis(log_data, fisher = True) + 3
+
+        #set the normal approximation
+        is_normal = normal_test_passed and (-2 <= skewness <= 2) and (1.5 <= kurtosis <= 4.5)
+
+        self.type['Lognormal']['Normal_approx'] = np.bool_(is_normal)
+        self.type['Lognormal']['Methods']['Normal_approx'] = {
+            'Skewness': skewness,
+            'Kurtosis': kurtosis,
+            'Decision': is_normal
+        }
         return output_format(
-            bool_result=self.type.get('Normal_approx', False), 
-            txt='Can be treated as normal' if self.type.get('Normal_approx', False) else 'Cannot be treated as normal'
+            bool_result=is_normal,
+            txt=f"Skewness: {skewness:.4f}, Kurtosis: {kurtosis:.4f}, {'Can be treated as normal' if is_normal else 'Cannot be treated as normal'}"
         )
     def calculate_log_likelihood(self):
        self.validate_data()

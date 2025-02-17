@@ -1,0 +1,8 @@
+test_normal_distribution_fit: PASSED
+test_normal_distribution_approximation: PASSED
+test_binomial_distribution_fit: FAILED
+test_binomial_distribution_approximation: FAILED
+test_poisson_distribution_fit: PASSED
+test_poisson_distribution_approximation: PASSED
+test_lognormal_distribution_fit: PASSED
+test_lognormal_distribution_approximation: PASSED
