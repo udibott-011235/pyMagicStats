@@ -1,0 +1,6 @@
+setup.py
+pyMagicStat/__init__.py
+pyMagicStat.egg-info/PKG-INFO
+pyMagicStat.egg-info/SOURCES.txt
+pyMagicStat.egg-info/dependency_links.txt
+pyMagicStat.egg-info/top_level.txt
