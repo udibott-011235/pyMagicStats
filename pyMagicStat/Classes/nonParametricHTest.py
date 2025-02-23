@@ -3,7 +3,7 @@ import warnings
 from numba import jit
 from lib.utils import output_format  
 
-# 🔥 Funciones independientes optimizadas con Numba
+
 @jit(nopython=True, fastmath=True)
 def bootstrap_resample_numba(data: np.ndarray, resamples: int, n: int):
     sample_statistics = np.zeros(resamples, dtype=np.float64)
@@ -59,3 +59,5 @@ class BootstrapVarianceCI(BootstrapConfidenceIntervals):
         self.sample_statistics = bootstrap_resample_variance(self.data, self.resamples, self.n)
         lb, ub = self.calculate_percentiles()
         return output_format(lb=lb, ub=ub)
+
+# hay que volver a agregar la proporcion muestral poblacional 
