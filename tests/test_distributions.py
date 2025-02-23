@@ -1,115 +1,166 @@
-import pytest
+import unittest
 import numpy as np
-from scipy import stats
-from pyMagicStat.Classes.distributions import NormalDistribution, BinomialDistribution, PoissonDistribution, LognormalDistribution
+import logging
+import warnings
+from scipy.stats import binom, poisson
 
-# 📌 Configurar tolerancia de error numérico
-TOLERANCE = 1e-6
+logging.basicConfig(filename='test_log.txt', filemode="w", level=logging.INFO, format="%(message)s")
 
-# 📌 Ruta para guardar el archivo de salida
-RESULTS_FILE = "tests/test_results.txt"
+# Importamos el módulo a testear (asegúrate de que distributions.py esté en el path)
+import pyMagicStat.Classes.distributions as distributions
 
-def write_results(test_name, result):
-    """
-    Escribe los resultados de cada test en un archivo de texto.
-    """
-    with open(RESULTS_FILE, "a") as f:
-        f.write(f"{test_name}: {'PASSED' if result else 'FAILED'}\n")
+# Configuración del log: se crea un archivo 'test_log.txt' en modo escritura.
 
-# 🔹 Generar datos de prueba
-@pytest.fixture
-def sample_data():
-    np.random.seed(42)
-    return {
-        'normal': np.random.normal(loc=10, scale=5, size=5000),
-        'binomial': np.random.binomial(n=20, p=0.5, size=5000),
-        'poisson': np.random.poisson(lam=5, size=5000),
-        'lognormal': np.random.lognormal(mean=2, sigma=0.5, size=5000)
-    }
+class TestDistributions(unittest.TestCase):
+    def setUp(self):
+        # Opcional: ignorar ciertos warnings para que no ensucien la salida
+        warnings.simplefilter("ignore", RuntimeWarning)
 
-# 🔥 🔹 TESTS PARA NormalDistribution
-def test_normal_distribution_fit(sample_data):
-    data = sample_data['normal']
-    model = NormalDistribution(data)
-    result = model.fit_test()
+    def log_result(self, descripcion, exito):
+        # Función auxiliar para escribir en el log el supuesto evaluado
+        mensaje = (
+            f"Supuesto: {descripcion}\n"
+            f"Resultado: {'Aceptado' if exito else 'Rechazado'}\n"
+            f"{'-'*50}"
+        )
+        logging.info(mensaje)
 
-    passed = 'Normal' in model.type and isinstance(model.type['Normal']['Fit'], np.bool_) and model.type['Normal']['Fit'] == True
-    write_results("test_normal_distribution_fit", passed)
-    assert passed
+    def test_normal_distribution_valid(self):
+        descripcion = (
+            "NormalDistribution con datos normales válidos. "
+            "Datos generados: 1000 muestras usando np.random.normal(0, 1, 1000). "
+            "Se evalúa que los tests de normalidad retornen p_value > 0.05."
+        )
+        try:
+            data = np.random.normal(0, 1, 1000).astype(float)
+            validator = distributions.NormalDistribution(data)
+            resultados = validator.evaluate_normality()
+            is_normal = validator.distribution.type.get('Normal', False)
+            self.assertTrue(is_normal, "La distribución no fue detectada como normal.")
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-def test_normal_distribution_approximation(sample_data):
-    data = sample_data['normal']
-    model = NormalDistribution(data)
-    model.fit_test()
-    result = model.normal_approximation()
+    def test_normal_distribution_invalid(self):
+        descripcion = (
+            "NormalDistribution con datos no normales (distribución exponencial). "
+            "Datos generados: 1000 muestras usando np.random.exponential(1, 1000). "
+            "Se evalúa que los tests de normalidad retornen p_value <= 0.05."
+        )
+        try:
+            data = np.random.exponential(1, 1000).astype(float)
+            validator = distributions.NormalDistribution(data)
+            resultados = validator.evaluate_normality()
+            is_normal = validator.distribution.type.get('Normal', False)
+            self.assertFalse(is_normal, "La distribución erróneamente fue detectada como normal.")
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-    passed = model.type['Normal']['Normal_approx'] == True
-    write_results("test_normal_distribution_approximation", passed)
-    assert passed
+    def test_lognormal_distribution_valid(self):
+        descripcion = (
+            "LognormalDistribution con datos lognormales válidos. "
+            "Datos generados: 1000 muestras usando np.random.lognormal(0, 1, 1000). "
+            "Se evalúa que al aplicar el logaritmo se detecte la normalidad en los datos transformados."
+        )
+        try:
+            data = np.random.lognormal(0, 1, 1000).astype(float)
+            validator = distributions.LognormalDistribution(data)
+            resultados = validator.fit_test()  # Se ejecuta el test sobre el logaritmo
+            is_lognormal = validator.distribution.type.get('Lognormal', False)
+            self.assertTrue(is_lognormal, "La distribución lognormal no fue detectada correctamente.")
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-# 🔥 🔹 TESTS PARA BinomialDistribution
-def test_binomial_distribution_fit(sample_data):
-    data = sample_data['binomial']
-    model = BinomialDistribution(data)
-    result = model.fit_test()
+    def test_lognormal_distribution_invalid(self):
+        descripcion = (
+            "LognormalDistribution con datos inválidos (contiene valores no positivos). "
+            "Datos generados: array con valores [-1, 0, 1, 2, 3]. "
+            "Se evalúa que la validación falle al tener valores no estrictamente positivos."
+        )
+        try:
+            data = np.array([-1, 0, 1, 2, 3], dtype=float)
+            with self.assertRaises(ValueError):
+                _ = distributions.LognormalDistribution(data)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-    passed = 'Binomial' in model.type and isinstance(model.type['Binomial']['Fit'], np.bool_) and model.type['Binomial']['Fit'] == True
-    write_results("test_binomial_distribution_fit", passed)
-    assert passed
+    def test_binomial_distribution_valid(self):
+        descripcion = (
+            "BinomialDistribution con datos binomiales válidos. "
+            "Datos generados: 1000 muestras usando binom.rvs(n=10, p=0.5, size=1000). "
+            "Se evalúa el test de bondad de ajuste (se espera p_value > 0.05) y "
+            "la estimación de parámetros; la aproximación normal se espera que sea False (ya que n*p*(1-p) < 9)."
+        )
+        try:
+            data = binom.rvs(n=10, p=0.5, size=1000)
+            validator = distributions.BinomialDistribution(data)
+            # Se proveen los parámetros para el test de bondad
+            gof_results = validator.evaluate_goodness_of_fit(n=10, p=0.5)
+            is_binomial = validator.distribution.type.get('Binomial', False)
+            self.assertTrue(is_binomial, "La bondad de ajuste para binomial falló.")
+            approx_normal = validator.evaluate_normal_approximation()
+            self.assertFalse(approx_normal, "La aproximación normal para binomial es incorrecta (se esperaba False).")
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-def test_binomial_distribution_approximation(sample_data):
-    data = sample_data['binomial']
-    model = BinomialDistribution(data)
-    model.fit_test()
-    result = model.normal_approximation()
+    def test_binomial_distribution_invalid(self):
+        descripcion = (
+            "BinomialDistribution con datos inválidos (valores no enteros). "
+            "Datos generados: array de floats [0.5, 1.5, 2.5]. "
+            "Se evalúa que la validación falle al requerir datos enteros."
+        )
+        try:
+            data = np.array([0.5, 1.5, 2.5])
+            with self.assertRaises(ValueError):
+                _ = distributions.BinomialDistribution(data)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-    expected_approx = (model.n * model.p >= 5) and (model.n * (1 - model.p) >= 5)
-    passed = model.type['Binomial']['Normal_approx'] == expected_approx
-    write_results("test_binomial_distribution_approximation", passed)
-    assert passed
+    def test_poisson_distribution_valid(self):
+        descripcion = (
+            "PoissonDistribution con datos Poisson válidos. "
+            "Datos generados: 1000 muestras usando poisson.rvs(mu=10, size=1000). "
+            "Se evalúa el test de bondad de ajuste (se espera p_value > 0.05) y "
+            "la aproximación normal (se espera True, ya que lambda >= 9)."
+        )
+        try:
+            data = poisson.rvs(mu=10, size=1000)
+            validator = distributions.PoissonDistribution(data)
+            gof_results = validator.evaluate_goodness_of_fit()
+            is_poisson = validator.distribution.type.get('Poisson', False)
+            self.assertTrue(is_poisson, "La bondad de ajuste para Poisson falló.")
+            approx_normal = validator.evaluate_normal_approximation()
+            self.assertTrue(approx_normal, "La aproximación normal para Poisson debería ser True.")
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-# 🔥 🔹 TESTS PARA PoissonDistribution
-def test_poisson_distribution_fit(sample_data):
-    data = sample_data['poisson']
-    model = PoissonDistribution(data)
-    result = model.fit_test()
+    def test_poisson_distribution_invalid(self):
+        descripcion = (
+            "PoissonDistribution con datos inválidos (contiene valores negativos). "
+            "Datos generados: array con valores [-1, 0, 1, 2, 3]. "
+            "Se evalúa que la validación falle al tener valores negativos."
+        )
+        try:
+            data = np.array([-1, 0, 1, 2, 3], dtype=int)
+            with self.assertRaises(ValueError):
+                _ = distributions.PoissonDistribution(data)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
 
-    passed = 'Poisson' in model.type and isinstance(model.type['Poisson']['Fit'], np.bool_) and model.type['Poisson']['Fit'] == True
-    write_results("test_poisson_distribution_fit", passed)
-    assert passed
-
-def test_poisson_distribution_approximation(sample_data):
-    data = sample_data['poisson']
-    model = PoissonDistribution(data)
-    model.fit_test()
-    result = model.normal_approximation()
-
-    expected_approx = model.lam >= 30
-    passed = model.type['Poisson']['Normal_approx'] == expected_approx
-    write_results("test_poisson_distribution_approximation", passed)
-    assert passed
-
-# 🔥 🔹 TESTS PARA LognormalDistribution
-def test_lognormal_distribution_fit(sample_data):
-    data = sample_data['lognormal']
-    model = LognormalDistribution(data)
-    result = model.fit_test()
-
-    passed = 'Lognormal' in model.type and isinstance(model.type['Lognormal']['Fit'], np.bool_) and model.type['Lognormal']['Fit'] == True
-    write_results("test_lognormal_distribution_fit", passed)
-    assert passed
-
-def test_lognormal_distribution_approximation(sample_data):
-    data = sample_data['lognormal']
-    model = LognormalDistribution(data)
-    model.fit_test()
-    result = model.normal_approximation()
-
-    log_data = np.log(data)
-    skewness = stats.skew(log_data)
-    kurtosis = stats.kurtosis(log_data, fisher=True) + 3
-
-    expected_approx = (-2 <= skewness <= 2) and (1.5 <= kurtosis <= 4.5)
-    passed = model.type['Lognormal']['Normal_approx'] == expected_approx
-    write_results("test_lognormal_distribution_approximation", passed)
-    assert passed
+if __name__ == '__main__':
+    unittest.main()

@@ -44,7 +44,7 @@ class PopulationMeanCI(NormalDistConfidenceIntervals):
             lower_bound = mean - margin_of_error
             upper_bound = mean + margin_of_error
 
-            return output_format(bool_result=True, txt='Confidence Interval for the mean calculated propperly', ul=upper_bound, ll=lower_bound)
+            return output_format(bool_result=True, txt='Confidence Interval for the mean calculated propperly', ub=upper_bound, lb=lower_bound)
         except Exception as e:
             return output_format(bool_result=False, txt=f'Error Calculating Confidence Interval for the Mean')
 
@@ -73,9 +73,9 @@ class PopulationProportionCI(NormalDistConfidenceIntervals):
     def calculate_interval(self):
         z_value = stats.norm.ppf(1 - self.alpha / 2)
         margin_of_error = z_value * self.prop_std_dev
-        ll = self.incidence_ratio - margin_of_error
-        ul = self.incidence_ratio + margin_of_error
-        return output_format(ll=ll, ul=ul)
+        lb = self.incidence_ratio - margin_of_error
+        ub = self.incidence_ratio + margin_of_error
+        return output_format(lb=lb, ub=ub)
 
 class PopulationVarianceCI(NormalDistConfidenceIntervals):
     def calculate_interval(self):
@@ -83,54 +83,10 @@ class PopulationVarianceCI(NormalDistConfidenceIntervals):
         chi2_upper = stats.chi2.ppf(self.alpha / 2, self.n - 1)
         lower = ((self.n - 1) * self.variance) / chi2_lower
         upper = ((self.n - 1) * self.variance) / chi2_upper
-        return output_format(ll=lower, ul=upper)
+        return output_format(lb=lower, ub=upper)
+    
 
 #------------------ Intervalos No Paramétricos (Bootstrap) ------------------#
-
-class BootstrapConfidenceIntervals(ConfidenceIntervals):
-    def __init__(self, data, alpha=0.05, resamples=5000):
-        super().__init__(data, alpha)
-        self.resamples = resamples
-        self.sample_statistics = []
-
-    def bootstrap_resample(self, stat_func):
-        for _ in range(self.resamples):
-            sample = np.random.choice(self.data, size=self.n, replace=True)
-            self.sample_statistics.append(stat_func(sample))
-
-    def calculate_percentiles(self):
-        lower_bound = np.percentile(self.sample_statistics, 100 * (self.alpha / 2))
-        upper_bound = np.percentile(self.sample_statistics, 100 * (1 - self.alpha / 2))
-        return lower_bound, upper_bound
-
-class BootstrapMeanCI(BootstrapConfidenceIntervals):
-    def calculate_interval(self):
-        self.bootstrap_resample(np.mean)
-        ll, ul = self.calculate_percentiles()
-        return output_format(ll=ll, ul=ul)
-
-class BootstrapMedianCI(BootstrapConfidenceIntervals):
-    def calculate_interval(self):
-        self.bootstrap_resample(np.median)
-        ll, ul = self.calculate_percentiles()
-        return output_format(ll=ll, ul=ul)
-
-class BootstrapVarianceCI(BootstrapConfidenceIntervals):
-    def calculate_interval(self):
-        self.bootstrap_resample(np.var)
-        ll, ul = self.calculate_percentiles()
-        return output_format(ll=ll, ul=ul)
-
-class BootstrapProportionCI(BootstrapConfidenceIntervals):
-    def __init__(self, data, alpha=0.05, resamples=1000, incidences=None):
-        if incidences:
-            data = [1 if incidences(x) else 0 for x in data]
-        super().__init__(data, alpha, resamples)
-
-    def calculate_interval(self):
-        self.bootstrap_resample(np.mean)
-        ll, ul = self.calculate_percentiles()
-        return output_format(ll=ll, ul=ul)
 
 # Manejo de advertencias
 with warnings.catch_warnings():

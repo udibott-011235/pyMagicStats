@@ -1,0 +1,61 @@
+
+class BinomialDistribution(DiscreteDistributionValidator):
+    def validate_data(self):
+        data = self.distribution.data
+        if not (isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.integer)):
+            warnings.warn("Los datos deben ser enteros para binomial.")
+            return False
+        return True
+
+    def evaluate_goodness_of_fit(self, n=None, p=None):
+        data = self.distribution.data
+        logging.info(f"Data for Binomial fit: {data}")
+        try:
+            if n is not None and p is not None:
+                logging.info(f"Using n={n}, p={p} for Binomial fit")
+                bins = np.arange(0, n + 2)
+                observed, _ = np.histogram(data, bins=bins)
+                expected = np.array([stats.binom.pmf(k, n, p) * len(data) for k in range(0, n + 1)])
+                chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected, sum_check=False)
+                resultados = {'chi2': chi2, 'p_value': p_value}
+            else:
+                resultados = {'chi2': 0.0, 'p_value': 1.0}
+        except Exception as e:
+            warnings.warn("Error en bondad de ajuste binomial: " + str(e))
+            resultados = {'error': str(e)}
+        self.distribution.update_type('Binomial', resultados.get('p_value', 0) > 0.05, 'goodness_of_fit', resultados)
+        return resultados
+
+
+################################
+
+class PoissonDistribution(DiscreteDistributionValidator):
+    def validate_data(self):
+        data = self.distribution.data
+        if not (isinstance(data, np.ndarray) and 
+                np.issubdtype(data.dtype, np.integer) and 
+                np.all(data >= 0)):
+            warnings.warn("Los datos deben ser enteros y no negativos para Poisson.")
+            return False
+        return True
+
+    def evaluate_goodness_of_fit(self):
+        data = self.distribution.data
+        logging.info(f"Data for Poisson fit: {data}")
+        try:
+            lambda_val = np.mean(data)
+            logging.info(f"Lambda for Poisson fit: {lambda_val}")
+            n = len(data)
+            bins = np.arange(np.min(data), np.max(data) + 2)
+            observed, _ = np.histogram(data, bins=bins)
+            expected = np.array([stats.poisson.pmf(k, lambda_val) * n for k in bins[:-1]])
+            chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected, sum_check=False)
+            resultados = {'chi2': chi2, 'p_value': p_value}
+        except Exception as e:
+            warnings.warn("Error en bondad de ajuste Poisson: " + str(e))
+            resultados = {'error': str(e)}
+        self.distribution.update_type('Poisson', resultados.get('p_value', 0) > 0.05, 'goodness_of_fit', resultados)
+        return resultados
+
+
+

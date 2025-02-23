@@ -1,0 +1,24 @@
+INFO     root:test_distributions.py:26 Supuesto: BinomialDistribution con datos inválidos (valores no enteros). Datos generados: array de floats [0.5, 1.5, 2.5]. Se evalúa que la validación falle al requerir datos enteros.
+Resultado: Aceptado
+--------------------------------------------------
+INFO     root:test_distributions.py:26 Supuesto: BinomialDistribution con datos binomiales válidos. Datos generados: 1000 muestras usando binom.rvs(n=10, p=0.5, size=1000). Se evalúa el test de bondad de ajuste (se espera p_value > 0.05) y la estimación de parámetros; la aproximación normal se espera que sea False (ya que n*p*(1-p) < 9).
+Resultado: Aceptado
+--------------------------------------------------
+INFO     root:test_distributions.py:26 Supuesto: LognormalDistribution con datos inválidos (contiene valores no positivos). Datos generados: array con valores [-1, 0, 1, 2, 3]. Se evalúa que la validación falle al tener valores no estrictamente positivos.
+Resultado: Aceptado
+--------------------------------------------------
+INFO     root:test_distributions.py:26 Supuesto: LognormalDistribution con datos lognormales válidos. Datos generados: 1000 muestras usando np.random.lognormal(0, 1, 1000). Se evalúa que al aplicar el logaritmo se detecte la normalidad en los datos transformados.
+Resultado: Aceptado
+--------------------------------------------------
+INFO     root:test_distributions.py:26 Supuesto: NormalDistribution con datos no normales (distribución exponencial). Datos generados: 1000 muestras usando np.random.exponential(1, 1000). Se evalúa que los tests de normalidad retornen p_value <= 0.05.
+Resultado: Aceptado
+--------------------------------------------------
+INFO     root:test_distributions.py:26 Supuesto: NormalDistribution con datos normales válidos. Datos generados: 1000 muestras usando np.random.normal(0, 1, 1000). Se evalúa que los tests de normalidad retornen p_value > 0.05.
+Resultado: Aceptado
+--------------------------------------------------
+INFO     root:test_distributions.py:26 Supuesto: PoissonDistribution con datos inválidos (contiene valores negativos). Datos generados: array con valores [-1, 0, 1, 2, 3]. Se evalúa que la validación falle al tener valores negativos.
+Resultado: Aceptado
+--------------------------------------------------
+INFO     root:test_distributions.py:26 Supuesto: PoissonDistribution con datos Poisson válidos. Datos generados: 1000 muestras usando poisson.rvs(mu=10, size=1000). Se evalúa el test de bondad de ajuste (se espera p_value > 0.05) y la aproximación normal (se espera True, ya que lambda >= 9).
+Resultado: Aceptado
+--------------------------------------------------
