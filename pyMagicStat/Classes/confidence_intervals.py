@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as stats
 from math import ceil
 import warnings
-from ..lib.utils import output_format
+from ..lib.utils import output_format 
 
 # Output format function
 

@@ -4,6 +4,7 @@ import scipy.stats as stats
 import statsmodels.api as sm
 import warnings
 
+#Pendiente ! no esta implementando output_format
 ################################# ######
 # 1. Clase Principal: Distribution
 #######################################
