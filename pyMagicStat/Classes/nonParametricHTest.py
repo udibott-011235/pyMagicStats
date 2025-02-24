@@ -91,7 +91,8 @@ class kruskalWallisTest:
         self.r_squared = None
         self._compute_r_squared()
         self.results = {}
-        
+
+     #could we optimice this func with numba ? 
     def _compute_r_squared(self):    
         all_data = np.concatenate(self.groups)
         grand_mean = np.mean(all_data)
@@ -104,6 +105,7 @@ class kruskalWallisTest:
         self.r_squared = [1- (ssw / self.ss_total) if self.ss_total > 0 else 0 for ssw in self.ss_within]
         
     def run_test(self):
+
         if self.r_squared is None or self.ss_within is None:
             raise ValueError("R² and sum of squares within (SSW) must be computed before running the test.")
         
@@ -136,3 +138,11 @@ class kruskalWallisTest:
     }
 
         return output_format(data=self.results)
+    
+    def remove_group(self, idx):
+        removed_label = self.labels[idx]
+        del self.groups[idx]
+        del self.labels[idx]
+        self._compute_r_squared()
+        return removed_label
+    
