@@ -61,6 +61,21 @@ class BootstrapVarianceCI(BootstrapConfidenceIntervals):
         lb, ub = self.calculate_percentiles()
         return output_format(lb=lb, ub=ub)
 
+class BootstrapProportionCI(BootstrapConfidenceIntervals):
+    def calculate_interval(self):
+        self.sample_statistics = bootstrap_resample_numba(self.data, self.resamples, self.n)
+        lb, ub = self.calculate_percentiles()
+        return output_format(lb=lb, ub=ub)
+    
+    def summary(self):
+        ci = self.calculate_interval()
+        observed_proportion = np.mean(self.data)
+        return{
+            "observed_proportion": observed_proportion,
+            "confidence_interval": ci, 
+            "alpha": self.alpha,
+            "resamples": self.resamples
+        }
 # hay que volver a agregar la proporcion muestral poblacional 
 class kruskalWallisTest:
     #### his objective is to explain the variance by studing the groups related to it 

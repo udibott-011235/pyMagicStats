@@ -3,8 +3,17 @@ import numpy as np
 import scipy.stats as stats
 import statsmodels.api as sm
 import warnings
+from lib.utils import plot_distribution_summary, output_format
+
 
 #Pendiente ! no esta implementando output_format
+#hay que poner bonito el distribution visualization 
+# necesitamos un refactory en el self.type, 
+# hay que unificar la llamada al metodo de evaluacion de distribucion para facilitar usabilidad 
+# organizar y complementar tabla de estadisticos en visualizacion 
+# urgente hay que meter la funcion assing weith a dentro de evaluate normality  
+# 
+
 ################################# ######
 # 1. Clase Principal: Distribution
 #######################################
@@ -13,14 +22,14 @@ class Distribution:
     Clase que encapsula los datos y algunos estadísticos básicos.
     Se utiliza para almacenar y actualizar el estado de validación mediante update_type().
     """
-    def __init__(self, data):
+    def __init__(self, data, dist_type=None):
         try:
             self.data = np.array(data)
         except Exception as e:
             raise ValueError("Error al convertir los datos a numpy array: " + str(e))
         
         # Estadísticos básicos
-        self.type = {}
+        self.type = dist_type
         self.mean = np.mean(self.data)
         self.std = np.std(self.data)
         self.var = np.var(self.data)
@@ -39,41 +48,32 @@ class Distribution:
         """
         Actualiza el diccionario type con la validación o resultado obtenido.
         """
+        if self.type is None:
+            self.type = {}
         self.type.update({distribution_name: bool_result, static_name: value})
 
-    def distribution_vizualization(data, title=None, x_label=None, y_label=None, bins=None):
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-
-        #if bins is None:
-        #buscar formula correcta para bins
+    def distribution_vizualization(self, title="Resumen de Distribución", x_label="Valor", y_label="Densidad", bins=30):
+        """
+        Visualiza la distribución de los datos utilizando la función genérica de visualización.
         
-        #bins = np.log10(len(data))
-####add a scatterplot , histogram and boxplot and table of contents
- 
-        plt.figure(figsize=(20, 10))
-        ax1 = plt.subplots(212)
-        ax1 = sns.scatterplot(data=data)
-        ax1 = plt.title('Scatterplot of ' + title)
-        ax1 = plt.xlabel(x_label)
-        ax1 = plt.ylabel(y_label)
-    
-#### Histogram
-        ax2 = plt.subplots(221)
-        ax2 = sns.histplot(data, kde=True)
-        ax2 = plt.title('Histogram of ' + title)
-        ax2 = plt.xlabel(x_label)
-        ax2 = plt.ylabel(y_label)
-
-##########
-#Boxplot     
-        ax3= plt.subplots(222)
-        ax3= sns.boxplot(data)
-        ax3 = plt.title('Boxplot of ' + title)
-        ax3 = plt.xlabel(x_label)
-        ax3 = plt.ylabel(y_label)
-
-        return plt.show()
+        Parámetros:
+          title: str, opcional
+              Título general de la figura.
+          x_label: str, opcional
+              Etiqueta del eje X.
+          y_label: str, opcional
+              Etiqueta del eje Y.
+          bins: int, opcional
+              Número de bins para el histograma.
+        """
+        plot_distribution_summary(
+            data=self.data,
+            distribution_type=self.type,
+            title=title,
+            x_label=x_label,
+            y_label=y_label,
+            bins=bins
+        )
 
 
 #######################################

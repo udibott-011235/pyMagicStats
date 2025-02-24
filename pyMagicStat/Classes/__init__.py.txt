@@ -1,3 +1,4 @@
 import pyMagicStat.Classes.confidence_intervals
 import pyMagicStat.Classes.distributions
 import pyMagicStat.Classes.nonParametricHTest
+import pyMagicStat.lib.utils
