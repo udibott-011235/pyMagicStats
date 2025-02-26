@@ -2,7 +2,7 @@ import numpy as np
 import warnings
 from numba import jit
 from scipy.stats import  kruskal, mannwhitneyu
-from lib.utils import output_format  
+from pyMagicStat.lib.utils import output_format 
 
 
 @jit(nopython=True, fastmath=True)
@@ -76,13 +76,14 @@ class BootstrapProportionCI(BootstrapConfidenceIntervals):
             "alpha": self.alpha,
             "resamples": self.resamples
         }
-# hay que volver a agregar la proporcion muestral poblacional 
+
 class kruskalWallisTest:
     #### his objective is to explain the variance by studing the groups related to it 
     #### with a low R**2 means the differece bettwen the groups explains the variance or not 
     ######## with a low r**2 pValue will increse pval > Alpha there is no difference within the groups
     #### ver valor H si hay tabla o valor de rechazo  
     #### hay que incluir un metodo vizual 
+    #####https://www.ibm.com/docs/es/spss-statistics/beta?topic=tests-kruskal-wallis-test
     def __init__(self, *groups, alpha=0.05, labels=None, alternative="two-sided"):    
         
         

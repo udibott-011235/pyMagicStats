@@ -3,7 +3,9 @@ import numpy as np
 import scipy.stats as stats
 import statsmodels.api as sm
 import warnings
-from lib.utils import plot_distribution_summary, output_format
+from pyMagicStat.lib.utils import plot_distribution_summary
+from pyMagicStat.lib.utils import output_format
+
 
 
 #Pendiente ! no esta implementando output_format

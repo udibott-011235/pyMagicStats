@@ -1,4 +1,8 @@
+# pyMagicStat/pyMagicStat/__init__.py
+# pyMagicStat/__init__.py
 import pyMagicStat.Classes.confidence_intervals
 import pyMagicStat.Classes.distributions
 import pyMagicStat.Classes.nonParametricHTest
 import pyMagicStat.lib.utils
+import pyMagicStat.Classes.statisticalEvaluator
+import pyMagicStat.Classes.orchestrator

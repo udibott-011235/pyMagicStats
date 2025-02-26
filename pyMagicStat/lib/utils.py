@@ -19,7 +19,7 @@ def output_format(data=None, lb=None, ub=None, bool_result=None, p_value=None, r
 
     if lb is not None and ub is not None:
         output['lb'] = lb
-        output['ub'] = ub,
+        output['ub'] = ub
 
     if p_value is not None : 
         output['p_value'] = p_value
