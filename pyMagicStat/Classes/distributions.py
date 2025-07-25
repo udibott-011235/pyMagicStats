@@ -45,6 +45,28 @@ class Distribution:
         self.q3 = np.percentile(self.data, 75)
         self.iqr = self.q3 - self.q1
         self.range = self.max - self.min
+    
+    def __repr__(self):
+        return output_format(data=f"""
+            Distribution Summary:
+            count={len(self.data)},
+            type={self.type},
+            stats:
+            mean={self.mean},
+            std={self.std},
+            var={self.var},
+            skewness={self.skewness},
+            kurtosis={self.kurtosis},
+            median={self.median},
+            mode={self.mode},
+            min={self.min},
+            max={self.max},
+            q1={self.q1},
+            q3={self.q3},
+            iqr={self.iqr},
+            range={self.range}
+        """,
+        )
 
     def update_type(self, distribution_name, bool_result, static_name, value):
         """
@@ -422,3 +444,9 @@ class PoissonDistribution(DiscreteDistributionValidator):
             warnings.warn("Error en test de aproximación normal Poisson: " + str(e))
             return False
 
+
+
+################################
+#Proximamente distribuciones financieras 
+############### empezando con Pareto  
+# ################
