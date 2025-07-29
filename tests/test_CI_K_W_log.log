@@ -1,0 +1,68 @@
+2025-07-24 21:35:08,510 - INFO - Test Kruskal-Wallis y StatisticalEvaluator
+2025-07-24 21:35:08,521 - INFO - Resultados KruskalWallisTest: {'global_R2': 0.7539128635583775, 'p_value': 9.276718985412087e-17, 'results': {'H_statistic': 77.76016528925624, 'p_value': 9.276718985412087e-17, 'df': 3, 'Total_SS': 41091.771824955664, 'Groups': [{'Label': 'Group 1', 'SSW': 2349.0335511603903, 'R^2': 0.9428344545188536, 'p_value': 4.994246572852178e-08}, {'Label': 'Group 2', 'SSW': 2514.1587781192707, 'R^2': 0.938816004604786, 'p_value': 0.005663262828789057}, {'Label': 'Group 3', 'SSW': 2853.6880265901013, 'R^2': 0.9305532981457614, 'p_value': 0.934791297548209}, {'Label': 'Group 4', 'SSW': 2395.2761038461235, 'R^2': 0.9417091062889764, 'p_value': 4.073271603344086e-16}]}}
+2025-07-24 21:35:08,521 - INFO - Test OptimizedExperimentationIteration
+2025-07-24 21:35:08,529 - INFO - Historial de iteraciones: [{'iteration': 0, 'groups': ['Group 1', 'Group 2', 'Group 3', 'Group 4'], 'global_R2': 0.7539128635583775, 'evaluation': {'global_R2': 0.7539128635583775, 'p_value': 9.276718985412087e-17, 'results': {'H_statistic': 77.76016528925624, 'p_value': 9.276718985412087e-17, 'df': 3, 'Total_SS': 41091.771824955664, 'Groups': [{'Label': 'Group 1', 'SSW': 2349.0335511603903, 'R^2': 0.9428344545188536, 'p_value': 4.994246572852178e-08}, {'Label': 'Group 2', 'SSW': 2514.1587781192707, 'R^2': 0.938816004604786, 'p_value': 0.005663262828789057}, {'Label': 'Group 3', 'SSW': 2853.6880265901013, 'R^2': 0.9305532981457614, 'p_value': 0.934791297548209}, {'Label': 'Group 4', 'SSW': 2395.2761038461235, 'R^2': 0.9417091062889764, 'p_value': 4.073271603344086e-16}]}}}]
+2025-07-24 21:35:08,531 - INFO - Test intervalos paramétricos
+2025-07-24 21:35:08,534 - INFO - normal - Mean CI: {'lb': np.float64(48.98376512067495), 'ub': np.float64(50.22495215770922), 'Result': np.True_, 'txt': 'Confidence Interval for the mean calculated propperly'}
+2025-07-24 21:35:08,534 - INFO - normal - Variance CI: {'lb': np.float64(92.01539687010667), 'ub': np.float64(109.66545499345793)}
+2025-07-24 21:35:08,534 - INFO - normal - Proportion CI: {'lb': np.float64(nan), 'ub': np.float64(nan)}
+2025-07-24 21:35:09,146 - INFO - Test intervalos bootstrap (scipy y numba)
+2025-07-24 21:35:09,178 - INFO - normal - mean (scipy) CI: {'lb': np.float64(49.02006219725159), 'ub': np.float64(50.24258694875633)}
+2025-07-24 21:35:10,446 - INFO - normal - mean (numba) CI: {'lb': np.float64(48.995560437028416), 'ub': np.float64(50.200952686278356)}
+2025-07-24 21:35:10,493 - INFO - normal - median (scipy) CI: {'lb': np.float64(48.73970414686985), 'ub': np.float64(50.34142128909841)}
+2025-07-24 21:35:11,272 - INFO - normal - median (numba) CI: {'lb': np.float64(48.751408409156426), 'ub': np.float64(50.33274691656856)}
+2025-07-24 21:35:11,302 - INFO - normal - variance (scipy) CI: {'lb': np.float64(91.87225355749146), 'ub': np.float64(108.68495260819137)}
+2025-07-24 21:35:11,477 - INFO - normal - variance (numba) CI: {'lb': np.float64(91.42921788167915), 'ub': np.float64(109.32883839121607)}
+2025-07-24 21:35:11,509 - INFO - normal - proportion (scipy) CI: {'lb': np.float64(48.9631517744646), 'ub': np.float64(50.2452278816208)}
+2025-07-24 21:35:11,531 - INFO - normal - proportion (numba) CI: {'lb': np.float64(48.982270342641804), 'ub': np.float64(50.22398056538263)}
+2025-07-24 21:35:11,540 - INFO - exponential - mean (scipy) CI: {'lb': np.float64(9.464847378291699), 'ub': np.float64(10.700722274949195)}
+2025-07-24 21:35:11,572 - INFO - exponential - mean (numba) CI: {'lb': np.float64(9.46723513464208), 'ub': np.float64(10.712271136212163)}
+2025-07-24 21:35:11,620 - INFO - exponential - median (scipy) CI: {'lb': np.float64(6.256760336607218), 'ub': np.float64(7.782821515821698)}
+2025-07-24 21:35:12,033 - INFO - exponential - median (numba) CI: {'lb': np.float64(6.257433330382402), 'ub': np.float64(7.783529150756089)}
+2025-07-24 21:35:12,064 - INFO - exponential - variance (scipy) CI: {'lb': np.float64(82.33402309311708), 'ub': np.float64(122.77805213777103)}
+2025-07-24 21:35:12,113 - INFO - exponential - variance (numba) CI: {'lb': np.float64(82.8127614033094), 'ub': np.float64(122.32730495691895)}
+2025-07-24 21:35:12,137 - INFO - exponential - proportion (scipy) CI: {'lb': np.float64(9.477382181877653), 'ub': np.float64(10.694793323911622)}
+2025-07-24 21:35:12,159 - INFO - exponential - proportion (numba) CI: {'lb': np.float64(9.471609283035656), 'ub': np.float64(10.680629176857334)}
+2025-07-24 21:35:12,175 - INFO - gamma - mean (scipy) CI: {'lb': np.float64(3.846241086825603), 'ub': np.float64(4.190828524189641)}
+2025-07-24 21:35:12,191 - INFO - gamma - mean (numba) CI: {'lb': np.float64(3.8396642491496498), 'ub': np.float64(4.18573549597235)}
+2025-07-24 21:35:12,239 - INFO - gamma - median (scipy) CI: {'lb': np.float64(3.2912451759334123), 'ub': np.float64(3.649932650293737)}
+2025-07-24 21:35:12,520 - INFO - gamma - median (numba) CI: {'lb': np.float64(3.3001517071021844), 'ub': np.float64(3.649932650293737)}
+2025-07-24 21:35:12,540 - INFO - gamma - variance (scipy) CI: {'lb': np.float64(6.769827945334631), 'ub': np.float64(8.641260381635522)}
+2025-07-24 21:35:12,572 - INFO - gamma - variance (numba) CI: {'lb': np.float64(6.771387769544812), 'ub': np.float64(8.671361125746943)}
+2025-07-24 21:35:12,609 - INFO - gamma - proportion (scipy) CI: {'lb': np.float64(3.841798110675051), 'ub': np.float64(4.181598316586398)}
+2025-07-24 21:35:12,620 - INFO - gamma - proportion (numba) CI: {'lb': np.float64(3.843844537664758), 'ub': np.float64(4.192943486508367)}
+2025-07-24 21:35:12,659 - INFO - uniform - mean (scipy) CI: {'lb': np.float64(48.754039254238215), 'ub': np.float64(52.183972633372356)}
+2025-07-24 21:35:12,683 - INFO - uniform - mean (numba) CI: {'lb': np.float64(48.81190630430226), 'ub': np.float64(52.265190914877124)}
+2025-07-24 21:35:12,749 - INFO - uniform - median (scipy) CI: {'lb': np.float64(48.612293718950525), 'ub': np.float64(55.00569692797909)}
+2025-07-24 21:35:13,123 - INFO - uniform - median (numba) CI: {'lb': np.float64(48.48822530397639), 'ub': np.float64(55.0528718644772)}
+2025-07-24 21:35:13,175 - INFO - uniform - variance (scipy) CI: {'lb': np.float64(735.5269341814856), 'ub': np.float64(822.2680315755892)}
+2025-07-24 21:35:13,215 - INFO - uniform - variance (numba) CI: {'lb': np.float64(736.5901242695886), 'ub': np.float64(822.369965142334)}
+2025-07-24 21:35:13,245 - INFO - uniform - proportion (scipy) CI: {'lb': np.float64(48.73943979846214), 'ub': np.float64(52.300822552325435)}
+2025-07-24 21:35:13,270 - INFO - uniform - proportion (numba) CI: {'lb': np.float64(48.76992008757255), 'ub': np.float64(52.290398959758505)}
+2025-07-24 21:35:13,309 - INFO - bimodal - mean (scipy) CI: {'lb': np.float64(48.86232811806346), 'ub': np.float64(51.41263163787266)}
+2025-07-24 21:35:13,323 - INFO - bimodal - mean (numba) CI: {'lb': np.float64(48.87702229952558), 'ub': np.float64(51.374007994377855)}
+2025-07-24 21:35:13,381 - INFO - bimodal - median (scipy) CI: {'lb': np.float64(37.80804050547993), 'ub': np.float64(62.44018215093003)}
+2025-07-24 21:35:13,750 - INFO - bimodal - median (numba) CI: {'lb': np.float64(37.785037127899855), 'ub': np.float64(62.44018215093003)}
+2025-07-24 21:35:13,802 - INFO - bimodal - variance (scipy) CI: {'lb': np.float64(403.6761552087307), 'ub': np.float64(428.56872475972705)}
+2025-07-24 21:35:13,849 - INFO - bimodal - variance (numba) CI: {'lb': np.float64(404.7493462424464), 'ub': np.float64(429.4999574878113)}
+2025-07-24 21:35:13,881 - INFO - bimodal - proportion (scipy) CI: {'lb': np.float64(48.8949165621805), 'ub': np.float64(51.39632245717207)}
+2025-07-24 21:35:13,911 - INFO - bimodal - proportion (numba) CI: {'lb': np.float64(48.81652785412161), 'ub': np.float64(51.3345331426948)}
+2025-07-24 21:35:13,951 - INFO - lognormal - mean (scipy) CI: {'lb': np.float64(29.866667783252087), 'ub': np.float64(34.73010070389827)}
+2025-07-24 21:35:13,975 - INFO - lognormal - mean (numba) CI: {'lb': np.float64(29.856418917647105), 'ub': np.float64(34.69228493937356)}
+2025-07-24 21:35:14,039 - INFO - lognormal - median (scipy) CI: {'lb': np.float64(18.25369255539633), 'ub': np.float64(21.27996889453241)}
+2025-07-24 21:35:14,399 - INFO - lognormal - median (numba) CI: {'lb': np.float64(18.22368474491352), 'ub': np.float64(21.34106398026787)}
+2025-07-24 21:35:14,449 - INFO - lognormal - variance (scipy) CI: {'lb': np.float64(1076.5884262559457), 'ub': np.float64(1830.6039761944344)}
+2025-07-24 21:35:14,465 - INFO - lognormal - variance (numba) CI: {'lb': np.float64(1076.059286121034), 'ub': np.float64(1844.9006583044663)}
+2025-07-24 21:35:14,517 - INFO - lognormal - proportion (scipy) CI: {'lb': np.float64(30.019071907698834), 'ub': np.float64(34.59058111304572)}
+2025-07-24 21:35:14,544 - INFO - lognormal - proportion (numba) CI: {'lb': np.float64(29.91900639287016), 'ub': np.float64(34.761465266002745)}
+2025-07-24 21:35:14,581 - INFO - poisson - mean (scipy) CI: {'lb': np.float64(4.834975), 'ub': np.float64(5.098)}
+2025-07-24 21:35:14,783 - INFO - poisson - mean (numba) CI: {'lb': np.float64(4.837975), 'ub': np.float64(5.101025)}
+2025-07-24 21:35:14,822 - INFO - poisson - median (scipy) CI: {'lb': np.float64(5.0), 'ub': np.float64(5.0)}
+2025-07-24 21:35:14,858 - INFO - Comparación Bootstrap vs Paramétrico para la media
+2025-07-24 21:35:14,896 - INFO - normal - Parametric CI width: 1.2411870370342655, Bootstrap CI width: 1.2225247515047428
+2025-07-24 21:35:14,936 - INFO - exponential - Parametric CI width: 1.2467190983572607, Bootstrap CI width: 1.2330520406731065
+2025-07-24 21:35:14,969 - INFO - gamma - Parametric CI width: 0.3433176955047528, Bootstrap CI width: 0.3414447871916533
+2025-07-24 21:35:15,003 - INFO - uniform - Parametric CI width: 3.4613941268775505, Bootstrap CI width: 3.4169172820333387
+2025-07-24 21:35:15,040 - INFO - bimodal - Parametric CI width: 2.5312190077025747, Bootstrap CI width: 2.632065571024839
+2025-07-24 21:35:15,066 - INFO - lognormal - Parametric CI width: 4.6856520005552795, Bootstrap CI width: 4.688359633747407
+2025-07-24 21:35:15,109 - INFO - poisson - Parametric CI width: 0.2632921829698702, Bootstrap CI width: 0.2590249999999994

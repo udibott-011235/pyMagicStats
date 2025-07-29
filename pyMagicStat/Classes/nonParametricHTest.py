@@ -163,3 +163,6 @@ class kruskalWallisTest:
         """Elimina un grupo por índice y recalcula R²."""
         removed = self.labels.pop(idx)
         self.groups
+
+
+# Agregar regresion lineal 

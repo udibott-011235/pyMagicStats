@@ -9,15 +9,11 @@ logging.basicConfig(filename='test_log.txt', filemode="w", level=logging.INFO, f
 # Importamos el módulo a testear (asegúrate de que distributions.py esté en el path)
 import pyMagicStat.Classes.distributions as distributions
 
-# Configuración del log: se crea un archivo 'test_log.txt' en modo escritura.
-
 class TestDistributions(unittest.TestCase):
     def setUp(self):
-        # Opcional: ignorar ciertos warnings para que no ensucien la salida
         warnings.simplefilter("ignore", RuntimeWarning)
 
     def log_result(self, descripcion, exito):
-        # Función auxiliar para escribir en el log el supuesto evaluado
         mensaje = (
             f"Supuesto: {descripcion}\n"
             f"Resultado: {'Aceptado' if exito else 'Rechazado'}\n"
@@ -101,13 +97,12 @@ class TestDistributions(unittest.TestCase):
         try:
             data = binom.rvs(n=10, p=0.5, size=1000)
             validator = distributions.BinomialDistribution(data)
-            # Se proveen los parámetros para el test de bondad
             gof_results = validator.evaluate_goodness_of_fit(n=10, p=0.5)
             is_binomial = validator.distribution.type.get('Binomial', False)
             self.assertTrue(is_binomial, "La bondad de ajuste para binomial falló.")
             approx_normal = validator.evaluate_normal_approximation()
             self.assertFalse(approx_normal, "La aproximación normal para binomial es incorrecta (se esperaba False).")
-            self.log_result(descripcion, True)
+            self.log_result(descripcion + f" | Aproximación normal: {approx_normal}", True)
         except Exception as e:
             self.log_result(descripcion + f" - Error: {e}", False)
             raise
@@ -142,7 +137,7 @@ class TestDistributions(unittest.TestCase):
             self.assertTrue(is_poisson, "La bondad de ajuste para Poisson falló.")
             approx_normal = validator.evaluate_normal_approximation()
             self.assertTrue(approx_normal, "La aproximación normal para Poisson debería ser True.")
-            self.log_result(descripcion, True)
+            self.log_result(descripcion + f" | Aproximación normal: {approx_normal}", True)
         except Exception as e:
             self.log_result(descripcion + f" - Error: {e}", False)
             raise
@@ -162,5 +157,170 @@ class TestDistributions(unittest.TestCase):
             self.log_result(descripcion + f" - Error: {e}", False)
             raise
 
-if __name__ == '__main__':
+    # BinomialDistribution absurd/edge cases
+    def test_binomial_gof_out_of_range(self):
+        descripcion = "BinomialDistribution: datos fuera de rango [0, n], se espera advertencia y posible p_value bajo."
+        try:
+            data = np.concatenate([binom.rvs(n=8, p=0.5, size=500), np.array([20, 25, 30])])
+            validator = distributions.BinomialDistribution(data)
+            result = validator.evaluate_goodness_of_fit(n=8, p=0.5)
+            self.assertTrue('p_value' in result)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
+
+    def test_binomial_gof_low_expected(self):
+        descripcion = "BinomialDistribution: datos con bins esperados < 5, se espera ValueError."
+        try:
+            data = np.full(100, 0)
+            validator = distributions.BinomialDistribution(data)
+            with self.assertRaises(ValueError):
+                validator.evaluate_goodness_of_fit(n=1, p=0.01)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
+
+    def test_binomial_gof_non_integer(self):
+        descripcion = "BinomialDistribution: datos no enteros, se espera ValueError en validación."
+        try:
+            data = np.array([0.1, 1.2, 2.5])
+            with self.assertRaises(ValueError):
+                distributions.BinomialDistribution(data)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
+
+    # PoissonDistribution absurd/edge cases
+    def test_poisson_gof_low_expected(self):
+        descripcion = "PoissonDistribution: datos con bins esperados < 5, se espera ValueError."
+        try:
+            data = np.full(50, 0)
+            validator = distributions.PoissonDistribution(data)
+            with self.assertRaises(ValueError):
+                validator.evaluate_goodness_of_fit()
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
+
+    def test_poisson_gof_negative(self):
+        descripcion = "PoissonDistribution: datos negativos, se espera ValueError en validación."
+        try:
+            data = np.array([-1, 0, 1, 2, 3], dtype=int)
+            with self.assertRaises(ValueError):
+                distributions.PoissonDistribution(data)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
+
+    def test_poisson_gof_non_integer(self):
+        descripcion = "PoissonDistribution: datos no enteros, se espera ValueError en validación."
+        try:
+            data = np.array([0.5, 1.5, 2.5])
+            with self.assertRaises(ValueError):
+                distributions.PoissonDistribution(data)
+            self.log_result(descripcion, True)
+        except Exception as e:
+            self.log_result(descripcion + f" - Error: {e}", False)
+            raise
+
+    def test_binomial_data_range(self):
+        descripcion = "Verifica que los datos binomiales estén en el rango [0, n]."
+        n, p = 10, 0.3
+        data = binom.rvs(n=n, p=p, size=1000)
+        in_range = np.all((data >= 0) & (data <= n))
+        self.assertTrue(in_range, "Datos binomiales fuera de rango.")
+        self.log_result(descripcion, in_range)
+
+    def test_poisson_data_range(self):
+        descripcion = "Verifica que los datos Poisson sean >= 0."
+        mu = 5
+        data = poisson.rvs(mu=mu, size=1000)
+        in_range = np.all(data >= 0)
+        self.assertTrue(in_range, "Datos Poisson fuera de rango.")
+        self.log_result(descripcion, in_range)
+
+    def test_binomial_mean_variance(self):
+        descripcion = "Verifica media y varianza binomial vs esperado."
+        n, p = 20, 0.4
+        data = binom.rvs(n=n, p=p, size=5000)
+        mean_expected = n * p
+        var_expected = n * p * (1 - p)
+        mean_actual = np.mean(data)
+        var_actual = np.var(data)
+        mean_close = np.isclose(mean_actual, mean_expected, atol=0.2)
+        var_close = np.isclose(var_actual, var_expected, atol=0.2)
+        self.assertTrue(mean_close and var_close, "Media/varianza binomial incorrecta.")
+        self.log_result(descripcion, mean_close and var_close)
+
+    def test_poisson_mean_variance(self):
+        descripcion = "Verifica media y varianza Poisson vs esperado."
+        mu = 7
+        data = poisson.rvs(mu=mu, size=5000)
+        mean_actual = np.mean(data)
+        var_actual = np.var(data)
+        mean_close = np.isclose(mean_actual, mu, atol=0.2)
+        var_close = np.isclose(var_actual, mu, atol=0.2)
+        self.assertTrue(mean_close and var_close, "Media/varianza Poisson incorrecta.")
+        self.log_result(descripcion, mean_close and var_close)
+
+    def test_binomial_ks_test_consistency(self):
+        descripcion = "Consistencia Kolmogorov-Smirnov para binomial."
+        n, p = 15, 0.5
+        data = binom.rvs(n=n, p=p, size=1000)
+        validator = distributions.BinomialDistribution(data)
+        gof = validator.evaluate_goodness_of_fit(n=n, p=p)
+        p_value = gof.get('p_value', 0)
+        self.assertTrue(p_value > 0.05, "KS test inconsistente para binomial.")
+        self.log_result(descripcion, p_value > 0.05)
+
+    def test_poisson_ks_test_consistency(self):
+        descripcion = "Consistencia Kolmogorov-Smirnov para Poisson."
+        mu = 8
+        data = poisson.rvs(mu=mu, size=1000)
+        validator = distributions.PoissonDistribution(data)
+        gof = validator.evaluate_goodness_of_fit()
+        p_value = gof.get('p_value', 0)
+        self.assertTrue(p_value > 0.05, "KS test inconsistente para Poisson.")
+        self.log_result(descripcion, p_value > 0.05)
+
+    def test_combined_lognormal_normal(self):
+        descripcion = "Combinación de lognormal y normal, verifica suma de probabilidades."
+        data_ln = np.random.lognormal(0, 1, 500)
+        data_n = np.random.normal(0, 1, 500)
+        combined = np.concatenate([data_ln, data_n])
+        validator_ln = distributions.LognormalDistribution(data_ln)
+        validator_n = distributions.NormalDistribution(data_n)
+        ln_prob = validator_ln.distribution.type.get('Lognormal', 0)
+        n_prob = validator_n.distribution.type.get('Normal', 0)
+        total_prob = ln_prob + n_prob
+        self.assertTrue(0.9 < total_prob <= 1.1, "Suma de probabilidades fuera de rango.")
+        self.log_result(descripcion, 0.9 < total_prob <= 1.1)
+
+    def test_custom_binomial_parameters(self):
+        descripcion = "Genera binomial con parámetros personalizados y verifica comportamiento."
+        n, p = 25, 0.7
+        data = binom.rvs(n=n, p=p, size=2000)
+        validator = distributions.BinomialDistribution(data)
+        gof = validator.evaluate_goodness_of_fit(n=n, p=p)
+        mean_actual = np.mean(data)
+        mean_expected = n * p
+        self.assertTrue(np.isclose(mean_actual, mean_expected, atol=0.5), "Media binomial personalizada incorrecta.")
+        self.log_result(descripcion, np.isclose(mean_actual, mean_expected, atol=0.5))
+
+    def test_custom_poisson_parameters(self):
+        descripcion = "Genera Poisson con parámetros personalizados y verifica comportamiento."
+        mu = 12
+        data = poisson.rvs(mu=mu, size=2000)
+        validator = distributions.PoissonDistribution(data)
+        gof = validator.evaluate_goodness_of_fit()
+        mean_actual = np.mean(data)
+        self.assertTrue(np.isclose(mean_actual, mu, atol=0.5), "Media Poisson personalizada incorrecta.")
+        self.log_result(descripcion, np.isclose(mean_actual, mu, atol=0.5))
+
+if __name__ == "__main__":
     unittest.main()

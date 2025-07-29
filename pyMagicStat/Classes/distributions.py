@@ -137,6 +137,7 @@ class DistributionValidator(ABC):
 
 #######################################
 # 3. Validadores para Distribuciones Continuas
+# hay que agregar chi2
 #######################################
 class ContinuousDistributionValidator(DistributionValidator, ABC):
     @abstractmethod
@@ -309,6 +310,7 @@ class LognormalDistribution(ContinuousDistributionValidator):
 
 #######################################
 # 4. Validadores para Distribuciones Discretas
+# hay que agregar binomial negativa e hypergeometric
 #######################################
 class DiscreteDistributionValidator(DistributionValidator, ABC):
     @abstractmethod
@@ -340,6 +342,8 @@ class DiscreteDistributionValidator(DistributionValidator, ABC):
         pass
 
 
+
+
 class BinomialDistribution(DiscreteDistributionValidator):
     """
     Validador para datos que se espera sigan una distribución binomial.
@@ -347,40 +351,53 @@ class BinomialDistribution(DiscreteDistributionValidator):
     """
     def validate_data(self):
         data = self.distribution.data
-        if not (isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.integer)):
-            warnings.warn("Los datos deben ser enteros para binomial.")
+        # Deben ser enteros, no negativos y no mayores que el máximo observado
+        if not (isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.integer) and np.all(data >= 0)):
+            warnings.warn("Los datos deben ser enteros y no negativos para binomial.")
             return False
         return True
 
     def evaluate_goodness_of_fit(self, n=None, p=None):
         data = self.distribution.data
         try:
-            if n is not None and p is not None:
-                bins = np.arange(0, n + 2)  # Bins de 0 a n
-                observed, _ = np.histogram(data, bins=bins)
-                expected = np.array([stats.binom.pmf(k, n, p) * len(data) for k in range(0, n + 1)])
-                chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected, sum_check=False)
-                resultados = {'chi2': chi2, 'p_value': p_value}
-            else:
-                resultados = {'chi2': 0.0, 'p_value': 1.0}
+            # Si no se pasan n y p, estimar por momentos
+            if n is None or p is None:
+                params = self.estimate_parameters_moments()
+                if 'error' in params:
+                    raise ValueError(params['error'])
+                n = int(round(params['n']))
+                p = params['p']
+            # Validar que los datos estén en el rango [0, n]
+            if np.any((data < 0) | (data > n)):
+                warnings.warn("Algunos datos están fuera del rango [0, n] estimado para binomial.")
+            bins = np.arange(0, n + 2)
+            observed, _ = np.histogram(data, bins=bins)
+            expected = np.array([stats.binom.pmf(k, n, p) * len(data) for k in range(0, n + 1)])
+            # Filtrar bins con esperado < 5 (regla estándar chi2)
+            mask = expected >= 5
+            if not np.any(mask):
+                raise ValueError("Todos los bins esperados son menores a 5. No se puede aplicar chi2.")
+            observed = observed[mask]
+            expected = expected[mask]
+            expected = expected * (observed.sum() / expected.sum())  # Ajustar para que sumen lo mism
+            chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected)
+            resultados = {'chi2': chi2, 'p_value': p_value, 'n': n, 'p': p}
         except Exception as e:
             warnings.warn("Error en bondad de ajuste binomial: " + str(e))
             resultados = {'error': str(e)}
-        # Actualiza el estado en Distribution (usamos el nombre de la clase como key)
         self.distribution.update_type('Binomial', resultados.get('p_value', 0) > 0.05, 'goodness_of_fit', resultados)
         return resultados
 
     def evaluate_normal_approximation(self):
-        # Se evalúa la aproximación normal con la regla n*p*(1-p) >= 9
         try:
-            # Si no se pasaron parámetros, se estima por momentos
-            if 'moments_estimation' not in self.distribution.type:
+            params = self.distribution.type.get('goodness_of_fit', {})
+            n = params.get('n')
+            p = params.get('p')
+            if n is None or p is None:
                 params = self.estimate_parameters_moments()
-            else:
-                params = self.distribution.type.get('moments_estimation')
-            n_est = params['n']
-            p_est = params['p']
-            var_approx = n_est * p_est * (1 - p_est)
+                n = params.get('n')
+                p = params.get('p')
+            var_approx = n * p * (1 - p)
             return var_approx >= 9
         except Exception as e:
             warnings.warn("Error en test de aproximación normal binomial: " + str(e))
@@ -412,9 +429,7 @@ class PoissonDistribution(DiscreteDistributionValidator):
     """
     def validate_data(self):
         data = self.distribution.data
-        if not (isinstance(data, np.ndarray) and 
-                np.issubdtype(data.dtype, np.integer) and 
-                np.all(data >= 0)):
+        if not (isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.integer) and np.all(data >= 0)):
             warnings.warn("Los datos deben ser enteros y no negativos para Poisson.")
             return False
         return True
@@ -427,8 +442,15 @@ class PoissonDistribution(DiscreteDistributionValidator):
             bins = np.arange(np.min(data), np.max(data) + 2)
             observed, _ = np.histogram(data, bins=bins)
             expected = np.array([stats.poisson.pmf(k, lambda_val) * n for k in bins[:-1]])
-            chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected, sum_check=False)
-            resultados = {'chi2': chi2, 'p_value': p_value}
+            # Filtrar bins con esperado < 5
+            mask = expected >= 5
+            if not np.any(mask):
+                raise ValueError("Todos los bins esperados son menores a 5. No se puede aplicar chi2.")
+            observed = observed[mask]
+            expected = expected[mask]
+            expected = expected * (observed.sum() / expected.sum())  # Ajustar para que sumen lo mismo
+            chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected)
+            resultados = {'chi2': chi2, 'p_value': p_value, 'lambda': lambda_val}
         except Exception as e:
             warnings.warn("Error en bondad de ajuste Poisson: " + str(e))
             resultados = {'error': str(e)}
@@ -436,15 +458,15 @@ class PoissonDistribution(DiscreteDistributionValidator):
         return resultados
 
     def evaluate_normal_approximation(self):
-        # Criterio para aproximación normal en Poisson: lambda >= 9.
         try:
-            lambda_val = np.mean(self.distribution.data)
+            params = self.distribution.type.get('goodness_of_fit', {})
+            lambda_val = params.get('lambda')
+            if lambda_val is None:
+                lambda_val = np.mean(self.distribution.data)
             return lambda_val >= 9
         except Exception as e:
             warnings.warn("Error en test de aproximación normal Poisson: " + str(e))
             return False
-
-
 
 ################################
 #Proximamente distribuciones financieras 
