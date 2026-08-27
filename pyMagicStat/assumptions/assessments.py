@@ -33,8 +33,26 @@ class DataQualityAssessment:
             if array.ndim == 1 and array.size > 1 and finite
             else np.nan
         )
-        if array.ndim == 1 and array.size >= self.min_size and distinct < 2:
-            reasons.append(f"{label} has zero variance")
+        scale = (
+            float(np.max(np.abs(array)))
+            if array.ndim == 1 and array.size and finite
+            else np.nan
+        )
+        variance_tolerance = (
+            float((np.finfo(float).eps * scale) ** 2)
+            if np.isfinite(scale)
+            else np.nan
+        )
+        if (
+            array.ndim == 1
+            and array.size >= self.min_size
+            and (
+                distinct < 2
+                or not np.isfinite(variance)
+                or variance <= variance_tolerance
+            )
+        ):
+            reasons.append(f"{label} has zero variance or numerically negligible variance")
 
         assessment = Assessment(
             name=f"data_quality_{label}",
@@ -43,6 +61,7 @@ class DataQualityAssessment:
                 "n": int(array.size),
                 "distinct": distinct,
                 "variance": variance,
+                "variance_tolerance": variance_tolerance,
                 "missing": int(np.count_nonzero(~np.isfinite(array))) if array.size else 0,
             },
             reasons=tuple(reasons) if reasons else ("Data are finite, one-dimensional and non-degenerate.",),

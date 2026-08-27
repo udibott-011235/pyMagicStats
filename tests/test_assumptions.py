@@ -31,6 +31,17 @@ def test_structural_failures_are_rejected_before_distribution_tests(data, messag
         InferenceValidator().validate_one_sample(data)
 
 
+def test_float64_distinct_values_with_negligible_variance_are_rejected():
+    adjacent = np.nextafter(1.0, 2.0)
+    data = np.array([1.0, adjacent, 1.0], dtype=np.float64)
+
+    assert np.unique(data).size == 2
+    assert np.var(data, ddof=1) > 0.0
+
+    with pytest.raises(ValueError, match="numerically negligible variance"):
+        InferenceValidator().validate_one_sample(data)
+
+
 def test_paired_validation_assesses_differences():
     before = np.array([10.0, 11.0, 13.0, 15.0, 18.0])
     after = np.array([9.0, 9.5, 12.0, 13.5, 16.0])
