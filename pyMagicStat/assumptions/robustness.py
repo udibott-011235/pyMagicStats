@@ -45,11 +45,11 @@ class SamplingRobustness:
     LARGE_N = 80
     LARGE_MAX_SKEW = 2.0
     LARGE_MAX_KURTOSIS = 7.0
-    LARGE_MAX_OUTLIER_FRACTION = 0.05
+    LARGE_MAX_OUTLIER_FRACTION = 0.10
     HEAVY_TAIL_N = 200
     HEAVY_TAIL_MAX_SKEW = 2.0
     HEAVY_TAIL_MAX_KURTOSIS = 25.0
-    HEAVY_TAIL_MAX_OUTLIER_FRACTION = 0.05
+    HEAVY_TAIL_MAX_OUTLIER_FRACTION = 0.10
 
     def evaluate(self, report: AssumptionReport) -> RobustnessResult:
         if report.has_failures and any(
@@ -123,12 +123,7 @@ class SamplingRobustness:
             and max_outlier_fraction <= self.LARGE_MAX_OUTLIER_FRACTION
         ):
             reasons.append("Large samples and bounded shape departure support an asymptotic approximation.")
-            return RobustnessResult(
-                RobustnessLevel.CAUTION
-                if extreme_count or independence_unknown
-                else RobustnessLevel.ACCEPTABLE,
-                tuple(reasons),
-            )
+            return RobustnessResult(RobustnessLevel.CAUTION, tuple(reasons))
 
         if (
             min_n >= self.MODERATE_N
@@ -137,12 +132,7 @@ class SamplingRobustness:
             and max_outlier_fraction <= self.MODERATE_MAX_OUTLIER_FRACTION
         ):
             reasons.append("Moderate shape departure is acceptable at the available sample size.")
-            level = (
-                RobustnessLevel.CAUTION
-                if extreme_count or independence_unknown
-                else RobustnessLevel.ACCEPTABLE
-            )
-            return RobustnessResult(level, tuple(reasons))
+            return RobustnessResult(RobustnessLevel.CAUTION, tuple(reasons))
 
         if (
             min_n >= self.HEAVY_TAIL_N

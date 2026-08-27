@@ -24,10 +24,7 @@ def test_large_moderately_skewed_sample_can_use_asymptotic_inference():
     decision = MethodSelector().select(report)
 
     assert decision.selected_method == "one_sample_t"
-    assert decision.robustness.level in {
-        RobustnessLevel.ACCEPTABLE,
-        RobustnessLevel.CAUTION,
-    }
+    assert decision.robustness.level is RobustnessLevel.CAUTION
 
 
 def test_heavy_skew_and_extreme_observations_are_not_approved_by_sample_size_alone():
