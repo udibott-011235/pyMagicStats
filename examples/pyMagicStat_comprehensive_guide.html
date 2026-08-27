@@ -7527,7 +7527,7 @@ a.anchor-link {
 </ul>
 </li>
 <li><strong>Módulo de Inferencia Paramétrica (<code>pyMagicStat.inference.parametric</code>)</strong><ul>
-<li>Intervalo de Confianza para la Media (con activación automática del Teorema del Límite Central).</li>
+<li>Intervalo de Confianza para la Media con validación estructurada de robustez.</li>
 <li>Intervalo de Confianza para Proporciones y Varianzas.</li>
 </ul>
 </li>
@@ -7871,7 +7871,7 @@ Resultados Poisson:
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="2.-Inferencia-Param%C3%A9trica-(pyMagicStat.inference.parametric)">2. Inferencia Paramétrica (<code>pyMagicStat.inference.parametric</code>)<a class="anchor-link" href="#2.-Inferencia-Param%C3%A9trica-(pyMagicStat.inference.parametric)">¶</a></h2><p>El módulo <code>parametric</code> de <code>pyMagicStat</code> proporciona herramientas completas para realizar inferencia estadística paramétrica, incluyendo la estimación de <strong>Intervalos de Confianza (CI)</strong> para parámetros poblacionales y la ejecución de <strong>Pruebas de Hipótesis Paramétricas</strong> (pruebas $t$ de una muestra, pareadas, dos muestras independientes y pruebas de homogeneidad de varianzas).</p>
-<p>Todas las pruebas paramétricas heredan de la clase base <code>ParametricMethod</code>, la cual evalúa automáticamente el cumplimiento del supuesto de <strong>normalidad</strong>. Si los datos no siguen una distribución normal empírica pero el tamaño muestral es $n \ge 30$, se aplica de forma transparente el <strong>Teorema del Límite Central (TLC)</strong> mediante remuestreo bootstrap de medias muestrales para permitir una inferencia paramétrica válida. Si $n &lt; 30$ y los datos no son normales, se lanza un <code>ValueError</code> preventivo recomendando el uso de métodos no paramétricos.</p>
+<p>Las pruebas paramétricas consumen un motor de validación que combina estructura, forma, outliers, tamaño y diseño. El tamaño muestral es evidencia, no un interruptor: no existe una regla automática $n \ge 30$ ni se remuestrean los datos para simular el TLC. Cada resultado expone <code>assumptions</code> e <code>inference_decision</code>.</p>
 </div>
 </div>
 </div>
@@ -7900,21 +7900,21 @@ Resultados Poisson:
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># 1. Intervalo de Confianza para la Media (PopulationMeanCI)</span>
 
-<span class="c1"># Caso A: Datos normales con n &lt; 30 (funciona directamente)</span>
+<span class="c1"># Caso A: Datos compatibles con inferencia t directa</span>
 <span class="n">datos_pequenos_normales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">ci_media_normal</span> <span class="o">=</span> <span class="n">PopulationMeanCI</span><span class="p">(</span><span class="n">datos_pequenos_normales</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="n">res_intervalo</span> <span class="o">=</span> <span class="n">ci_media_normal</span><span class="o">.</span><span class="n">calculate_interval</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"A) Datos Normales Muestra Pequeña (n=20):"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Intervalo de confianza 95%: [</span><span class="si">{</span><span class="n">res_intervalo</span><span class="p">[</span><span class="s1">'lb'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">res_intervalo</span><span class="p">[</span><span class="s1">'ub'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   ¿Se aplicó TLC?: </span><span class="si">{</span><span class="n">ci_media_normal</span><span class="o">.</span><span class="n">tlc_applied</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Robustez: </span><span class="si">{</span><span class="n">ci_media_normal</span><span class="o">.</span><span class="n">inference_decision</span><span class="o">.</span><span class="n">robustness</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># Caso B: Datos NO normales con n &gt;= 30 (Aplica TLC automáticamente)</span>
+<span class="c1"># Caso B: Una muestra grande no anula automáticamente sesgo y outliers</span>
 <span class="n">datos_grandes_exponenciales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">B) Datos Exponenciales Muestra Grande (n=150):"</span><span class="p">)</span>
-<span class="n">ci_media_exp</span> <span class="o">=</span> <span class="n">PopulationMeanCI</span><span class="p">(</span><span class="n">datos_grandes_exponenciales</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">ci_media_exp</span> <span class="o">=</span> <span class="n">PopulationMeanCI</span><span class="p">(</span><span class="n">datos_grandes_exponenciales</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">res_intervalo_exp</span> <span class="o">=</span> <span class="n">ci_media_exp</span><span class="o">.</span><span class="n">calculate_interval</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Intervalo de confianza 95%: [</span><span class="si">{</span><span class="n">res_intervalo_exp</span><span class="p">[</span><span class="s1">'lb'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">res_intervalo_exp</span><span class="p">[</span><span class="s1">'ub'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   ¿Se aplicó TLC?: </span><span class="si">{</span><span class="n">ci_media_exp</span><span class="o">.</span><span class="n">tlc_applied</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Robustez: </span><span class="si">{</span><span class="n">ci_media_exp</span><span class="o">.</span><span class="n">inference_decision</span><span class="o">.</span><span class="n">robustness</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Caso C: Cálculo del tamaño de muestra requerido para un margen de error objetivo</span>
 <span class="n">req_size</span> <span class="o">=</span> <span class="n">ci_media_normal</span><span class="o">.</span><span class="n">required_sample_size</span><span class="p">(</span><span class="n">margin_error</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
@@ -7933,21 +7933,13 @@ Resultados Poisson:
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>A) Datos Normales Muestra Pequeña (n=20):
    Intervalo de confianza 95%: [4.4168, 5.5142]
-   ¿Se aplicó TLC?: False
+   Robustez: acceptable
 
 B) Datos Exponenciales Muestra Grande (n=150):
    Intervalo de confianza 95%: [6.9553, 9.3432]
-   ¿Se aplicó TLC?: True
+   Robustez: insufficient (cálculo solicitado con strict=False)
 
 C) Tamaño de muestra requerido para margen de error = 0.5: Sample Size Calculated Fine: 25
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>c:\Users\ehudb\OneDrive\Desktop\pyMagicStat\pyMagicStat\inference\parametric.py:56: UserWarning: Los datos no siguen una distribución normal empírica. Aplicando el Teorema del Límite Central (TLC) mediante remuestreo de medias...
-  warnings.warn("Los datos no siguen una distribución normal empírica. Aplicando el Teorema del Límite Central (TLC) mediante remuestreo de medias...")
 </pre>
 </div>
 </div>
