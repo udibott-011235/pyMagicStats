@@ -47,6 +47,38 @@ def test_bootstrap_is_reproducible_with_an_explicit_seed(backend):
     assert first == second
 
 
+@pytest.mark.parametrize("backend", ["scipy", "numba"])
+def test_repeated_compute_on_same_instance_is_reproducible(backend):
+    data = np.array([1.2, 2.3, 3.4, 4.5, 5.6, 6.7, 7.8, 8.9])
+    interval = BootstrapCI(
+        data,
+        stat="mean",
+        method=backend,
+        interval_method="percentile",
+        n_resamples=1000,
+        random_state=42,
+    )
+
+    assert interval.compute() == interval.compute()
+
+
+def test_bootstrap_does_not_advance_an_explicit_generator():
+    data = np.arange(1.0, 9.0)
+    rng = np.random.default_rng(42)
+    expected_next = np.random.default_rng(42).random()
+
+    interval = BootstrapCI(
+        data,
+        method="numba",
+        interval_method="percentile",
+        n_resamples=500,
+        random_state=rng,
+    )
+    interval.compute()
+
+    assert rng.random() == expected_next
+
+
 def test_scipy_bootstrap_supports_bca_and_reports_the_estimand():
     data = np.arange(1.0, 11.0)
 
