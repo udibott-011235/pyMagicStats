@@ -61,13 +61,24 @@ class ParametricMethod:
         self.is_normal = (
             validation.report.assessments["shape"].status is AssessmentStatus.PASS
         )
-        self.tlc_applied = False
 
         if self.inference_decision.selected_method is None:
             message = "; ".join(self.inference_decision.reasons)
             if strict:
                 raise ValueError(f"Parametric mean inference is not recommended: {message}")
             warnings.warn(message, UserWarning)
+
+    @property
+    def tlc_applied(self) -> bool:
+        """Deprecated compatibility sentinel; no TLC operation is performed."""
+
+        warnings.warn(
+            "tlc_applied is deprecated and always False; inspect inference_decision "
+            "for the sampling-robustness assessment.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return False
 
     def validate_data(self) -> bool:
         """
@@ -502,7 +513,7 @@ class OneSampleTTest(ParametricMethod):
             "alternative": self.alternative,
             "ha": self.ha,
             "is_normal": self.is_normal,
-            "tlc_applied": self.tlc_applied,
+            "tlc_applied": False,
             "assumptions": self.assumption_report.to_dict(),
             "inference_decision": self.inference_decision.to_dict(),
             "txt": txt
@@ -745,6 +756,7 @@ class TwoSampleTTest:
             alpha=alpha,
         )
         self.homogeneity_res = homo_test.run_test()
+        self.equal_var_requested = equal_var
         self.equal_var = self.inference_decision.selected_method == "student_t"
 
     def run_test(self) -> Dict[str, Any]:
@@ -820,15 +832,29 @@ class TwoSampleTTest:
             "lb": float(ci_lower),
             "ub": float(ci_upper),
             "equal_var": self.equal_var,
+            "equal_var_requested": self.equal_var_requested,
+            "variance_selection_policy": (
+                "explicit_student" if self.equal_var else "welch_default"
+            ),
             "method": test_name,
             "alternative": self.alternative,
             "ha": self.ha,
             "homogeneity_test": self.homogeneity_res,
             "group1_assumptions": {
+                "is_normal": (
+                    self.assumption_report.assessments["shape_group_1"].status
+                    is AssessmentStatus.PASS
+                ),
+                "tlc_applied": False,
                 "shape": self.assumption_report.assessments["shape_group_1"].to_dict(),
                 "outliers": self.assumption_report.assessments["outliers_group_1"].to_dict(),
             },
             "group2_assumptions": {
+                "is_normal": (
+                    self.assumption_report.assessments["shape_group_2"].status
+                    is AssessmentStatus.PASS
+                ),
+                "tlc_applied": False,
                 "shape": self.assumption_report.assessments["shape_group_2"].to_dict(),
                 "outliers": self.assumption_report.assessments["outliers_group_2"].to_dict(),
             },

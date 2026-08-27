@@ -63,7 +63,8 @@ def test_normal_small_sample(reproducible_seed):
         pm = ParametricMethod(data_small_norm)
         
     assert pm.is_normal is True, "La distribución debería haber sido detectada como normal."
-    assert pm.tlc_applied is False
+    with pytest.warns(DeprecationWarning):
+        assert pm.tlc_applied is False
 
 # ==============================================================================
 # 2. Pruebas de Exactitud Matemática
@@ -78,7 +79,8 @@ def test_inference_validation_is_deterministic_and_does_not_resample(reproducibl
     with pytest.warns(UserWarning):
         second = ParametricMethod(data_exp, strict=False)
 
-    assert first.tlc_applied is False
+    with pytest.warns(DeprecationWarning):
+        assert first.tlc_applied is False
     assert not hasattr(first, "tlc_data")
     assert first.inference_decision.to_dict() == second.inference_decision.to_dict()
 
@@ -219,7 +221,8 @@ def test_assessment_performance_without_resampling(reproducible_seed):
     
     MAX_TIME_SECONDS = 1.0
 
-    assert pm.tlc_applied is False
+    with pytest.warns(DeprecationWarning):
+        assert pm.tlc_applied is False
     assert execution_time < MAX_TIME_SECONDS, (
         f"El diagnóstico tomó {execution_time:.4f}s, "
         f"lo cual excede el umbral estricto de {MAX_TIME_SECONDS}s."
@@ -362,6 +365,8 @@ def test_two_sample_ttest_defaults_to_welch_and_reports_homogeneity(reproducible
     res_auto_equal = t_auto_equal.run_test()
     assert res_auto_equal['equal_var'] == False
     assert res_auto_equal['method'] == "Welch's t-test"
+    assert res_auto_equal['equal_var_requested'] is None
+    assert res_auto_equal['variance_selection_policy'] == "welch_default"
     assert res_auto_equal['homogeneity_test']['equal_variance'] == True
 
     g3 = np.random.normal(loc=50, scale=1, size=40)
@@ -371,6 +376,27 @@ def test_two_sample_ttest_defaults_to_welch_and_reports_homogeneity(reproducible
     assert res_auto_unequal['equal_var'] == False
     assert res_auto_unequal['method'] == "Welch's t-test"
     assert res_auto_unequal['homogeneity_test']['equal_variance'] == False
+
+
+def test_two_sample_preserves_legacy_group_assumption_keys():
+    group1 = np.array([-1.2, -0.7, -0.2, 0.0, 0.3, 0.8, 1.1, 1.4])
+    group2 = group1 + 0.5
+
+    result = TwoSampleTTest(group1, group2, strict=False).run_test()
+
+    for key in ("group1_assumptions", "group2_assumptions"):
+        assert isinstance(result[key]["is_normal"], bool)
+        assert result[key]["tlc_applied"] is False
+        assert "shape" in result[key]
+        assert "outliers" in result[key]
+
+
+def test_tlc_applied_attribute_is_a_deprecated_false_sentinel():
+    data = np.array([-1.3, -0.9, -0.4, -0.1, 0.0, 0.2, 0.5, 0.8, 1.2])
+    method = ParametricMethod(data, independence="assumed")
+
+    with pytest.warns(DeprecationWarning, match="always False"):
+        assert method.tlc_applied is False
 
 
 def test_two_sample_ttest_ha_expressions_and_df_aliases(reproducible_seed):
