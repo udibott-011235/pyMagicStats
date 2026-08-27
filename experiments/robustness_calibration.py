@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Sequence
 
 import numpy as np
+import scipy
 from scipy import stats
 
 from pyMagicStat.assumptions import InferenceValidator, SamplingRobustness
@@ -281,6 +282,9 @@ def main() -> None:
             "sample_sizes": args.sample_sizes,
             "scenario_count": len(scenarios()),
             "seed": args.seed,
+            "numpy_version": np.__version__,
+            "scipy_version": scipy.__version__,
+            "sampling_robustness_policy": SamplingRobustness.POLICY_VERSION,
         },
     )
 

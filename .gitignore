@@ -7,3 +7,6 @@ dist/
 build/
 .coverage
 htmlcov/
+.mpl-cache/
+experiments/results-baseline/
+experiments/results/*.csv.gz
