@@ -41,6 +41,21 @@ def test_heavy_skew_and_extreme_observations_are_not_approved_by_sample_size_alo
     assert decision.alternatives[0].estimand == "mean"
 
 
+def test_shape_failure_is_not_an_independent_large_sample_veto():
+    data = np.random.default_rng(1).standard_t(df=3, size=200)
+    report = InferenceValidator().validate_one_sample(
+        data,
+        independence="assumed",
+    ).report
+
+    assert report.assessments["shape"].status.value == "fail"
+    decision = MethodSelector().select(report)
+
+    assert decision.selected_method == "one_sample_t"
+    assert decision.robustness.level is RobustnessLevel.CAUTION
+    assert any("heavy-tail" in reason for reason in decision.reasons)
+
+
 def test_welch_is_the_default_for_two_independent_groups():
     rng = np.random.default_rng(42)
     report = InferenceValidator().validate_two_sample(
