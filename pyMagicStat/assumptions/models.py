@@ -26,6 +26,7 @@ class Estimand(str, Enum):
     MEAN_DIFFERENCE = "mean_difference"
     PROPORTION = "proportion"
     VARIANCE = "variance"
+    GROUP_MEAN_DIFFERENCES = "group_mean_differences"
 
 
 @dataclass(frozen=True)

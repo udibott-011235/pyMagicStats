@@ -109,6 +109,40 @@ class InferenceValidator:
         )
         return ValidationResult((sample1, sample2), (centered1, centered2), report)
 
+    def validate_one_way(
+        self,
+        *groups: Any,
+        independence: str = "unknown",
+    ) -> ValidationResult:
+        if len(groups) < 2:
+            raise ValueError("One-way inference requires at least two groups")
+
+        normalized = []
+        assessments: Dict[str, Assessment] = {}
+        qualities = []
+        for index, group in enumerate(groups, start=1):
+            label = f"group_{index}"
+            sample, quality = self.data_quality.normalize(group, label)
+            normalized.append(sample)
+            qualities.append(quality)
+            assessments[f"data_quality_{label}"] = quality
+        self._raise_for_quality_failures(qualities)
+
+        centered = tuple(sample - np.mean(sample) for sample in normalized)
+        for index, residuals in enumerate(centered, start=1):
+            label = f"group_{index}"
+            assessments[f"shape_{label}"] = self.shape.assess(residuals, label)
+            assessments[f"outliers_{label}"] = self.outliers.assess(residuals, label)
+        assessments["variance"] = self.variance.assess(tuple(normalized))
+        assessments["independence"] = self.independence.assess(independence)
+
+        report = AssumptionReport(
+            InferenceDesign.ONE_WAY,
+            Estimand.GROUP_MEAN_DIFFERENCES,
+            assessments,
+        )
+        return ValidationResult(tuple(normalized), centered, report)
+
     @staticmethod
     def _raise_for_quality_failures(assessments: Iterable[Assessment]) -> None:
         reasons = [

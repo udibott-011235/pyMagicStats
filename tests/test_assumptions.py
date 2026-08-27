@@ -67,3 +67,18 @@ def test_assessment_is_deterministic():
     second = validator.validate_one_sample(data).report.to_dict()
 
     assert first == second
+
+
+def test_one_way_validation_centralizes_residual_and_variance_diagnostics():
+    rng = np.random.default_rng(17)
+    result = InferenceValidator().validate_one_way(
+        rng.normal(size=30),
+        rng.normal(loc=1.0, scale=2.0, size=35),
+        rng.normal(loc=2.0, scale=3.0, size=40),
+    )
+
+    assert result.report.design is InferenceDesign.ONE_WAY
+    assert result.report.estimand.value == "group_mean_differences"
+    assert len(result.relevant_samples) == 3
+    assert "shape_group_3" in result.report.assessments
+    assert "variance" in result.report.assessments
