@@ -160,5 +160,10 @@ def test_one_way_diagnostics_prepare_welch_anova_without_computing_anova():
 
     decision = MethodSelector().select(report)
 
-    assert decision.selected_method == "welch_anova"
-    assert decision.parametric_recommended is True
+    serialized = decision.to_dict()
+
+    assert decision.selected_method is None
+    assert decision.parametric_recommended is False
+    assert serialized["status"] == "not_calibrated"
+    assert "welch_anova" not in str(serialized)
+    assert any("not calibrated or implemented" in reason for reason in decision.reasons)

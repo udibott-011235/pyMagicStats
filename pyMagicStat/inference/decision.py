@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
 from pyMagicStat.assumptions.models import AssumptionReport
@@ -12,6 +13,12 @@ class MethodAlternative:
     note: str
 
 
+class InferenceDecisionStatus(str, Enum):
+    SELECTED = "selected"
+    INSUFFICIENT = "insufficient"
+    NOT_CALIBRATED = "not_calibrated"
+
+
 @dataclass(frozen=True)
 class InferenceDecision:
     selected_method: Optional[str]
@@ -19,6 +26,7 @@ class InferenceDecision:
     report: AssumptionReport
     reasons: Tuple[str, ...] = ()
     alternatives: Tuple[MethodAlternative, ...] = field(default_factory=tuple)
+    status: InferenceDecisionStatus = InferenceDecisionStatus.SELECTED
 
     @property
     def parametric_recommended(self) -> bool:
@@ -27,12 +35,12 @@ class InferenceDecision:
             "paired_t",
             "student_t",
             "welch_t",
-            "welch_anova",
         }
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "selected_method": self.selected_method,
+            "status": self.status.value,
             "parametric_recommended": self.parametric_recommended,
             "robustness": self.robustness.to_dict(),
             "reasons": list(self.reasons),

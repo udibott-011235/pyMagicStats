@@ -3,9 +3,14 @@ from typing import Optional, Tuple
 from pyMagicStat.assumptions.models import AssumptionReport, InferenceDesign
 from pyMagicStat.assumptions.robustness import (
     RobustnessLevel,
+    RobustnessResult,
     SamplingRobustness,
 )
-from pyMagicStat.inference.decision import InferenceDecision, MethodAlternative
+from pyMagicStat.inference.decision import (
+    InferenceDecision,
+    InferenceDecisionStatus,
+    MethodAlternative,
+)
 
 
 class MethodSelector:
@@ -20,6 +25,22 @@ class MethodSelector:
         *,
         equal_var: Optional[bool] = None,
     ) -> InferenceDecision:
+        if report.design is InferenceDesign.ONE_WAY:
+            reason = (
+                "One-way inference is not calibrated or implemented in this release."
+            )
+            return InferenceDecision(
+                selected_method=None,
+                robustness=RobustnessResult(
+                    RobustnessLevel.INSUFFICIENT,
+                    (reason,),
+                ),
+                report=report,
+                reasons=(reason,),
+                alternatives=(),
+                status=InferenceDecisionStatus.NOT_CALIBRATED,
+            )
+
         robustness = self.robustness_policy.evaluate(report)
         alternatives = self._alternatives(report.design)
         reasons = list(robustness.reasons)
@@ -32,16 +53,15 @@ class MethodSelector:
                 report=report,
                 reasons=tuple(reasons),
                 alternatives=alternatives,
+                status=InferenceDecisionStatus.INSUFFICIENT,
             )
 
         if report.design is InferenceDesign.ONE_SAMPLE:
             method = "one_sample_t"
         elif report.design is InferenceDesign.PAIRED:
             method = "paired_t"
-        elif report.design in {InferenceDesign.TWO_SAMPLE, InferenceDesign.ONE_WAY}:
-            if report.design is InferenceDesign.ONE_WAY:
-                method = "welch_anova"
-            elif equal_var is True:
+        elif report.design is InferenceDesign.TWO_SAMPLE:
+            if equal_var is True:
                 method = "student_t"
                 reasons.append("Equal-variance Student inference was explicitly requested.")
             else:
@@ -56,6 +76,7 @@ class MethodSelector:
             report=report,
             reasons=tuple(reasons),
             alternatives=alternatives,
+            status=InferenceDecisionStatus.SELECTED,
         )
 
     @staticmethod
