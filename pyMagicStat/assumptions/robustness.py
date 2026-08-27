@@ -107,10 +107,6 @@ class SamplingRobustness:
         if extreme_count:
             reasons.append("Extreme observations may remain influential for mean-based inference.")
 
-        if extreme_count and not shape_departure:
-            reasons.append("The overall shape remains compatible with t-based inference.")
-            return RobustnessResult(RobustnessLevel.CAUTION, tuple(reasons))
-
         if not shape_departure and not extreme_count:
             reasons.append("The relevant observations are compatible with direct t-based inference.")
             level = RobustnessLevel.CAUTION if independence_unknown else RobustnessLevel.ACCEPTABLE
@@ -145,5 +141,7 @@ class SamplingRobustness:
             )
             return RobustnessResult(RobustnessLevel.CAUTION, tuple(reasons))
 
-        reasons.append("The sample size does not offset the observed shape departure.")
+        reasons.append(
+            "The calibrated sample-size, shape and outlier constraints are not all satisfied."
+        )
         return RobustnessResult(RobustnessLevel.INSUFFICIENT, tuple(reasons))

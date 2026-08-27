@@ -1,6 +1,13 @@
 import numpy as np
 
-from pyMagicStat.assumptions import InferenceValidator, RobustnessLevel
+from pyMagicStat.assumptions import (
+    Assessment,
+    AssessmentStatus,
+    AssumptionReport,
+    InferenceValidator,
+    RobustnessLevel,
+    SamplingRobustness,
+)
 from pyMagicStat.inference import MethodSelector
 
 
@@ -36,6 +43,46 @@ def test_heavy_skew_and_extreme_observations_are_not_approved_by_sample_size_alo
     assert decision.selected_method is None
     assert decision.robustness.level is RobustnessLevel.INSUFFICIENT
     assert decision.alternatives[0].estimand == "mean"
+
+
+def test_small_sample_shape_pass_cannot_bypass_extreme_outlier_constraints():
+    data = np.array(
+        [0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 15.0]
+    )
+    report = InferenceValidator().validate_one_sample(
+        data,
+        independence="assumed",
+    ).report
+
+    assert report.assessments["outliers"].metrics["fraction"] == 1 / 12
+
+    decision = MethodSelector().select(report)
+
+    assert decision.selected_method is None
+    assert decision.robustness.level is RobustnessLevel.INSUFFICIENT
+
+    # Preserve the report's structural/outlier evidence while controlling the
+    # shape status so this test catches the original early-return bypass across
+    # SciPy versions with different diagnostic behaviour.
+    assessments = dict(report.assessments)
+    assessments["shape"] = Assessment(
+        name="shape_sample",
+        status=AssessmentStatus.PASS,
+        metrics={
+            **report.assessments["shape"].metrics,
+            "skewness": 0.5,
+            "excess_kurtosis": 0.5,
+        },
+        reasons=("Controlled compatible-shape diagnostic.",),
+    )
+    controlled_report = AssumptionReport(
+        design=report.design,
+        estimand=report.estimand,
+        assessments=assessments,
+    )
+
+    controlled_result = SamplingRobustness().evaluate(controlled_report)
+    assert controlled_result.level is RobustnessLevel.INSUFFICIENT
 
 
 def test_shape_failure_is_not_an_independent_large_sample_veto():
