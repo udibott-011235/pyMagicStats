@@ -171,7 +171,18 @@ def test_variance_ci_requires_explicit_population_normality_in_strict_mode():
     data = np.random.default_rng(42).normal(size=50)
 
     with pytest.raises(ValueError, match="explicit normal-population assumption"):
-        PopulationVarianceCI(data)
+        PopulationVarianceCI(data, strict=True)
+
+
+def test_variance_ci_historical_call_warns_and_returns_unvalidated_interval():
+    data = np.random.default_rng(42).normal(size=50)
+
+    with pytest.warns(FutureWarning, match="unvalidated legacy"):
+        result = PopulationVarianceCI(data).calculate_interval()
+
+    assert result["method"] == "chi_square"
+    assert result["variance_inference"]["level"] == "unsupported"
+    assert result["variance_inference"]["chi_square_validated"] is False
 
 
 def test_variance_ci_does_not_use_large_n_as_a_normality_substitute():
@@ -181,6 +192,7 @@ def test_variance_ci_does_not_use_large_n_as_a_normality_substitute():
         PopulationVarianceCI(
             data,
             population_normality="not_assumed",
+            strict=True,
         )
 
 

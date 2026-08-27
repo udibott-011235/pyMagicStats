@@ -293,7 +293,7 @@ class PopulationVarianceCI:
         data: Any,
         alpha: float = 0.05,
         *,
-        strict: bool = True,
+        strict: Optional[bool] = None,
         independence: str = "unknown",
         population_normality: Union[PopulationNormality, str] = PopulationNormality.UNKNOWN,
     ) -> None:
@@ -307,19 +307,36 @@ class PopulationVarianceCI:
         self.n = int(self.data.size)
         self.variance = float(np.var(self.data, ddof=1))
         self.assumption_report = validation.report
+        legacy_default = strict is None
+        strict_mode = bool(strict) if strict is not None else False
         self.variance_inference = VarianceInferencePolicy().evaluate(
             validation.report,
             population_normality,
         )
-        if self.variance_inference.level is VarianceInferenceLevel.UNSUPPORTED and strict:
+        if (
+            self.variance_inference.level is VarianceInferenceLevel.UNSUPPORTED
+            and strict_mode
+        ):
             raise ValueError(
                 "Chi-square variance inference is unsupported: "
                 + " ".join(self.variance_inference.reasons)
             )
-        if self.variance_inference.level is not VarianceInferenceLevel.SUPPORTED:
+        if (
+            legacy_default
+            and self.variance_inference.level is VarianceInferenceLevel.UNSUPPORTED
+        ):
+            warnings.warn(
+                "PopulationVarianceCI(data) currently computes an unvalidated legacy "
+                "chi-square interval. Pass population_normality='assumed' or opt into "
+                "strict=True; a future release will make strict validation the default.",
+                FutureWarning,
+                stacklevel=2,
+            )
+        elif self.variance_inference.level is not VarianceInferenceLevel.SUPPORTED:
             warnings.warn(
                 " ".join(self.variance_inference.reasons),
                 UserWarning,
+                stacklevel=2,
             )
 
     def calculate_interval(self) -> Dict[str, Any]:
