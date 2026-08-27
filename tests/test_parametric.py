@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import scipy.stats as stats
 import logging
+import json
 import time
 import warnings
 
@@ -119,6 +120,25 @@ def test_proportion_ci_accuracy(reproducible_seed):
     
     assert np.isclose(result['lb'], expected_lb), "Límite inferior matemáticamente inexacto en PopulationProportionCI"
     assert np.isclose(result['ub'], expected_ub), "Límite superior matemáticamente inexacto en PopulationProportionCI"
+    assert result["method"] == "wilson"
+    assert result["assumptions"]["normal_approximation_required"] is False
+
+
+def test_zero_incidences_are_not_confused_with_missing_input():
+    result = PopulationProportionCI(
+        np.ones(20),
+        incidences=0,
+    ).calculate_interval()
+
+    assert result["estimate"] == 0.0
+    assert result["lb"] == 0.0
+
+
+def test_interval_output_is_json_serializable(reproducible_seed):
+    data = np.random.normal(size=30)
+    result = PopulationMeanCI(data).calculate_interval()
+
+    json.dumps(result)
 
 def test_variance_ci_accuracy(reproducible_seed):
     """Valida los límites matemáticos del intervalo de confianza para la varianza."""

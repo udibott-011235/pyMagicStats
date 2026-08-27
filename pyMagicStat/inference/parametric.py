@@ -209,6 +209,17 @@ class PopulationProportionCI:
                 raise ValueError("data must be binary when incidences is not provided")
             self.incidence_ratio = float(np.mean(self.data))
         self.prop_std_dev: float = np.sqrt(self.incidence_ratio * (1 - self.incidence_ratio) / self.n)
+        self.successes = float(self.incidence_ratio * self.n)
+        self.failures = float(self.n - self.successes)
+        self.normal_approximation_adequate = bool(
+            self.successes >= 10.0 and self.failures >= 10.0
+        )
+        if self.method == "wald" and not self.normal_approximation_adequate:
+            warnings.warn(
+                "The Wald interval is unreliable with fewer than 10 expected successes or failures; "
+                "prefer Wilson.",
+                UserWarning,
+            )
 
     def calculate_interval(self) -> Dict[str, Any]:
         """
@@ -244,6 +255,12 @@ class PopulationProportionCI:
                 "method": self.method,
                 "estimate": self.incidence_ratio,
                 "n": self.n,
+                "assumptions": {
+                    "successes": self.successes,
+                    "failures": self.failures,
+                    "normal_approximation_adequate": self.normal_approximation_adequate,
+                    "normal_approximation_required": self.method == "wald",
+                },
             }
         )
         return result

@@ -88,3 +88,18 @@ def test_unknown_independence_is_reported_as_caution_not_inferred_from_values():
     assert decision.selected_method == "one_sample_t"
     assert decision.robustness.level is RobustnessLevel.CAUTION
     assert any("Independence was not assessed" in reason for reason in decision.reasons)
+
+
+def test_one_way_diagnostics_prepare_welch_anova_without_computing_anova():
+    rng = np.random.default_rng(31)
+    report = InferenceValidator().validate_one_way(
+        rng.normal(size=40),
+        rng.normal(loc=1.0, size=45),
+        rng.normal(loc=2.0, scale=2.0, size=50),
+        independence="assumed",
+    ).report
+
+    decision = MethodSelector().select(report)
+
+    assert decision.selected_method == "welch_anova"
+    assert decision.parametric_recommended is True
