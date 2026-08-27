@@ -5,6 +5,7 @@ import statsmodels.api as sm
 import warnings
 from typing import Any, Dict, Optional, Union
 from pyMagicStat.utils.utils import output_format
+from pyMagicStat.assumptions import AssessmentStatus, ShapeAssessment
 
 
 
@@ -146,83 +147,25 @@ class NormalDistribution(ContinuousDistributionValidator):
 
     def evaluate_normality(self) -> Dict[str, Any]:
         data = self.distribution.data
-        resultados = {}
-        try:
-            # Test Kolmogorov-Smirnov
-            mu, sigma = np.mean(data), np.std(data, ddof=1)
-            stat_ks, p_ks = stats.kstest(data, 'norm', args=(mu, sigma))
-            resultados['KS'] = {'statistic': stat_ks, 'p_value': p_ks}
-        except Exception as e:
-            warnings.warn("Error en KS: " + str(e))
-            resultados['KS'] = {'error': str(e)}
-        try:
-            # Test Shapiro-Wilk
-            stat_shapiro, p_shapiro = stats.shapiro(data)
-            resultados['Shapiro'] = {'statistic': stat_shapiro, 'p_value': p_shapiro}
-        except Exception as e:
-            warnings.warn("Error en Shapiro-Wilk: " + str(e))
-            resultados['Shapiro'] = {'error': str(e)}
-        try:
-            # Test D'Agostino-Pearson
-            stat_dagostino, p_dagostino = stats.normaltest(data)
-            resultados["D'Agostino"] = {'statistic': stat_dagostino, 'p_value': p_dagostino}
-        except Exception as e:
-            warnings.warn("Error en D'Agostino-Pearson: " + str(e))
-            resultados["D'Agostino"] = {'error': str(e)}
-        try:
-            # Test Anderson-Darling
-            ad_result = stats.anderson(data, dist='norm')
-            resultados['Anderson'] = {
-                'statistic': ad_result.statistic,
-                'critical_values': ad_result.critical_values.tolist(),
-                'significance_levels': ad_result.significance_level.tolist()
-            }
-        except Exception as e:
-            warnings.warn("Error en Anderson-Darling: " + str(e))
-            resultados['Anderson'] = {'error': str(e)}
-        try:
-            # Análisis Q-Q
-            resultados['QQ'] = self.evaluate_qq(data)
-        except Exception as e:
-            warnings.warn("Error en análisis Q-Q: " + str(e))
-            resultados['QQ'] = {'error': str(e)}
-        
-        # Ponderación de los tests para determinar la normalidad
-        try:
-            pesos = self.assign_weights()
-            ks_pass = resultados.get('KS', {}).get('p_value', 0) > 0.05
-            shapiro_pass = resultados.get('Shapiro', {}).get('p_value', 0) > 0.05
-            dag_pass = resultados.get("D'Agostino", {}).get('p_value', 0) > 0.05
-            
-            # Anderson
-            anderson_res = resultados.get('Anderson', {})
-            ad_pass = False
-            if 'statistic' in anderson_res and 'critical_values' in anderson_res:
-                sig_levels = anderson_res.get('significance_levels', [])
-                crit_vals = anderson_res.get('critical_values', [])
-                if 5.0 in sig_levels:
-                    idx = sig_levels.index(5.0)
-                    ad_pass = anderson_res['statistic'] < crit_vals[idx]
-                elif len(crit_vals) >= 3:
-                    ad_pass = anderson_res['statistic'] < crit_vals[2]
-            
-            # QQ
-            qq_pass = resultados.get('QQ', {}).get('r_squared', 0) > 0.95
-            
-            # Ponderación
-            score = 0.0
-            if ks_pass: score += pesos.get('KS', 0)
-            if shapiro_pass: score += pesos.get('Shapiro', 0)
-            if dag_pass: score += pesos.get("D'Agostino", 0)
-            if ad_pass: score += pesos.get('Anderson', 0)
-            if qq_pass: score += pesos.get('QQ', 0)
-            
-            is_normal = bool(score >= 0.5)
-        except Exception as e:
-            warnings.warn("Error al evaluar normalidad: " + str(e))
-            is_normal = False
-        
-        # Actualiza el objeto Distribution.
+        assessment = ShapeAssessment(alpha=0.05).assess(data)
+        metrics = assessment.metrics
+        resultados = {
+            "assessment": assessment.to_dict(),
+            "Shapiro": {
+                "p_value": metrics.get("shapiro_p_value"),
+                "alpha": metrics.get("alpha"),
+            },
+            "D'Agostino": {
+                "p_value": metrics.get("dagostino_p_value"),
+                "alpha": metrics.get("alpha"),
+            },
+            "shape": {
+                "skewness": metrics.get("skewness"),
+                "excess_kurtosis": metrics.get("excess_kurtosis"),
+            },
+            "QQ": self.evaluate_qq(data),
+        }
+        is_normal = assessment.status is AssessmentStatus.PASS
         self.distribution.update_type('Normal', is_normal, 'normality_results', resultados)
         return resultados
 

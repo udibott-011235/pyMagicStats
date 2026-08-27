@@ -1,0 +1,19 @@
+{
+  "alpha": 0.05,
+  "numpy_version": "2.5.2",
+  "replications": 1000,
+  "sample_sizes": [
+    10,
+    20,
+    30,
+    40,
+    50,
+    80,
+    100,
+    200
+  ],
+  "sampling_robustness_policy": "mean-v2.1-2026-08",
+  "scenario_count": 19,
+  "scipy_version": "1.18.1",
+  "seed": 20260826
+}

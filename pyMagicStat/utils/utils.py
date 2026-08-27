@@ -53,7 +53,7 @@ def output_format(
         output['p_value'] = p_value
 
     if bool_result is not None:
-        output['Result'] = np.bool_(bool_result)
+        output['Result'] = bool(bool_result)
 
     if r2 is not None:
         output['R^2'] = r2
