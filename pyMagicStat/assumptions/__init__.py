@@ -15,6 +15,11 @@ from pyMagicStat.assumptions.models import (
     InferenceDesign,
     ValidationResult,
 )
+from pyMagicStat.assumptions.robustness import (
+    RobustnessLevel,
+    RobustnessResult,
+    SamplingRobustness,
+)
 from pyMagicStat.assumptions.validator import InferenceValidator
 
 __all__ = [
@@ -27,6 +32,9 @@ __all__ = [
     "InferenceDesign",
     "InferenceValidator",
     "OutlierAssessment",
+    "RobustnessLevel",
+    "RobustnessResult",
+    "SamplingRobustness",
     "ShapeAssessment",
     "ValidationResult",
     "VarianceAssessment",
