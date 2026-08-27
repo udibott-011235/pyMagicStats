@@ -9,7 +9,8 @@ from pyMagicStat.utils.utils import output_format
 # ----------------------------
 
 @njit
-def _numba_resample_mean(data: np.ndarray, n_resamples: int) -> np.ndarray:
+def _numba_resample_mean(data: np.ndarray, n_resamples: int, seed: int) -> np.ndarray:
+    np.random.seed(seed)
     n = data.shape[0]
     res = np.empty(n_resamples)
     for i in range(n_resamples):
@@ -21,7 +22,8 @@ def _numba_resample_mean(data: np.ndarray, n_resamples: int) -> np.ndarray:
     return res
 
 @njit
-def _numba_resample_median(data: np.ndarray, n_resamples: int) -> np.ndarray:
+def _numba_resample_median(data: np.ndarray, n_resamples: int, seed: int) -> np.ndarray:
+    np.random.seed(seed)
     n = data.shape[0]
     res = np.empty(n_resamples)
     temp = np.empty(n)
@@ -43,17 +45,20 @@ def _numba_resample_median(data: np.ndarray, n_resamples: int) -> np.ndarray:
     return res
 
 @njit
-def _numba_resample_variance(data: np.ndarray, n_resamples: int) -> np.ndarray:
+def _numba_resample_variance(data: np.ndarray, n_resamples: int, seed: int) -> np.ndarray:
+    np.random.seed(seed)
     n = data.shape[0]
     res = np.empty(n_resamples)
+    sample = np.empty(n)
     for i in range(n_resamples):
         m = 0.0
-        for _ in range(n):
-            m += data[np.random.randint(0, n)]
+        for j in range(n):
+            sample[j] = data[np.random.randint(0, n)]
+            m += sample[j]
         m /= n
         v = 0.0
-        for _ in range(n):
-            diff = data[np.random.randint(0, n)] - m
+        for j in range(n):
+            diff = sample[j] - m
             v += diff * diff
         res[i] = v / n
     return res
@@ -87,19 +92,38 @@ class BootstrapCI:
         method: str = 'scipy',
         alpha: float = 0.05,
         n_resamples: int = 5000,
-        p0: Optional[float] = None
+        p0: Optional[float] = None,
+        interval_method: str = "bca",
+        random_state: Optional[Union[int, np.random.Generator]] = None,
     ) -> None:
-        self.data: np.ndarray = np.array(data)
+        self.data: np.ndarray = np.asarray(data, dtype=float)
         self.stat: str = stat
-        self.method: str = method
-        self.alpha: float = alpha
-        self.n_resamples: int = n_resamples
+        self.method: str = method.lower()
+        self.alpha: float = float(alpha)
+        self.n_resamples: int = int(n_resamples)
         self.p0: Optional[float] = p0
+        self.interval_method = interval_method.lower()
+        self.rng = (
+            random_state
+            if isinstance(random_state, np.random.Generator)
+            else np.random.default_rng(random_state)
+        )
+
+        if self.data.ndim != 1 or self.data.size < 2 or not np.all(np.isfinite(self.data)):
+            raise ValueError("Bootstrap data must be a finite one-dimensional sample of size >= 2")
+        if not 0.0 < self.alpha < 1.0:
+            raise ValueError("alpha must be between 0 and 1")
+        if self.n_resamples < 100:
+            raise ValueError("n_resamples must be at least 100")
         
         if stat not in ('mean', 'median', 'variance', 'proportion'):
             raise ValueError(f"Stat desconocido: {stat}")
-        if method not in ('numba', 'scipy'):
+        if self.method not in ('numba', 'scipy'):
             raise ValueError(f"Method desconocido: {method}")
+        if self.interval_method not in {"percentile", "basic", "bca"}:
+            raise ValueError("interval_method must be 'percentile', 'basic', or 'bca'")
+        if self.method == "numba" and self.interval_method != "percentile":
+            raise ValueError("The numba backend currently supports percentile intervals only")
 
     def compute(self) -> Dict[str, Any]:
         """
@@ -114,37 +138,114 @@ class BootstrapCI:
             lb, ub = self._compute_numba()
         else:
             lb, ub = self._compute_scipy()
-        return output_format(lb=lb, ub=ub)
+        result = output_format(lb=lb, ub=ub)
+        result.update({
+            "estimate": float(self._statistic(self.data)),
+            "stat": self.stat,
+            "backend": self.method,
+            "interval_method": self.interval_method,
+            "n_resamples": self.n_resamples,
+        })
+        return result
 
     def _compute_numba(self) -> Tuple[float, float]:
+        seed = int(self.rng.integers(0, np.iinfo(np.int32).max))
         if self.stat == 'mean':
-            res = _numba_resample_mean(self.data, self.n_resamples)
+            res = _numba_resample_mean(self.data, self.n_resamples, seed)
         elif self.stat == 'median':
-            res = _numba_resample_median(self.data, self.n_resamples)
+            res = _numba_resample_median(self.data, self.n_resamples, seed)
         elif self.stat == 'variance':
-            res = _numba_resample_variance(self.data, self.n_resamples)
+            res = _numba_resample_variance(self.data, self.n_resamples, seed)
         else:  # proportion
             if self.p0 is None:
                 binary = self.data
             else:
                 binary = np.where(self.data >= self.p0, 1.0, 0.0)
-            res = _numba_resample_mean(binary, self.n_resamples)
+            res = _numba_resample_mean(binary, self.n_resamples, seed)
             
         lower: float = float(np.percentile(res, self.alpha / 2 * 100))
         upper: float = float(np.percentile(res, (1 - self.alpha / 2) * 100))
         return lower, upper
 
     def _compute_scipy(self) -> Tuple[float, float]:
-        if self.stat == 'proportion':
-            func = (lambda x: np.mean(x >= self.p0)) if self.p0 is not None else np.mean
-        else:
-            func = {'mean': np.mean, 'median': np.median, 'variance': np.var}[self.stat]
-            
-        ci = _scipy_bootstrap((self.data,), func,
-                              confidence_level=1 - self.alpha,
-                              n_resamples=self.n_resamples,
-                              method='percentile')
+        method_name = "BCa" if self.interval_method == "bca" else self.interval_method
+        ci = _scipy_bootstrap(
+            (self.data,),
+            self._statistic,
+            confidence_level=1 - self.alpha,
+            n_resamples=self.n_resamples,
+            method=method_name,
+            vectorized=False,
+            rng=self.rng,
+        )
         return float(ci.confidence_interval.low), float(ci.confidence_interval.high)
+
+    def _statistic(self, data: np.ndarray) -> float:
+        if self.stat == "proportion":
+            return float(np.mean(data >= self.p0)) if self.p0 is not None else float(np.mean(data))
+        return float({"mean": np.mean, "median": np.median, "variance": np.var}[self.stat](data))
+
+
+class BootstrapMeanDifferenceCI:
+    """Bootstrap CI for the arithmetic mean difference of independent groups."""
+
+    def __init__(
+        self,
+        data1: Any,
+        data2: Any,
+        *,
+        alpha: float = 0.05,
+        n_resamples: int = 5000,
+        interval_method: str = "bca",
+        random_state: Optional[Union[int, np.random.Generator]] = None,
+    ) -> None:
+        self.data1 = np.asarray(data1, dtype=float)
+        self.data2 = np.asarray(data2, dtype=float)
+        if any(
+            sample.ndim != 1 or sample.size < 2 or not np.all(np.isfinite(sample))
+            for sample in (self.data1, self.data2)
+        ):
+            raise ValueError("Each group must be a finite one-dimensional sample of size >= 2")
+        if not 0.0 < alpha < 1.0:
+            raise ValueError("alpha must be between 0 and 1")
+        if n_resamples < 100:
+            raise ValueError("n_resamples must be at least 100")
+        self.alpha = float(alpha)
+        self.n_resamples = int(n_resamples)
+        self.interval_method = interval_method.lower()
+        if self.interval_method not in {"percentile", "basic", "bca"}:
+            raise ValueError("interval_method must be 'percentile', 'basic', or 'bca'")
+        self.rng = (
+            random_state
+            if isinstance(random_state, np.random.Generator)
+            else np.random.default_rng(random_state)
+        )
+
+    @staticmethod
+    def _mean_difference(group1: np.ndarray, group2: np.ndarray) -> float:
+        return float(np.mean(group1) - np.mean(group2))
+
+    def compute(self) -> Dict[str, Any]:
+        method_name = "BCa" if self.interval_method == "bca" else self.interval_method
+        result = _scipy_bootstrap(
+            (self.data1, self.data2),
+            self._mean_difference,
+            paired=False,
+            vectorized=False,
+            confidence_level=1.0 - self.alpha,
+            n_resamples=self.n_resamples,
+            method=method_name,
+            rng=self.rng,
+        )
+        return {
+            "lb": float(result.confidence_interval.low),
+            "ub": float(result.confidence_interval.high),
+            "estimate": self._mean_difference(self.data1, self.data2),
+            "stat": "mean_difference",
+            "backend": "scipy",
+            "interval_method": self.interval_method,
+            "n_resamples": self.n_resamples,
+        }
 
 # ----------------------------
 # Kruskal-Wallis Test class
