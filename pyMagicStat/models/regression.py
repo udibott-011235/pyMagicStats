@@ -1,9 +1,10 @@
 import statsmodels.api as sm
 import pandas as pd
 from typing import Any, Dict, Optional, Union
-from pyMagicStat.distributions.distributions import Distribution, NormalDistribution
+from pyMagicStat.distributions.distributions import Distribution
 from pyMagicStat.utils.utils import output_format
 from pyMagicStat.viz.plots import plot_distribution_summary
+from pyMagicStat.assumptions import ShapeAssessment
 
 class RegressionModel:
     """
@@ -108,8 +109,10 @@ class RegressionModel:
         self.aic = float(self.model.aic)
         self.bic = float(self.model.bic)
 
-        normal_validator = NormalDistribution(self.residuals.to_numpy())
-        self.residual_normality = normal_validator.evaluate_normality()
+        self.residual_normality = ShapeAssessment().assess(
+            self.residuals.to_numpy(),
+            label="residuals",
+        ).to_dict()
 
         return {
             'r_squared': self.r_squared,
