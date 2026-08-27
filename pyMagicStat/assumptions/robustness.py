@@ -37,7 +37,7 @@ class SamplingRobustness:
     ``experiments/robustness_calibration.py``.
     """
 
-    POLICY_VERSION = "mean-v2-2026-08"
+    POLICY_VERSION = "mean-v2.1-2026-08"
     MODERATE_N = 40
     MODERATE_MAX_SKEW = 1.0
     MODERATE_MAX_KURTOSIS = 3.0

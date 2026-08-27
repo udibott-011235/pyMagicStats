@@ -12,7 +12,7 @@
     100,
     200
   ],
-  "sampling_robustness_policy": "mean-v2-2026-08",
+  "sampling_robustness_policy": "mean-v2.1-2026-08",
   "scenario_count": 19,
   "scipy_version": "1.18.1",
   "seed": 20260826
