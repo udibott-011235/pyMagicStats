@@ -64,7 +64,7 @@ validation = InferenceValidator().validate_two_sample(
 decision = MethodSelector().select(validation.report)
 print(decision.to_dict())
 
-# Welch is the default. Student requires equal_var=True.
+# Welch is the documented default. Student requires equal_var=True.
 result = TwoSampleTTest(group_a, group_b).run_test()
 print(result["method"], result["p_value"])
 ```
@@ -94,8 +94,20 @@ observed data and every resample. Pass `ddof=0` explicitly to bootstrap the
 empirical/MLE second central moment instead.
 
 Exact chi-square variance intervals have a separate population-model contract:
-strict inference requires `population_normality="assumed"`. A sample normality
-test cannot establish that assumption, and sample size does not replace it.
+`strict=True` requires `population_normality="assumed"`. During the compatibility
+transition, the historical `PopulationVarianceCI(data)` call still computes an
+explicitly unvalidated interval and emits `FutureWarning`; a sample normality
+test cannot establish the assumption, and sample size does not replace it.
+
+`TwoSampleTTest` keeps Welch as the variance-robust default when
+`equal_var=None`; Levene is diagnostic and does not switch the method. Legacy
+`is_normal` and `tlc_applied` group keys remain temporarily available.
+`tlc_applied` is deprecated, always `False`, and never means that bootstrap or a
+CLT operation was executed.
+
+With an explicit `random_state`, repeated `BootstrapCI.compute()` calls are
+idempotent for both SciPy and Numba backends and do not advance a caller-owned
+generator.
 
 The mean-inference thresholds and their 152,000-replicate calibration are
 documented in [the calibration report](Docs/sampling-robustness-calibration.md).

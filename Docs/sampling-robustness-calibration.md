@@ -1,4 +1,4 @@
-# Calibración de `SamplingRobustness` (`mean-v2-2026-08`)
+# Calibración de `SamplingRobustness` (`mean-v2.1-2026-08`)
 
 ## Objetivo y reproducibilidad
 
@@ -85,6 +85,15 @@ Conclusiones de política:
 5. Toda aceptación basada en aproximación asintótica se etiqueta `caution`.
    `acceptable` queda reservado a forma directamente compatible y ausencia de
    extremos detectados.
+6. La revisión v2.1 aplica los constraints antes de cualquier alivio por shape:
+   una muestra con outliers sólo puede recibir `caution` si satisface uno de los
+   escalones calibrados. En particular, n=12 con 1/12 outliers es
+   `insufficient`, aunque el diagnóstico de shape sea `pass`.
+
+La repetición completa de v2.1 mantuvo idénticas las 152 tasas de cobertura,
+error tipo I y métricas diagnósticas de v2. Sólo cambió la decisión: 77 celdas
+aumentaron su tasa `insufficient` (máximo +0.19). Las proporciones globales
+quedaron en 0.3180 `acceptable`, 0.2220 `caution` y 0.4600 `insufficient`.
 
 ## Por qué `ShapeAssessment.FAIL` no decide solo
 

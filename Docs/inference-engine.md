@@ -13,7 +13,8 @@ garantía ni activa remuestreo automático.
 
 El reporte incluye:
 
-- tamaño, finitud, dimensionalidad y degeneración;
+- tamaño, finitud, dimensionalidad y degeneración, incluyendo varianza
+  numéricamente despreciable a escala float64;
 - skewness y kurtosis excedente;
 - Shapiro-Wilk y D'Agostino cuando sus tamaños mínimos lo permiten;
 - outliers extremos mediante MAD, con fallback IQR;
@@ -31,7 +32,10 @@ el reporte conserva `not_assessed`.
 - Una vía: residuos centrados por grupo, balance y heterocedasticidad.
 
 `validate_one_way` prepara los diagnósticos compartidos para ANOVA, pero esta rama
-no implementa todavía el estadístico ANOVA.
+no implementa todavía el estadístico ANOVA. `MethodSelector` devuelve
+`selected_method: null` y `status: "not_calibrated"` para ese diseño: no
+recomienda ANOVA/Welch ANOVA hasta que existan implementación y calibración
+específicas.
 
 ## Ejemplo
 
@@ -56,8 +60,12 @@ print(decision.to_dict())
 # selected_method: "welch_t"
 ```
 
-Welch es el valor predeterminado. Student solo se selecciona mediante
-`equal_var=True`; Levene permanece disponible como diagnóstico.
+Welch es el valor predeterminado documentado. Student solo se selecciona
+mediante `equal_var=True`; Levene permanece disponible como diagnóstico y no
+cambia el método automáticamente. `TwoSampleTTest` conserva temporalmente las
+claves históricas `is_normal` y `tlc_applied` dentro de los supuestos de cada
+grupo. `tlc_applied` está deprecada, siempre vale `False` y no representa
+bootstrap ni una operación TLC.
 
 ## Ejecución estricta y diagnóstico
 
@@ -102,6 +110,10 @@ variance_ci = BootstrapCI(
 ).compute()
 ```
 
+Con `random_state` explícito, llamadas repetidas a `compute()` sobre la misma
+instancia producen el mismo resultado en backends SciPy y Numba. El generador
+del llamador no se avanza y Numba no siembra estado aleatorio global.
+
 Para varianza, `ddof=1` es el contrato predeterminado: el valor observado y
 cada réplica usan el estimador de varianza muestral, dirigido a la varianza
 poblacional convencional. `ddof=0` debe solicitarse explícitamente cuando el
@@ -127,11 +139,14 @@ interval = PopulationVarianceCI(
 ).calculate_interval()
 ```
 
-En modo estricto, `population_normality="unknown"` (predeterminado) y
+Con `strict=True`, `population_normality="unknown"` (predeterminado) y
 `"not_assumed"` rechazan la inferencia. El diagnóstico de forma muestral puede
 no contradecir, advertir o contradecir fuertemente la declaración, pero nunca
-demuestra normalidad poblacional. Con `strict=False` todavía puede calcularse el
-intervalo, marcado como `chi_square_validated: false`.
+demuestra normalidad poblacional. Durante la transición compatible,
+`PopulationVarianceCI(data)` conserva la llamada histórica: emite
+`FutureWarning` y calcula un intervalo marcado como
+`chi_square_validated: false`. `strict=False` mantiene esa posibilidad de forma
+explícita; una versión futura hará estricto el default.
 
 ## Cambios de comportamiento
 
@@ -145,7 +160,7 @@ intervalo, marcado como `chi_square_validated: false`.
 - Bootstrap acepta `random_state` y separa backend de `interval_method`.
 
 Los umbrales de robustez son una política versionada. La versión
-`mean-v2-2026-08` fue calibrada con 152 000 réplicas y 19 escenarios. Consulte
+`mean-v2.1-2026-08` fue calibrada con 152 000 réplicas y 19 escenarios. Consulte
 [el informe de calibración](sampling-robustness-calibration.md) y el
 [runner reproducible](../experiments/robustness_calibration.py). Nuevas versiones
 deben repetir esa matriz o documentar expresamente su ampliación.
