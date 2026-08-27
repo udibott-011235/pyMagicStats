@@ -22,3 +22,40 @@ Clone the repository to work directly with the source code:
 
 ```bash
 git clone https://github.com/your_username/pyMagicStats.git
+```
+
+### Usage Examples (Post-Migration)
+
+With the new domain-based architecture, importing modules is more intuitive.
+
+#### 1. Statistical Distributions
+Evaluate normality for a set of data:
+```python
+import numpy as np
+from pyMagicStat.distributions.distributions import NormalDistribution
+
+data = np.random.randn(100)
+dist = NormalDistribution(data)
+results = dist.fit_test()
+print(results)
+```
+
+#### 2. Statistical Inference (Parametric)
+Calculate a confidence interval for the mean:
+```python
+from pyMagicStat.inference.parametric import PopulationMeanCI
+
+ci = PopulationMeanCI(data, alpha=0.05)
+print(ci.calculate_interval())
+```
+
+#### 3. Modeling (Linear Regression)
+Run a linear regression model:
+```python
+import pandas as pd
+from pyMagicStat.models.regression import RegressionModel
+
+df = pd.DataFrame({'x': np.random.rand(100), 'y': np.random.rand(100)})
+model = RegressionModel(data=df, formula='y ~ x')
+print(model.summary())
+```
