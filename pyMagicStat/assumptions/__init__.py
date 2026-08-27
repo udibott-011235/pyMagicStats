@@ -21,6 +21,12 @@ from pyMagicStat.assumptions.robustness import (
     SamplingRobustness,
 )
 from pyMagicStat.assumptions.validator import InferenceValidator
+from pyMagicStat.assumptions.variance_policy import (
+    PopulationNormality,
+    VarianceInferenceLevel,
+    VarianceInferencePolicy,
+    VarianceInferenceResult,
+)
 
 __all__ = [
     "Assessment",
@@ -32,10 +38,14 @@ __all__ = [
     "InferenceDesign",
     "InferenceValidator",
     "OutlierAssessment",
+    "PopulationNormality",
     "RobustnessLevel",
     "RobustnessResult",
     "SamplingRobustness",
     "ShapeAssessment",
     "ValidationResult",
     "VarianceAssessment",
+    "VarianceInferenceLevel",
+    "VarianceInferencePolicy",
+    "VarianceInferenceResult",
 ]

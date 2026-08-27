@@ -143,7 +143,11 @@ def test_interval_output_is_json_serializable(reproducible_seed):
 def test_variance_ci_accuracy(reproducible_seed):
     """Valida los límites matemáticos del intervalo de confianza para la varianza."""
     data_norm = np.random.normal(loc=50, scale=10, size=50)
-    var_ci = PopulationVarianceCI(data_norm, alpha=0.05)
+    var_ci = PopulationVarianceCI(
+        data_norm,
+        alpha=0.05,
+        population_normality="assumed",
+    )
     result = var_ci.calculate_interval()
     
     # Cálculos a mano usando chi-cuadrado
@@ -158,6 +162,34 @@ def test_variance_ci_accuracy(reproducible_seed):
     
     assert np.isclose(result['lb'], expected_lb), "Límite inferior matemáticamente inexacto en PopulationVarianceCI"
     assert np.isclose(result['ub'], expected_ub), "Límite superior matemáticamente inexacto en PopulationVarianceCI"
+    assert result["variance_inference"]["chi_square_validated"] is True
+
+
+def test_variance_ci_requires_explicit_population_normality_in_strict_mode():
+    data = np.random.default_rng(42).normal(size=50)
+
+    with pytest.raises(ValueError, match="explicit normal-population assumption"):
+        PopulationVarianceCI(data)
+
+
+def test_variance_ci_does_not_use_large_n_as_a_normality_substitute():
+    data = np.random.default_rng(42).exponential(size=500)
+
+    with pytest.raises(ValueError, match="does not support"):
+        PopulationVarianceCI(
+            data,
+            population_normality="not_assumed",
+        )
+
+
+def test_variance_ci_can_report_an_unvalidated_interval_when_not_strict():
+    data = np.random.default_rng(42).normal(size=50)
+
+    with pytest.warns(UserWarning, match="explicit normal-population assumption"):
+        result = PopulationVarianceCI(data, strict=False).calculate_interval()
+
+    assert result["variance_inference"]["level"] == "unsupported"
+    assert result["variance_inference"]["chi_square_validated"] is False
 
 # ==============================================================================
 # 3. Pruebas de Rendimiento (Performance)

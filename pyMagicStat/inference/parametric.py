@@ -8,6 +8,9 @@ from pyMagicStat.assumptions import (
     AssessmentStatus,
     Estimand,
     InferenceValidator,
+    PopulationNormality,
+    VarianceInferenceLevel,
+    VarianceInferencePolicy,
 )
 from pyMagicStat.inference.selector import MethodSelector
 
@@ -266,8 +269,13 @@ class PopulationProportionCI:
         return result
 
 class PopulationVarianceCI:
-    """
-    Calcula el intervalo de confianza para la varianza poblacional.
+    """Exact chi-square confidence interval for a population variance.
+
+    ``population_normality`` is a required model declaration in strict mode.
+    It is deliberately separate from sample shape diagnostics: those can
+    contradict an assumed normal population, but cannot prove one.  Unlike
+    inference about a mean, a large sample does not make this chi-square pivot
+    distribution-free.
     """
     def __init__(
         self,
@@ -276,6 +284,7 @@ class PopulationVarianceCI:
         *,
         strict: bool = True,
         independence: str = "unknown",
+        population_normality: Union[PopulationNormality, str] = PopulationNormality.UNKNOWN,
     ) -> None:
         self.alpha = float(alpha)
         validation = InferenceValidator(alpha=alpha).validate_one_sample(
@@ -287,15 +296,18 @@ class PopulationVarianceCI:
         self.n = int(self.data.size)
         self.variance = float(np.var(self.data, ddof=1))
         self.assumption_report = validation.report
-        shape = validation.report.assessments["shape"]
-        if shape.status is AssessmentStatus.FAIL and strict:
+        self.variance_inference = VarianceInferencePolicy().evaluate(
+            validation.report,
+            population_normality,
+        )
+        if self.variance_inference.level is VarianceInferenceLevel.UNSUPPORTED and strict:
             raise ValueError(
-                "Chi-square variance inference requires a sufficiently Gaussian population shape; "
-                "consider a bootstrap variance interval."
+                "Chi-square variance inference is unsupported: "
+                + " ".join(self.variance_inference.reasons)
             )
-        if shape.status is AssessmentStatus.WARN:
+        if self.variance_inference.level is not VarianceInferenceLevel.SUPPORTED:
             warnings.warn(
-                "The chi-square variance interval is sensitive to the observed non-Gaussian shape.",
+                " ".join(self.variance_inference.reasons),
                 UserWarning,
             )
 
@@ -315,6 +327,7 @@ class PopulationVarianceCI:
         result = output_format(lb=lower, ub=upper)
         result["method"] = "chi_square"
         result["assumptions"] = self.assumption_report.to_dict()
+        result["variance_inference"] = self.variance_inference.to_dict()
         return result
 
 
