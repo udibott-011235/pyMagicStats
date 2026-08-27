@@ -93,6 +93,13 @@ usual population variance with the same sample-variance estimator in the
 observed data and every resample. Pass `ddof=0` explicitly to bootstrap the
 empirical/MLE second central moment instead.
 
+Exact chi-square variance intervals have a separate population-model contract:
+strict inference requires `population_normality="assumed"`. A sample normality
+test cannot establish that assumption, and sample size does not replace it.
+
+The mean-inference thresholds and their 152,000-replicate calibration are
+documented in [the calibration report](Docs/sampling-robustness-calibration.md).
+
 ## Current scope
 
 - distribution and shape assessment;

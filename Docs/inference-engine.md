@@ -93,11 +93,45 @@ difference_ci = BootstrapMeanDifferenceCI(
     interval_method="bca",
     random_state=42,
 ).compute()
+
+variance_ci = BootstrapCI(
+    data,
+    stat="variance",
+    ddof=1,
+    random_state=42,
+).compute()
 ```
+
+Para varianza, `ddof=1` es el contrato predeterminado: el valor observado y
+cada réplica usan el estimador de varianza muestral, dirigido a la varianza
+poblacional convencional. `ddof=0` debe solicitarse explícitamente cuando el
+estimando sea el segundo momento central empírico/MLE. El resultado registra el
+`ddof` empleado.
 
 Mann-Whitney y Kruskal-Wallis se reportan como procedimientos con estimandos de
 rangos/distribuciones; no se presentan como reemplazos automáticos de pruebas de
 medias.
+
+## Varianza poblacional y chi-square
+
+El intervalo chi-square no consume `SamplingRobustness`. Su pivote es exacto
+sólo para una muestra independiente de una población normal, y un n grande no
+elimina ese requisito. Por eso el contrato exige declarar el modelo:
+
+```python
+from pyMagicStat.inference.parametric import PopulationVarianceCI
+
+interval = PopulationVarianceCI(
+    data,
+    population_normality="assumed",
+).calculate_interval()
+```
+
+En modo estricto, `population_normality="unknown"` (predeterminado) y
+`"not_assumed"` rechazan la inferencia. El diagnóstico de forma muestral puede
+no contradecir, advertir o contradecir fuertemente la declaración, pero nunca
+demuestra normalidad poblacional. Con `strict=False` todavía puede calcularse el
+intervalo, marcado como `chi_square_validated: false`.
 
 ## Cambios de comportamiento
 
@@ -105,10 +139,13 @@ medias.
 - Los errores estándar de pruebas t vuelven a ser analíticos y deterministas.
 - Los intervalos de media usan cuantiles t cuando la desviación se estima.
 - Los intervalos de proporción usan Wilson por defecto; `method="wald"` permanece disponible.
-- Los intervalos chi-cuadrado de varianza tienen validación de forma específica.
+- Los intervalos chi-cuadrado de varianza exigen una política explícita de
+  normalidad poblacional.
 - `apply_transform=True` levanta `NotImplementedError`: transformar puede cambiar el estimando.
 - Bootstrap acepta `random_state` y separa backend de `interval_method`.
 
-Los umbrales de robustez son una política versionada. Las pruebas de simulación
-vigilan cobertura, error tipo I y escenarios de sesgo severo; futuras versiones
-deben recalibrarlos contra una matriz más amplia de distribuciones y diseños.
+Los umbrales de robustez son una política versionada. La versión
+`mean-v2-2026-08` fue calibrada con 152 000 réplicas y 19 escenarios. Consulte
+[el informe de calibración](sampling-robustness-calibration.md) y el
+[runner reproducible](../experiments/robustness_calibration.py). Nuevas versiones
+deben repetir esa matriz o documentar expresamente su ampliación.
