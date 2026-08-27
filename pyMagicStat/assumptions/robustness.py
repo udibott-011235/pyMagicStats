@@ -78,12 +78,16 @@ class SamplingRobustness:
         shape_warning = any(item.status is AssessmentStatus.WARN for item in shapes)
 
         if extreme_count:
-            if min_n < 80:
+            if shape_warning and min_n < 80:
                 return RobustnessResult(
                     RobustnessLevel.INSUFFICIENT,
-                    ("Extreme observations can dominate the mean at the available sample size.",),
+                    ("Extreme observations combined with shape departure can dominate the mean.",),
                 )
-            reasons.append("Extreme observations remain influential despite the large sample.")
+            reasons.append("Extreme observations may remain influential for mean-based inference.")
+
+        if extreme_count and not shape_warning:
+            reasons.append("The overall shape remains compatible with t-based inference.")
+            return RobustnessResult(RobustnessLevel.CAUTION, tuple(reasons))
 
         if not shape_warning and not extreme_count:
             reasons.append("The relevant observations are compatible with direct t-based inference.")

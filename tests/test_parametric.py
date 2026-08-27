@@ -37,18 +37,18 @@ def test_nan_inf_handling(reproducible_seed):
     data_with_nan = np.array([1, 2, np.nan, 4])
     data_with_inf = np.array([1, 2, np.inf, 4])
     
-    with pytest.raises(ValueError, match="Data must not contain NaN or Inf values"):
+    with pytest.raises(ValueError, match="NaN or infinite"):
         ParametricMethod(data_with_nan)
         
-    with pytest.raises(ValueError, match="Data must not contain NaN or Inf values"):
+    with pytest.raises(ValueError, match="NaN or infinite"):
         ParametricMethod(data_with_inf)
 
 def test_non_normal_small_sample(reproducible_seed):
-    """Evalúa que se levante un ValueError si la muestra no es normal y n < 30."""
+    """Rejects insufficient robustness because of diagnostics, not an n=30 switch."""
     # Generar datos exponenciales (no normales) con n=15
     data_small_exp = np.random.exponential(scale=1.0, size=15)
     
-    with pytest.raises(ValueError, match="Los datos no siguen una distribución normal y la muestra es menor a 30"):
+    with pytest.raises(ValueError, match="Parametric mean inference is not recommended"):
         ParametricMethod(data_small_exp)
 
 def test_normal_small_sample(reproducible_seed):
@@ -68,26 +68,18 @@ def test_normal_small_sample(reproducible_seed):
 # 2. Pruebas de Exactitud Matemática
 # ==============================================================================
 
-def test_tlc_mathematical_accuracy(reproducible_seed):
-    """Evalúa que al aplicar el TLC, la distribución generada de medias se aproxima a la normal y conserva la media poblacional."""
-    # n=50 exponencial (no normal) garantiza que self.is_normal será False y n>=30
-    true_mean = 5.0
-    data_exp = np.random.exponential(scale=true_mean, size=50)
-    
-    with pytest.warns(UserWarning, match="Teorema del Límite Central"):
-        pm = ParametricMethod(data_exp)
-        
-    assert pm.tlc_applied is True, "El TLC debió ser aplicado (n>=30 y no normal)."
-    assert hasattr(pm, 'tlc_data'), "Se debió generar tlc_data."
-    
-    # Verificar exactitud: la media de las medias muestrales debe aproximarse a la media original
-    original_mean = np.mean(data_exp)
-    tlc_mean = np.mean(pm.tlc_data)
-    assert np.isclose(original_mean, tlc_mean, rtol=0.05), "La media generada por el TLC difiere significativamente de la media original."
-    
-    # Comprobar normalidad del tlc_data matemáticamente mediante Shapiro-Wilk
-    _, p_value = stats.shapiro(pm.tlc_data)
-    assert p_value > 0.05, f"La distribución del TLC no es normal matemáticamente (p-value={p_value})."
+def test_inference_validation_is_deterministic_and_does_not_resample(reproducible_seed):
+    """The same observations always produce the same diagnostic decision."""
+    data_exp = np.random.exponential(scale=5.0, size=50)
+
+    with pytest.warns(UserWarning):
+        first = ParametricMethod(data_exp, strict=False)
+    with pytest.warns(UserWarning):
+        second = ParametricMethod(data_exp, strict=False)
+
+    assert first.tlc_applied is False
+    assert not hasattr(first, "tlc_data")
+    assert first.inference_decision.to_dict() == second.inference_decision.to_dict()
 
 def test_mean_ci_accuracy(reproducible_seed):
     """Valida los límites matemáticos del intervalo de confianza para la media poblacional."""
@@ -97,14 +89,11 @@ def test_mean_ci_accuracy(reproducible_seed):
     
     # Cálculos estrictos a mano
     expected_mean = np.mean(data_norm)
-    if mean_ci.tlc_applied:
-        expected_std_error = np.std(mean_ci.tlc_data, ddof=1)
-    else:
-        expected_std_error = np.std(data_norm, ddof=1) / np.sqrt(40)
+    expected_std_error = np.std(data_norm, ddof=1) / np.sqrt(40)
         
-    z_val = stats.norm.ppf(0.975) # Para alpha=0.05 a dos colas
-    expected_lb = expected_mean - z_val * expected_std_error
-    expected_ub = expected_mean + z_val * expected_std_error
+    t_val = stats.t.ppf(0.975, df=39)
+    expected_lb = expected_mean - t_val * expected_std_error
+    expected_ub = expected_mean + t_val * expected_std_error
     
     assert result['Result'] == True
     assert np.isclose(result['lb'], expected_lb), "Límite inferior matemáticamente inexacto en PopulationMeanCI"
@@ -121,11 +110,12 @@ def test_proportion_ci_accuracy(reproducible_seed):
     
     p_hat = np.mean(data_prop)
     n = len(data_prop)
-    expected_std_error = np.sqrt(p_hat * (1 - p_hat) / n)
     z_val = stats.norm.ppf(0.975)
-    
-    expected_lb = p_hat - z_val * expected_std_error
-    expected_ub = p_hat + z_val * expected_std_error
+    denominator = 1 + z_val ** 2 / n
+    center = (p_hat + z_val ** 2 / (2 * n)) / denominator
+    half_width = z_val * np.sqrt(p_hat * (1 - p_hat) / n + z_val ** 2 / (4 * n ** 2)) / denominator
+    expected_lb = center - half_width
+    expected_ub = center + half_width
     
     assert np.isclose(result['lb'], expected_lb), "Límite inferior matemáticamente inexacto en PopulationProportionCI"
     assert np.isclose(result['ub'], expected_ub), "Límite superior matemáticamente inexacto en PopulationProportionCI"
@@ -153,38 +143,40 @@ def test_variance_ci_accuracy(reproducible_seed):
 # 3. Pruebas de Rendimiento (Performance)
 # ==============================================================================
 
-def test_tlc_performance(reproducible_seed):
+def test_assessment_performance_without_resampling(reproducible_seed):
     """
-    Evalúa el rendimiento del algoritmo de remuestreo del TLC.
-    Falla si el tiempo de ejecución supera los 0.2 segundos.
+    Evalúa que el diagnóstico no realice un bucle de remuestreo costoso.
     Registra logs detallados para reproducibilidad.
     """
     # Generar un arreglo grande y no normal para forzar un TLC intensivo
     n_size = 500
-    num_samples_tlc = 1000
     data_large_exp = np.random.exponential(scale=1.0, size=n_size)
     
-    logger.info(f"Iniciando test_tlc_performance. n={n_size}, tlc_iterations={num_samples_tlc}, seed=42")
+    logger.info(f"Iniciando test de diagnóstico. n={n_size}, seed=42")
     
     start_time = time.time()
     
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        pm = ParametricMethod(data_large_exp)
+        pm = ParametricMethod(data_large_exp, strict=False)
         
     end_time = time.time()
     execution_time = end_time - start_time
     
     logger.info(f"Tiempo de ejecución de inicialización (con TLC si aplica): {execution_time:.4f} segundos")
     
-    # Límite estricto de rendimiento sugerido: 0.2 segundos
-    MAX_TIME_SECONDS = 0.2
-    
-    assert pm.tlc_applied is True, "El test de rendimiento requiere que el TLC sea ejecutado."
+    MAX_TIME_SECONDS = 1.0
+
+    assert pm.tlc_applied is False
     assert execution_time < MAX_TIME_SECONDS, (
-        f"El rendimiento del módulo degradó. El cálculo del TLC tomó {execution_time:.4f}s, "
+        f"El diagnóstico tomó {execution_time:.4f}s, "
         f"lo cual excede el umbral estricto de {MAX_TIME_SECONDS}s."
     )
+
+
+def test_automatic_transformation_is_not_a_silent_noop():
+    with pytest.raises(NotImplementedError, match="change the estimand"):
+        ParametricMethod([1.0, 2.0, 3.0, 4.0], apply_transform=True)
 
 # ==============================================================================
 # 4. Pruebas de Hipótesis Paramétricas (t-tests y Homocedasticidad)
@@ -246,6 +238,21 @@ def test_one_sample_ttest_alternatives(reproducible_seed):
     scipy_stat_l, scipy_p_l = stats.ttest_1samp(data, popmean, alternative='less')
     assert np.isclose(res_l['p_value'], scipy_p_l)
 
+
+def test_one_sample_non_gaussian_non_strict_remains_analytic_and_deterministic(reproducible_seed):
+    data = np.random.exponential(scale=2.0, size=50)
+    scipy_stat, scipy_p = stats.ttest_1samp(data, popmean=2.0)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        first = OneSampleTTest(data, popmean=2.0, strict=False).run_test()
+        second = OneSampleTTest(data, popmean=2.0, strict=False).run_test()
+
+    assert np.isclose(first["statistic"], scipy_stat)
+    assert np.isclose(first["p_value"], scipy_p)
+    assert first["statistic"] == second["statistic"]
+    assert first["p_value"] == second["p_value"]
+
 def test_paired_ttest_precision(reproducible_seed):
     """Valida la exactitud matemática de la prueba t pareada contra SciPy."""
     d1 = np.random.normal(loc=20.0, scale=3.0, size=35)
@@ -263,7 +270,7 @@ def test_paired_ttest_length_mismatch():
     """Valida error si las muestras pareadas no tienen la misma longitud."""
     d1 = [1, 2, 3, 4]
     d2 = [1, 2, 3]
-    with pytest.raises(ValueError, match="Las muestras pareadas deben tener la misma longitud"):
+    with pytest.raises(ValueError, match="same length"):
         PairedTTest(d1, d2)
 
 def test_two_sample_ttest_student_and_welch(reproducible_seed):
@@ -295,23 +302,23 @@ def test_two_sample_ttest_student_and_welch(reproducible_seed):
     assert np.isclose(res_welch['statistic'], scipy_stat_w)
     assert np.isclose(res_welch['p_value'], scipy_p_w)
 
-def test_two_sample_ttest_auto_homogeneity(reproducible_seed):
-    """Valida la selección automática entre Student y Welch según la prueba de homogeneidad de varianza."""
-    # Varianzas iguales -> debe elegir Student
+def test_two_sample_ttest_defaults_to_welch_and_reports_homogeneity(reproducible_seed):
+    """Levene is diagnostic; Welch remains the default with either variance pattern."""
     g1 = np.random.normal(loc=50, scale=5, size=40)
     g2 = np.random.normal(loc=52, scale=5, size=40)
     t_auto_equal = TwoSampleTTest(g1, g2, equal_var=None)
     res_auto_equal = t_auto_equal.run_test()
-    assert res_auto_equal['equal_var'] == True
-    assert res_auto_equal['method'] == "Student's t-test"
+    assert res_auto_equal['equal_var'] == False
+    assert res_auto_equal['method'] == "Welch's t-test"
+    assert res_auto_equal['homogeneity_test']['equal_variance'] == True
 
-    # Varianzas desiguales -> debe elegir Welch
     g3 = np.random.normal(loc=50, scale=1, size=40)
     g4 = np.random.normal(loc=52, scale=10, size=40)
     t_auto_unequal = TwoSampleTTest(g3, g4, equal_var=None)
     res_auto_unequal = t_auto_unequal.run_test()
     assert res_auto_unequal['equal_var'] == False
     assert res_auto_unequal['method'] == "Welch's t-test"
+    assert res_auto_unequal['homogeneity_test']['equal_variance'] == False
 
 
 def test_two_sample_ttest_ha_expressions_and_df_aliases(reproducible_seed):

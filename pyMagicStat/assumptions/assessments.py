@@ -26,8 +26,13 @@ class DataQualityAssessment:
         if array.size and not np.all(np.isfinite(array)):
             reasons.append(f"{label} contains NaN or infinite values")
 
+        finite = bool(array.size and np.all(np.isfinite(array)))
         distinct = int(np.unique(array).size) if array.ndim == 1 and array.size else 0
-        variance = float(np.var(array, ddof=1)) if array.ndim == 1 and array.size > 1 else np.nan
+        variance = (
+            float(np.var(array, ddof=1))
+            if array.ndim == 1 and array.size > 1 and finite
+            else np.nan
+        )
         if array.ndim == 1 and array.size >= self.min_size and distinct < 2:
             reasons.append(f"{label} has zero variance")
 

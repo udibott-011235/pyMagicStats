@@ -4,14 +4,19 @@ from math import ceil
 import warnings
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from pyMagicStat.utils.utils import output_format, parse_hypothesis
-from pyMagicStat.distributions.distributions import NormalDistribution
+from pyMagicStat.assumptions import (
+    AssessmentStatus,
+    Estimand,
+    InferenceValidator,
+)
+from pyMagicStat.inference.selector import MethodSelector
 
 #------------------ Clase Base ------------------#
 
 class ParametricMethod:
     """
     Clase base para la aplicación de métodos de estadística paramétrica.
-    Garantiza el cumplimiento de supuestos básicos (Normalidad o aproximación por TLC).
+    Valida inferencia sobre una media sin transformar ni remuestrear los datos.
 
     Parameters
     ----------
@@ -27,67 +32,39 @@ class ParametricMethod:
     ValueError
         Si los datos contienen valores no finitos (NaN o Inf), o si no cumplen los supuestos.
     """
-    def __init__(self, data: Any, alpha: float = 0.05, apply_transform: bool = False) -> None:
-        self.data: np.ndarray = np.array(data)
-        self.alpha: float = alpha
-        self.n: int = len(self.data)
-        
-        if not self.validate_data():
-            raise ValueError("Data must not contain NaN or Inf values")
-            
-        self.check_assumptions(apply_transform)
-
-    def check_assumptions(self, apply_transform: bool) -> None:
-        """
-        Verifica el supuesto de normalidad. Si no se cumple, verifica si se puede aplicar el TLC (n >= 30).
-        Reserva espacio para aplicar transformaciones (Box-Cox, etc.) si apply_transform=True.
-        """
+    def __init__(
+        self,
+        data: Any,
+        alpha: float = 0.05,
+        apply_transform: bool = False,
+        *,
+        independence: str = "unknown",
+        strict: bool = True,
+    ) -> None:
         if apply_transform:
-            # TODO: Implementar lógica de transformaciones (Box-Cox, Log, etc.) para forzar normalidad
-            pass
-            
-        evaluator = NormalDistribution(self.data)
-        evaluator.evaluate_normality()
-        self.is_normal = evaluator.distribution.type.get('Normal', False)
+            raise NotImplementedError(
+                "Automatic transformation is not implemented because it can change the estimand."
+            )
+        self.alpha = float(alpha)
+        validation = InferenceValidator(alpha=alpha).validate_one_sample(
+            data,
+            estimand=Estimand.MEAN,
+            independence=independence,
+        )
+        self.data = validation.samples[0]
+        self.n = int(self.data.size)
+        self.assumption_report = validation.report
+        self.inference_decision = MethodSelector().select(validation.report)
+        self.is_normal = (
+            validation.report.assessments["shape"].status is AssessmentStatus.PASS
+        )
         self.tlc_applied = False
-        
-        if not self.is_normal:
-            if self.n >= 30:
-                warnings.warn("Los datos no siguen una distribución normal empírica. Aplicando el Teorema del Límite Central (TLC) mediante remuestreo de medias...")
-                self.apply_tlc()
-            else:
-                raise ValueError("Los datos no siguen una distribución normal y la muestra es menor a 30. No se cumplen los supuestos para estadística paramétrica. Por favor, utilice métodos no paramétricos o aplique una transformación a los datos.")
 
-    def apply_tlc(self, num_samples: int = 1000) -> None:
-        """
-        Aplica el Teorema del Límite Central empíricamente mediante remuestreo (bootstrapping)
-        para generar una distribución de medias muestrales en self.tlc_data que converja a la normal.
-        """
-        sample_means = []
-        for _ in range(num_samples):
-            # Muestra aleatoria con reemplazo
-            sample = np.random.choice(self.data, size=self.n, replace=True)
-            sample_means.append(np.mean(sample))
-            
-        self.tlc_data = np.array(sample_means)
-        
-        # Validar que la distribución de medias resultante sea normal
-        evaluator = NormalDistribution(self.tlc_data)
-        evaluator.evaluate_normality()
-        is_tlc_normal = evaluator.distribution.type.get('Normal', False)
-        
-        if not is_tlc_normal:
-            # Tolerancia para datos discretos donde KS/Shapiro fallan debido a empates
-            dag_p = evaluator.distribution.type.get('normality_results', {}).get("D'Agostino", {}).get('p_value', 0)
-            skew = np.abs(stats.skew(self.tlc_data))
-            kurt = np.abs(stats.kurtosis(self.tlc_data))
-            if dag_p > 0.05 or (skew < 0.25 and kurt < 0.5):
-                is_tlc_normal = True
-        
-        if not is_tlc_normal:
-            raise ValueError("Incluso tras aplicar el TLC, la distribución de medias no se aproxima a una distribución normal. Utilice métodos no paramétricos o aplique transformaciones de datos.")
-            
-        self.tlc_applied = True
+        if self.inference_decision.selected_method is None:
+            message = "; ".join(self.inference_decision.reasons)
+            if strict:
+                raise ValueError(f"Parametric mean inference is not recommended: {message}")
+            warnings.warn(message, UserWarning)
 
     def validate_data(self) -> bool:
         """
@@ -98,7 +75,12 @@ class ParametricMethod:
         bool
             True si los datos son finitos, False en caso contrario.
         """
-        return np.all(np.isfinite(self.data))
+        return bool(
+            self.data.ndim == 1
+            and self.data.size >= 2
+            and np.all(np.isfinite(self.data))
+            and np.var(self.data, ddof=1) > 0
+        )
 
 #------------------ Intervalos Paramétricos ------------------#
 
@@ -107,18 +89,27 @@ class NormalDistConfidenceIntervals(ParametricMethod):
     Clase base para intervalos de confianza que asumen distribución normal.
     Precalcula media, desviación estándar y error estándar.
     """
-    def __init__(self, data: Any, alpha: float = 0.05, apply_transform: bool = False) -> None:
-        super().__init__(data, alpha, apply_transform)
+    def __init__(
+        self,
+        data: Any,
+        alpha: float = 0.05,
+        apply_transform: bool = False,
+        *,
+        independence: str = "unknown",
+        strict: bool = True,
+    ) -> None:
+        super().__init__(
+            data,
+            alpha,
+            apply_transform,
+            independence=independence,
+            strict=strict,
+        )
         self.mean: float = np.mean(self.data)
         self.std_dev: float = np.std(self.data, ddof=1)
         self.variance: float = self.std_dev ** 2
         self.effective_n: int = self.n
-        
-        if self.tlc_applied:
-            # Si se aplicó TLC, el error estándar proviene de la dispersión de tlc_data.
-            self.std_error: float = np.std(self.tlc_data, ddof=1)
-        else:
-            self.std_error: float = self.std_dev / np.sqrt(self.n)
+        self.std_error: float = self.std_dev / np.sqrt(self.n)
 
 class PopulationMeanCI(NormalDistConfidenceIntervals):
     """
@@ -134,17 +125,27 @@ class PopulationMeanCI(NormalDistConfidenceIntervals):
             Diccionario conteniendo 'lb', 'ub', 'Result' y un mensaje 'txt'.
         """
         try:
-            z_value = stats.norm.ppf(1 - self.alpha / 2)
+            critical_value = stats.t.ppf(1 - self.alpha / 2, df=self.n - 1)
             if self.effective_n <= 1:
                 return output_format(bool_result=False, txt='Sample is too small, must be > 1')
             if self.std_dev <= 0:
                 return output_format(bool_result=False, txt='Standard Deviation must be > 0')
 
-            margin_of_error = z_value * self.std_error
+            margin_of_error = critical_value * self.std_error
             lower_bound = self.mean - margin_of_error
             upper_bound = self.mean + margin_of_error
 
-            return output_format(bool_result=True, txt='Confidence Interval for the mean calculated properly', ub=upper_bound, lb=lower_bound)
+            result = output_format(
+                bool_result=True,
+                txt='Confidence interval for the mean calculated with Student t quantiles',
+                ub=upper_bound,
+                lb=lower_bound,
+            )
+            result["df"] = self.n - 1
+            result["std_error"] = float(self.std_error)
+            result["assumptions"] = self.assumption_report.to_dict()
+            result["inference_decision"] = self.inference_decision.to_dict()
+            return result
         except Exception as e:
             return output_format(bool_result=False, txt=f'Error Calculating Confidence Interval for the Mean: {e}')
 
@@ -175,16 +176,38 @@ class PopulationMeanCI(NormalDistConfidenceIntervals):
         except Exception as e:
             return output_format(bool_result=False, txt=f'Error calculating the size of the sample: {str(e)}')
 
-class PopulationProportionCI(NormalDistConfidenceIntervals):
+class PopulationProportionCI:
     """
     Calcula el intervalo de confianza para una proporción poblacional.
     """
-    def __init__(self, data: Any, alpha: float = 0.05, incidences: Optional[Union[int, float, Callable]] = None) -> None:
-        super().__init__(data, alpha)
+    def __init__(
+        self,
+        data: Any,
+        alpha: float = 0.05,
+        incidences: Optional[Union[int, float, Callable]] = None,
+        method: str = "wilson",
+    ) -> None:
+        if not 0.0 < alpha < 1.0:
+            raise ValueError("alpha must be between 0 and 1")
+        self.data = np.asarray(data, dtype=float)
+        if self.data.ndim != 1 or self.data.size < 1 or not np.all(np.isfinite(self.data)):
+            raise ValueError("Proportion data must be a finite one-dimensional sample")
+        self.alpha = float(alpha)
+        self.n = int(self.data.size)
+        self.method = method.lower()
+        if self.method not in {"wilson", "wald"}:
+            raise ValueError("method must be 'wilson' or 'wald'")
         if callable(incidences):
             self.incidence_ratio: float = np.mean([1 if incidences(x) else 0 for x in self.data])
+        elif incidences is not None:
+            count = float(incidences)
+            if not 0.0 <= count <= self.n:
+                raise ValueError("incidences must be between 0 and the sample size")
+            self.incidence_ratio = count / self.n
         else:
-            self.incidence_ratio: float = float(incidences) / self.n if incidences else np.mean(self.data)
+            if not np.all(np.isin(self.data, (0.0, 1.0))):
+                raise ValueError("data must be binary when incidences is not provided")
+            self.incidence_ratio = float(np.mean(self.data))
         self.prop_std_dev: float = np.sqrt(self.incidence_ratio * (1 - self.incidence_ratio) / self.n)
 
     def calculate_interval(self) -> Dict[str, Any]:
@@ -197,15 +220,68 @@ class PopulationProportionCI(NormalDistConfidenceIntervals):
             Límites inferior (lb) y superior (ub).
         """
         z_value = stats.norm.ppf(1 - self.alpha / 2)
-        margin_of_error = z_value * self.prop_std_dev
-        lb = self.incidence_ratio - margin_of_error
-        ub = self.incidence_ratio + margin_of_error
-        return output_format(lb=lb, ub=ub)
+        if self.method == "wald":
+            margin_of_error = z_value * self.prop_std_dev
+            lb = self.incidence_ratio - margin_of_error
+            ub = self.incidence_ratio + margin_of_error
+        else:
+            z_squared = z_value ** 2
+            denominator = 1.0 + z_squared / self.n
+            center = (self.incidence_ratio + z_squared / (2.0 * self.n)) / denominator
+            half_width = (
+                z_value
+                * np.sqrt(
+                    self.incidence_ratio * (1.0 - self.incidence_ratio) / self.n
+                    + z_squared / (4.0 * self.n ** 2)
+                )
+                / denominator
+            )
+            lb = max(0.0, center - half_width)
+            ub = min(1.0, center + half_width)
+        result = output_format(lb=float(lb), ub=float(ub))
+        result.update(
+            {
+                "method": self.method,
+                "estimate": self.incidence_ratio,
+                "n": self.n,
+            }
+        )
+        return result
 
-class PopulationVarianceCI(NormalDistConfidenceIntervals):
+class PopulationVarianceCI:
     """
     Calcula el intervalo de confianza para la varianza poblacional.
     """
+    def __init__(
+        self,
+        data: Any,
+        alpha: float = 0.05,
+        *,
+        strict: bool = True,
+        independence: str = "unknown",
+    ) -> None:
+        self.alpha = float(alpha)
+        validation = InferenceValidator(alpha=alpha).validate_one_sample(
+            data,
+            estimand=Estimand.VARIANCE,
+            independence=independence,
+        )
+        self.data = validation.samples[0]
+        self.n = int(self.data.size)
+        self.variance = float(np.var(self.data, ddof=1))
+        self.assumption_report = validation.report
+        shape = validation.report.assessments["shape"]
+        if shape.status is AssessmentStatus.FAIL and strict:
+            raise ValueError(
+                "Chi-square variance inference requires a sufficiently Gaussian population shape; "
+                "consider a bootstrap variance interval."
+            )
+        if shape.status is AssessmentStatus.WARN:
+            warnings.warn(
+                "The chi-square variance interval is sensitive to the observed non-Gaussian shape.",
+                UserWarning,
+            )
+
     def calculate_interval(self) -> Dict[str, Any]:
         """
         Calcula los límites del intervalo usando la distribución Chi-cuadrado.
@@ -219,7 +295,10 @@ class PopulationVarianceCI(NormalDistConfidenceIntervals):
         chi2_upper = stats.chi2.ppf(self.alpha / 2, self.n - 1)
         lower = ((self.n - 1) * self.variance) / chi2_lower
         upper = ((self.n - 1) * self.variance) / chi2_upper
-        return output_format(lb=lower, ub=upper)
+        result = output_format(lb=lower, ub=upper)
+        result["method"] = "chi_square"
+        result["assumptions"] = self.assumption_report.to_dict()
+        return result
 
 
 #------------------ Pruebas de Hipótesis Paramétricas ------------------#
@@ -320,19 +399,24 @@ class OneSampleTTest(ParametricMethod):
         alpha: float = 0.05,
         ha: Optional[str] = None,
         alternative: str = 'two-sided',
-        apply_transform: bool = False
+        apply_transform: bool = False,
+        independence: str = "unknown",
+        strict: bool = True,
     ) -> None:
-        super().__init__(data, alpha, apply_transform)
+        super().__init__(
+            data,
+            alpha,
+            apply_transform,
+            independence=independence,
+            strict=strict,
+        )
         self.popmean: float = float(popmean)
         self.alternative, self.ha = parse_hypothesis(ha=ha, alternative=alternative, is_two_sample=False)
 
         self.mean: float = float(np.mean(self.data))
         self.sample_std: float = float(np.std(self.data, ddof=1))
         
-        if self.tlc_applied:
-            self.std_error: float = float(np.std(self.tlc_data, ddof=1))
-        else:
-            self.std_error: float = float(self.sample_std / np.sqrt(self.n))
+        self.std_error: float = float(self.sample_std / np.sqrt(self.n))
             
         self.df: int = self.n - 1
 
@@ -389,6 +473,8 @@ class OneSampleTTest(ParametricMethod):
             "ha": self.ha,
             "is_normal": self.is_normal,
             "tlc_applied": self.tlc_applied,
+            "assumptions": self.assumption_report.to_dict(),
+            "inference_decision": self.inference_decision.to_dict(),
             "txt": txt
         }
         return output_format(data=res_dict)
@@ -436,7 +522,9 @@ class PairedTTest:
         alpha: float = 0.05,
         ha: Optional[str] = None,
         alternative: str = 'two-sided',
-        apply_transform: bool = False
+        apply_transform: bool = False,
+        independence: str = "unknown",
+        strict: bool = True,
     ) -> None:
         d1_raw = data1 if data1 is not None else (df1 if df1 is not None else group1)
         d2_raw = data2 if data2 is not None else (df2 if df2 is not None else group2)
@@ -444,20 +532,32 @@ class PairedTTest:
         if d1_raw is None or d2_raw is None:
             raise ValueError("Se requieren dos muestras de datos para comparar (data1/df1/group1 y data2/df2/group2).")
 
-        self.d1: np.ndarray = np.array(d1_raw)
-        self.d2: np.ndarray = np.array(d2_raw)
-        if len(self.d1) != len(self.d2):
-            raise ValueError(f"Las muestras pareadas deben tener la misma longitud. Se recibió {len(self.d1)} y {len(self.d2)}.")
-        
-        self.alternative, self.ha = parse_hypothesis(ha=ha, alternative=alternative, is_two_sample=True)
-        self.diff: np.ndarray = self.d1 - self.d2
-        self.one_sample_test = OneSampleTTest(
-            data=self.diff,
-            popmean=popmean,
-            alpha=alpha,
-            alternative=self.alternative,
-            apply_transform=apply_transform
+        if apply_transform:
+            raise NotImplementedError(
+                "Automatic transformation is not implemented because it can change the estimand."
+            )
+        validation = InferenceValidator(alpha=alpha).validate_paired(
+            d1_raw,
+            d2_raw,
+            independence=independence,
         )
+        self.d1, self.d2 = validation.samples
+        self.diff = validation.relevant_samples[0]
+        self.assumption_report = validation.report
+        self.inference_decision = MethodSelector().select(validation.report)
+        if self.inference_decision.selected_method is None:
+            message = "; ".join(self.inference_decision.reasons)
+            if strict:
+                raise ValueError(f"Parametric paired inference is not recommended: {message}")
+            warnings.warn(message, UserWarning)
+
+        self.alpha = float(alpha)
+        self.popmean = float(popmean)
+        self.alternative, self.ha = parse_hypothesis(ha=ha, alternative=alternative, is_two_sample=True)
+        self.n = int(self.diff.size)
+        self.df = self.n - 1
+        self.mean_difference = float(np.mean(self.diff))
+        self.std_error = float(np.std(self.diff, ddof=1) / np.sqrt(self.n))
 
     def run_test(self) -> Dict[str, Any]:
         """
@@ -468,22 +568,50 @@ class PairedTTest:
         Dict[str, Any]
             Resultados formateados de la prueba t pareada.
         """
-        res = self.one_sample_test.run_test()
-        res["mean_difference"] = res.pop("sample_mean")
-        res["test_type"] = "Paired t-test"
-        res["ha"] = self.ha
-        p_val = res["p_value"]
-        alpha = res.get("alpha", self.one_sample_test.alpha)
-        reject_null = res["reject_null"]
+        t_stat = (self.mean_difference - self.popmean) / self.std_error
+        if self.alternative == "two-sided":
+            p_val = 2.0 * float(stats.t.sf(abs(t_stat), df=self.df))
+            critical = float(stats.t.ppf(1.0 - self.alpha / 2.0, df=self.df))
+            ci_lower = self.mean_difference - critical * self.std_error
+            ci_upper = self.mean_difference + critical * self.std_error
+        elif self.alternative == "greater":
+            p_val = float(stats.t.sf(t_stat, df=self.df))
+            critical = float(stats.t.ppf(1.0 - self.alpha, df=self.df))
+            ci_lower = self.mean_difference - critical * self.std_error
+            ci_upper = np.inf
+        else:
+            p_val = float(stats.t.cdf(t_stat, df=self.df))
+            critical = float(stats.t.ppf(1.0 - self.alpha, df=self.df))
+            ci_lower = -np.inf
+            ci_upper = self.mean_difference + critical * self.std_error
 
-        res["txt"] = (
-            f"Se rechaza H0 en favor de Ha ({self.ha}) (Paired t-test, p={p_val:.4e} < alpha={alpha}): "
+        reject_null = bool(p_val < self.alpha)
+        text = (
+            f"Se rechaza H0 en favor de Ha ({self.ha}) (Paired t-test, p={p_val:.4e} < alpha={self.alpha}): "
             f"Existe una diferencia significativa entre los grupos pareados."
             if reject_null
-            else f"No se rechaza H0 (Paired t-test, Ha: {self.ha}, p={p_val:.4e} >= alpha={alpha}): "
+            else f"No se rechaza H0 (Paired t-test, Ha: {self.ha}, p={p_val:.4e} >= alpha={self.alpha}): "
             f"No hay suficiente evidencia para afirmar una diferencia significativa entre los grupos pareados."
         )
-        return res
+        return output_format(data={
+            "Result": reject_null,
+            "reject_null": reject_null,
+            "statistic": float(t_stat),
+            "p_value": p_val,
+            "df": self.df,
+            "mean_difference": self.mean_difference,
+            "popmean": self.popmean,
+            "std_error": self.std_error,
+            "confidence_interval": (float(ci_lower), float(ci_upper)),
+            "lb": float(ci_lower),
+            "ub": float(ci_upper),
+            "alternative": self.alternative,
+            "ha": self.ha,
+            "test_type": "Paired t-test",
+            "assumptions": self.assumption_report.to_dict(),
+            "inference_decision": self.inference_decision.to_dict(),
+            "txt": text,
+        })
 
 
 class TwoSampleTTest:
@@ -516,7 +644,7 @@ class TwoSampleTTest:
     equal_var : Optional[bool], default=None
         Si es True, aplica la prueba t de Student (varianzas iguales).
         Si es False, aplica la prueba t de Welch (varianzas desiguales).
-        Si es None, ejecuta automáticamente VarianceHomogeneityTest para decidir.
+        Si es None, aplica Welch por defecto y reporta heterogeneidad como diagnóstico.
     homogeneity_method : str, default='levene'
         Prueba de homocedasticidad a utilizar ('levene', 'bartlett', 'fligner').
     apply_transform : bool, default=False
@@ -537,7 +665,9 @@ class TwoSampleTTest:
         alternative: str = 'two-sided',
         equal_var: Optional[bool] = None,
         homogeneity_method: str = 'levene',
-        apply_transform: bool = False
+        apply_transform: bool = False,
+        independence: str = "unknown",
+        strict: bool = True,
     ) -> None:
         d1_raw = data1 if data1 is not None else (df1 if df1 is not None else group1)
         d2_raw = data2 if data2 is not None else (df2 if df2 is not None else group2)
@@ -545,11 +675,27 @@ class TwoSampleTTest:
         if d1_raw is None or d2_raw is None:
             raise ValueError("Se requieren dos muestras de datos para comparar (data1/df1/group1 y data2/df2/group2).")
 
-        self.d1_parametric = ParametricMethod(d1_raw, alpha=alpha, apply_transform=apply_transform)
-        self.d2_parametric = ParametricMethod(d2_raw, alpha=alpha, apply_transform=apply_transform)
-        
-        self.data1: np.ndarray = self.d1_parametric.data
-        self.data2: np.ndarray = self.d2_parametric.data
+        if apply_transform:
+            raise NotImplementedError(
+                "Automatic transformation is not implemented because it can change the estimand."
+            )
+        validation = InferenceValidator(alpha=alpha).validate_two_sample(
+            d1_raw,
+            d2_raw,
+            independence=independence,
+        )
+        self.data1, self.data2 = validation.samples
+        self.assumption_report = validation.report
+        self.inference_decision = MethodSelector().select(
+            validation.report,
+            equal_var=equal_var,
+        )
+        if self.inference_decision.selected_method is None:
+            message = "; ".join(self.inference_decision.reasons)
+            if strict:
+                raise ValueError(f"Parametric two-sample inference is not recommended: {message}")
+            warnings.warn(message, UserWarning)
+
         self.popmean: float = float(popmean)
         self.alpha: float = alpha
         
@@ -562,14 +708,14 @@ class TwoSampleTTest:
         self.var1: float = float(np.var(self.data1, ddof=1))
         self.var2: float = float(np.var(self.data2, ddof=1))
         
-        # Homogeneidad de varianzas
-        self.homogeneity_res: Optional[Dict[str, Any]] = None
-        if equal_var is None:
-            homo_test = VarianceHomogeneityTest(self.data1, self.data2, method=homogeneity_method, alpha=alpha)
-            self.homogeneity_res = homo_test.run_test()
-            self.equal_var: bool = bool(self.homogeneity_res["equal_variance"])
-        else:
-            self.equal_var = bool(equal_var)
+        homo_test = VarianceHomogeneityTest(
+            self.data1,
+            self.data2,
+            method=homogeneity_method,
+            alpha=alpha,
+        )
+        self.homogeneity_res = homo_test.run_test()
+        self.equal_var = self.inference_decision.selected_method == "student_t"
 
     def run_test(self) -> Dict[str, Any]:
         """
@@ -649,13 +795,15 @@ class TwoSampleTTest:
             "ha": self.ha,
             "homogeneity_test": self.homogeneity_res,
             "group1_assumptions": {
-                "is_normal": self.d1_parametric.is_normal,
-                "tlc_applied": self.d1_parametric.tlc_applied
+                "shape": self.assumption_report.assessments["shape_group_1"].to_dict(),
+                "outliers": self.assumption_report.assessments["outliers_group_1"].to_dict(),
             },
             "group2_assumptions": {
-                "is_normal": self.d2_parametric.is_normal,
-                "tlc_applied": self.d2_parametric.tlc_applied
+                "shape": self.assumption_report.assessments["shape_group_2"].to_dict(),
+                "outliers": self.assumption_report.assessments["outliers_group_2"].to_dict(),
             },
+            "assumptions": self.assumption_report.to_dict(),
+            "inference_decision": self.inference_decision.to_dict(),
             "txt": txt
         }
         return output_format(data=res_dict)
