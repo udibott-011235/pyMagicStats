@@ -45,7 +45,12 @@ def _numba_resample_median(data: np.ndarray, n_resamples: int, seed: int) -> np.
     return res
 
 @njit
-def _numba_resample_variance(data: np.ndarray, n_resamples: int, seed: int) -> np.ndarray:
+def _numba_resample_variance(
+    data: np.ndarray,
+    n_resamples: int,
+    seed: int,
+    ddof: int = 1,
+) -> np.ndarray:
     np.random.seed(seed)
     n = data.shape[0]
     res = np.empty(n_resamples)
@@ -60,7 +65,7 @@ def _numba_resample_variance(data: np.ndarray, n_resamples: int, seed: int) -> n
         for j in range(n):
             diff = sample[j] - m
             v += diff * diff
-        res[i] = v / n
+        res[i] = v / (n - ddof)
     return res
 
 # ----------------------------
@@ -84,6 +89,11 @@ class BootstrapCI:
         Número de iteraciones de remuestreo.
     p0 : float, optional
         Valor de referencia (umbral) para el cálculo de proporciones.
+    ddof : {0, 1}, default=1
+        Divisor convention for ``stat='variance'``. ``ddof=1`` targets the
+        conventional population variance using the same sample-variance
+        estimator in the observed sample and every bootstrap resample.
+        ``ddof=0`` instead bootstraps the empirical/MLE second central moment.
     """
     def __init__(
         self,
@@ -95,6 +105,7 @@ class BootstrapCI:
         p0: Optional[float] = None,
         interval_method: str = "bca",
         random_state: Optional[Union[int, np.random.Generator]] = None,
+        ddof: int = 1,
     ) -> None:
         self.data: np.ndarray = np.asarray(data, dtype=float)
         self.stat: str = stat
@@ -103,6 +114,7 @@ class BootstrapCI:
         self.n_resamples: int = int(n_resamples)
         self.p0: Optional[float] = p0
         self.interval_method = interval_method.lower()
+        self.ddof = int(ddof)
         self.rng = (
             random_state
             if isinstance(random_state, np.random.Generator)
@@ -122,6 +134,8 @@ class BootstrapCI:
             raise ValueError(f"Method desconocido: {method}")
         if self.interval_method not in {"percentile", "basic", "bca"}:
             raise ValueError("interval_method must be 'percentile', 'basic', or 'bca'")
+        if self.ddof not in {0, 1}:
+            raise ValueError("ddof must be 0 or 1")
         if self.method == "numba" and self.interval_method != "percentile":
             raise ValueError("The numba backend currently supports percentile intervals only")
 
@@ -146,6 +160,8 @@ class BootstrapCI:
             "interval_method": self.interval_method,
             "n_resamples": self.n_resamples,
         })
+        if self.stat == "variance":
+            result["ddof"] = self.ddof
         return result
 
     def _compute_numba(self) -> Tuple[float, float]:
@@ -155,7 +171,12 @@ class BootstrapCI:
         elif self.stat == 'median':
             res = _numba_resample_median(self.data, self.n_resamples, seed)
         elif self.stat == 'variance':
-            res = _numba_resample_variance(self.data, self.n_resamples, seed)
+            res = _numba_resample_variance(
+                self.data,
+                self.n_resamples,
+                seed,
+                self.ddof,
+            )
         else:  # proportion
             if self.p0 is None:
                 binary = self.data
@@ -183,7 +204,9 @@ class BootstrapCI:
     def _statistic(self, data: np.ndarray) -> float:
         if self.stat == "proportion":
             return float(np.mean(data >= self.p0)) if self.p0 is not None else float(np.mean(data))
-        return float({"mean": np.mean, "median": np.median, "variance": np.var}[self.stat](data))
+        if self.stat == "variance":
+            return float(np.var(data, ddof=self.ddof))
+        return float({"mean": np.mean, "median": np.median}[self.stat](data))
 
 
 class BootstrapMeanDifferenceCI:

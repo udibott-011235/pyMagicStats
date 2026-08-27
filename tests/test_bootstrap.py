@@ -15,6 +15,17 @@ def test_numba_variance_uses_one_resample_per_replication():
         seed=42,
     )
 
+    assert set(np.unique(replicates)).issubset({0.0, 50.0})
+
+
+def test_numba_variance_supports_empirical_ddof_zero_explicitly():
+    replicates = _numba_resample_variance(
+        np.array([0.0, 10.0]),
+        n_resamples=500,
+        seed=42,
+        ddof=0,
+    )
+
     assert set(np.unique(replicates)).issubset({0.0, 25.0})
 
 
@@ -50,6 +61,44 @@ def test_scipy_bootstrap_supports_bca_and_reports_the_estimand():
     assert result["lb"] < np.mean(data) < result["ub"]
     assert result["estimate"] == np.mean(data)
     assert result["interval_method"] == "bca"
+
+
+@pytest.mark.parametrize("backend", ["scipy", "numba"])
+def test_variance_bootstrap_defaults_to_sample_variance_ddof_one(backend):
+    data = np.arange(1.0, 11.0)
+
+    result = BootstrapCI(
+        data,
+        stat="variance",
+        method=backend,
+        interval_method="percentile",
+        n_resamples=1000,
+        random_state=7,
+    ).compute()
+
+    assert result["estimate"] == np.var(data, ddof=1)
+    assert result["ddof"] == 1
+
+
+def test_variance_bootstrap_can_target_empirical_second_moment():
+    data = np.arange(1.0, 11.0)
+
+    result = BootstrapCI(
+        data,
+        stat="variance",
+        ddof=0,
+        interval_method="percentile",
+        n_resamples=1000,
+        random_state=7,
+    ).compute()
+
+    assert result["estimate"] == np.var(data, ddof=0)
+    assert result["ddof"] == 0
+
+
+def test_variance_bootstrap_rejects_unsupported_ddof():
+    with pytest.raises(ValueError, match="ddof"):
+        BootstrapCI([1.0, 2.0, 3.0], stat="variance", ddof=2)
 
 
 def test_numba_rejects_interval_algorithms_it_does_not_implement():

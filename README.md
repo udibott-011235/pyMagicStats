@@ -88,6 +88,11 @@ interval = BootstrapCI(
 Rank procedures are not presented as automatic replacements for tests of means.
 Their alternative estimands are included in `InferenceDecision.alternatives`.
 
+For `stat="variance"`, bootstrap uses `ddof=1` by default. This targets the
+usual population variance with the same sample-variance estimator in the
+observed data and every resample. Pass `ddof=0` explicitly to bootstrap the
+empirical/MLE second central moment instead.
+
 ## Current scope
 
 - distribution and shape assessment;
