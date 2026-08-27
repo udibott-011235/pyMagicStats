@@ -54,6 +54,13 @@ class SamplingRobustness:
             if name.startswith("outliers")
         ]
         reasons: List[str] = []
+        independence_unknown = any(
+            name.startswith("independence")
+            and item.status is AssessmentStatus.NOT_ASSESSED
+            for name, item in report.assessments.items()
+        )
+        if independence_unknown:
+            reasons.append("Independence was not assessed from study-design metadata.")
 
         if not shapes:
             return RobustnessResult(
@@ -91,18 +98,22 @@ class SamplingRobustness:
 
         if not shape_warning and not extreme_count:
             reasons.append("The relevant observations are compatible with direct t-based inference.")
-            return RobustnessResult(RobustnessLevel.ACCEPTABLE, tuple(reasons))
+            level = RobustnessLevel.CAUTION if independence_unknown else RobustnessLevel.ACCEPTABLE
+            return RobustnessResult(level, tuple(reasons))
 
         if min_n >= 80 and max_abs_skew <= 2.0 and max_abs_kurtosis <= 7.0:
             reasons.append("Large samples and bounded shape departure support an asymptotic approximation.")
             return RobustnessResult(
-                RobustnessLevel.CAUTION if extreme_count else RobustnessLevel.ACCEPTABLE,
+                RobustnessLevel.CAUTION
+                if extreme_count or independence_unknown
+                else RobustnessLevel.ACCEPTABLE,
                 tuple(reasons),
             )
 
         if min_n >= 40 and max_abs_skew <= 1.0 and max_abs_kurtosis <= 3.0 and not extreme_count:
             reasons.append("Moderate shape departure is acceptable at the available sample size.")
-            return RobustnessResult(RobustnessLevel.ACCEPTABLE, tuple(reasons))
+            level = RobustnessLevel.CAUTION if independence_unknown else RobustnessLevel.ACCEPTABLE
+            return RobustnessResult(level, tuple(reasons))
 
         reasons.append("The sample size does not offset the observed shape departure.")
         return RobustnessResult(RobustnessLevel.INSUFFICIENT, tuple(reasons))

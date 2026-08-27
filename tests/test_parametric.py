@@ -52,7 +52,7 @@ def test_non_normal_small_sample(reproducible_seed):
         ParametricMethod(data_small_exp)
 
 def test_normal_small_sample(reproducible_seed):
-    """Evalúa que si la muestra es normal (incluso si n < 30), pase la validación sin usar TLC."""
+    """A compatible small sample uses direct analytic inference without resampling."""
     # Generar datos normales con n=25 (para evitar warnings de curtosis que requieren n>=20)
     data_small_norm = np.random.normal(loc=0, scale=1, size=25)
     
@@ -62,7 +62,7 @@ def test_normal_small_sample(reproducible_seed):
         pm = ParametricMethod(data_small_norm)
         
     assert pm.is_normal is True, "La distribución debería haber sido detectada como normal."
-    assert pm.tlc_applied is False, "El TLC no debió aplicarse ya que los datos son normales."
+    assert pm.tlc_applied is False
 
 # ==============================================================================
 # 2. Pruebas de Exactitud Matemática
@@ -148,7 +148,7 @@ def test_assessment_performance_without_resampling(reproducible_seed):
     Evalúa que el diagnóstico no realice un bucle de remuestreo costoso.
     Registra logs detallados para reproducibilidad.
     """
-    # Generar un arreglo grande y no normal para forzar un TLC intensivo
+    # Una muestra grande y no gaussiana no debe activar un bucle de remuestreo.
     n_size = 500
     data_large_exp = np.random.exponential(scale=1.0, size=n_size)
     
@@ -163,7 +163,7 @@ def test_assessment_performance_without_resampling(reproducible_seed):
     end_time = time.time()
     execution_time = end_time - start_time
     
-    logger.info(f"Tiempo de ejecución de inicialización (con TLC si aplica): {execution_time:.4f} segundos")
+    logger.info(f"Tiempo de ejecución del diagnóstico: {execution_time:.4f} segundos")
     
     MAX_TIME_SECONDS = 1.0
 

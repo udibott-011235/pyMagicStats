@@ -27,6 +27,7 @@ class InferenceDecision:
             "paired_t",
             "student_t",
             "welch_t",
+            "welch_anova",
         }
 
     def to_dict(self) -> Dict[str, Any]:

@@ -6,7 +6,10 @@ from pyMagicStat.inference import MethodSelector
 
 def test_small_gaussian_sample_can_use_direct_t_inference():
     data = np.array([-1.3, -0.9, -0.4, -0.1, 0.0, 0.2, 0.5, 0.8, 1.2])
-    report = InferenceValidator().validate_one_sample(data).report
+    report = InferenceValidator().validate_one_sample(
+        data,
+        independence="assumed",
+    ).report
 
     decision = MethodSelector().select(report)
 
@@ -74,3 +77,14 @@ def test_mann_whitney_is_labeled_with_its_distinct_estimand():
     mann_whitney = next(item for item in alternatives if item["method"] == "mann_whitney_u")
 
     assert mann_whitney["estimand"] == "probabilistic_ordering"
+
+
+def test_unknown_independence_is_reported_as_caution_not_inferred_from_values():
+    data = np.array([-1.3, -0.9, -0.4, -0.1, 0.0, 0.2, 0.5, 0.8, 1.2])
+    report = InferenceValidator().validate_one_sample(data).report
+
+    decision = MethodSelector().select(report)
+
+    assert decision.selected_method == "one_sample_t"
+    assert decision.robustness.level is RobustnessLevel.CAUTION
+    assert any("Independence was not assessed" in reason for reason in decision.reasons)

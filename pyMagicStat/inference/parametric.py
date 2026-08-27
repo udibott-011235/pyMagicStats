@@ -617,7 +617,7 @@ class PairedTTest:
 class TwoSampleTTest:
     """
     Prueba t para dos muestras independientes (Student t-test o Welch t-test).
-    Evalúa normalidad/TLC en cada muestra y homogeneidad de varianza entre ellas.
+    Evalúa forma, outliers y varianzas por grupo; Welch es el valor predeterminado.
 
     Parameters
     ----------
