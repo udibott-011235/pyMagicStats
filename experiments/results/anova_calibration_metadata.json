@@ -1,0 +1,254 @@
+{
+  "replications_per_cell": 100,
+  "nominal_sizes": [
+    10,
+    25,
+    60
+  ],
+  "effect_sizes": [
+    0.0,
+    0.8
+  ],
+  "seeds": [
+    20260827,
+    20260828,
+    20260829
+  ],
+  "alpha": 0.05,
+  "generated_at_utc": "2026-08-28T00:26:08.635198+00:00",
+  "scenario_count": 15,
+  "cell_count": 270,
+  "total_replications": 27000,
+  "policy_version": "anova-v1-2026-08",
+  "scenarios": [
+    {
+      "name": "normal_equal_balanced",
+      "family": "normal",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "normal_equal_unbalanced",
+      "family": "normal",
+      "size_multipliers": [
+        0.5,
+        1.0,
+        2.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "normal_unequal_balanced",
+      "family": "normal",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        2.0,
+        4.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "normal_small_group_high_variance",
+      "family": "normal",
+      "size_multipliers": [
+        0.5,
+        1.0,
+        2.0
+      ],
+      "scale_multipliers": [
+        4.0,
+        2.0,
+        1.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "normal_large_group_high_variance",
+      "family": "normal",
+      "size_multipliers": [
+        0.5,
+        1.0,
+        2.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        2.0,
+        4.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "normal_equal_five_groups",
+      "family": "normal",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "gamma_moderate",
+      "family": "gamma",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 4.0
+    },
+    {
+      "name": "exponential_severe",
+      "family": "gamma",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 1.0
+    },
+    {
+      "name": "lognormal_moderate",
+      "family": "lognormal",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.5
+    },
+    {
+      "name": "lognormal_severe",
+      "family": "lognormal",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 1.2
+    },
+    {
+      "name": "student_t_df3",
+      "family": "student_t",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 3.0
+    },
+    {
+      "name": "laplace",
+      "family": "laplace",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "mixture_symmetric",
+      "family": "mixture_symmetric",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "mixture_skewed",
+      "family": "mixture_skewed",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.0
+    },
+    {
+      "name": "outlier_contamination_5pct",
+      "family": "contaminated",
+      "size_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "scale_multipliers": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parameter": 0.05
+    }
+  ]
+}

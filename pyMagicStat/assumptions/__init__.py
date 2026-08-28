@@ -20,6 +20,7 @@ from pyMagicStat.assumptions.robustness import (
     RobustnessResult,
     SamplingRobustness,
 )
+from pyMagicStat.assumptions.anova_robustness import OneWayRobustness
 from pyMagicStat.assumptions.validator import InferenceValidator
 from pyMagicStat.assumptions.variance_policy import (
     PopulationNormality,
@@ -38,6 +39,7 @@ __all__ = [
     "InferenceDesign",
     "InferenceValidator",
     "OutlierAssessment",
+    "OneWayRobustness",
     "PopulationNormality",
     "RobustnessLevel",
     "RobustnessResult",

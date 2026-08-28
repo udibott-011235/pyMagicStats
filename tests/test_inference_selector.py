@@ -149,7 +149,7 @@ def test_unknown_independence_is_reported_as_caution_not_inferred_from_values():
     assert any("Independence was not assessed" in reason for reason in decision.reasons)
 
 
-def test_one_way_diagnostics_prepare_welch_anova_without_computing_anova():
+def test_one_way_selector_defaults_to_calibrated_welch_anova():
     rng = np.random.default_rng(31)
     report = InferenceValidator().validate_one_way(
         rng.normal(size=40),
@@ -162,8 +162,51 @@ def test_one_way_diagnostics_prepare_welch_anova_without_computing_anova():
 
     serialized = decision.to_dict()
 
+    assert decision.selected_method == "welch_anova"
+    assert decision.parametric_recommended is True
+    assert serialized["status"] == "selected"
+    assert any("calibrated variance-robust default" in reason for reason in decision.reasons)
+
+
+def test_one_way_classical_requires_explicit_request_and_variance_support():
+    rng = np.random.default_rng(312)
+    report = InferenceValidator().validate_one_way(
+        rng.normal(size=50),
+        rng.normal(loc=0.5, size=50),
+        rng.normal(loc=1.0, size=50),
+        independence="assumed",
+    ).report
+
+    decision = MethodSelector().select(report, equal_var=True)
+
+    assert decision.selected_method == "classical_anova"
+    assert any("explicitly requested" in reason for reason in decision.reasons)
+
+
+def test_one_way_classical_is_denied_for_dangerous_size_variance_alignment():
+    rng = np.random.default_rng(20260827)
+    report = InferenceValidator().validate_one_way(
+        rng.normal(scale=8.0, size=12),
+        rng.normal(scale=3.0, size=30),
+        rng.normal(scale=1.0, size=60),
+        independence="assumed",
+    ).report
+
+    decision = MethodSelector().select(report, equal_var=True)
+
     assert decision.selected_method is None
-    assert decision.parametric_recommended is False
-    assert serialized["status"] == "not_calibrated"
-    assert "welch_anova" not in str(serialized)
-    assert any("not calibrated or implemented" in reason for reason in decision.reasons)
+    assert decision.status.value == "insufficient"
+    assert any("common-variance" in reason for reason in decision.reasons)
+
+
+def test_one_way_severe_skew_and_contamination_remain_insufficient():
+    rng = np.random.default_rng(919)
+    report = InferenceValidator().validate_one_way(
+        *(rng.lognormal(sigma=1.5, size=60) for _ in range(3)),
+        independence="assumed",
+    ).report
+
+    decision = MethodSelector().select(report)
+
+    assert decision.selected_method is None
+    assert decision.robustness.level is RobustnessLevel.INSUFFICIENT
