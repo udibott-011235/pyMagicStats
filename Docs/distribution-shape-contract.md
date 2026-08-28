@@ -9,6 +9,10 @@ calcula una sola familia coherente de descriptivos muestrales: varianza y desvia
 `ddof=1`, skewness con `bias=False`, y curtosis excedente con `fisher=True` y
 `bias=False`. El nombre público no ambiguo es `excess_kurtosis`.
 
+El contrato de solo lectura se restaura al reconstruir la instancia mediante
+pickle o `copy.deepcopy`. `copy.copy` comparte el mismo snapshot, lo cual es
+seguro porque el ndarray compartido permanece read-only.
+
 `ShapeAssessment.assess(distribution)` reutiliza los descriptivos de la
 instancia. `ShapeAssessment.assess(distribution.data)` sigue siendo compatible y
 aplica exactamente las mismas convenciones canónicas.

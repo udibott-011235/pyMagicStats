@@ -65,6 +65,17 @@ class Distribution:
 
         return self._data
 
+    def __setstate__(self, state: Dict[str, Any]) -> None:
+        """Restore the immutable snapshot contract after Python reconstruction."""
+
+        snapshot = state.get("_data", state.get("data"))
+        if not isinstance(snapshot, np.ndarray):
+            raise TypeError("Distribution state must contain an ndarray snapshot")
+        self.__dict__.update(state)
+        self.__dict__.pop("data", None)
+        self._data = snapshot
+        self._data.flags.writeable = False
+
     @property
     def kurtosis(self) -> float:
         """Deprecated alias for bias-corrected excess kurtosis."""

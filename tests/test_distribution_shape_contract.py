@@ -1,3 +1,6 @@
+import copy
+import pickle
+
 import numpy as np
 import pytest
 from scipy import stats
@@ -43,6 +46,54 @@ def test_distribution_is_a_defensive_read_only_snapshot():
     assert distribution.data.flags.writeable is False
     with pytest.raises(ValueError, match="read-only"):
         distribution.data[0] = 1000.0
+
+
+def _assert_distribution_descriptives_match_data(distribution):
+    data = distribution.data
+    assert distribution.mean == pytest.approx(np.mean(data))
+    assert distribution.std == pytest.approx(np.std(data, ddof=1))
+    assert distribution.var == pytest.approx(np.var(data, ddof=1))
+    assert distribution.skewness == pytest.approx(stats.skew(data, bias=False))
+    assert distribution.excess_kurtosis == pytest.approx(
+        stats.kurtosis(data, fisher=True, bias=False)
+    )
+
+
+def test_distribution_pickle_roundtrip_restores_read_only_snapshot():
+    original = Distribution([1.0, 2.0, 4.0, 8.0, 16.0, 32.0])
+
+    restored = pickle.loads(pickle.dumps(original))
+
+    assert restored.data.flags.writeable is False
+    assert restored.data is not original.data
+    with pytest.raises(ValueError, match="read-only"):
+        restored.data[0] = 999.0
+    _assert_distribution_descriptives_match_data(restored)
+
+
+def test_distribution_deepcopy_restores_read_only_snapshot():
+    original = Distribution([1.0, 2.0, 4.0, 8.0, 16.0, 32.0])
+
+    restored = copy.deepcopy(original)
+
+    assert restored.data.flags.writeable is False
+    assert restored.data is not original.data
+    with pytest.raises(ValueError, match="read-only"):
+        restored.data[0] = 999.0
+    _assert_distribution_descriptives_match_data(restored)
+
+
+def test_distribution_shallow_copy_shares_only_the_read_only_snapshot():
+    original = Distribution([1.0, 2.0, 4.0, 8.0, 16.0, 32.0])
+
+    restored = copy.copy(original)
+
+    assert restored is not original
+    assert restored.data is original.data
+    assert restored.data.flags.writeable is False
+    with pytest.raises(ValueError, match="read-only"):
+        restored.data[0] = 999.0
+    _assert_distribution_descriptives_match_data(restored)
 
 
 def test_distribution_rejects_empty_and_multidimensional_samples():
