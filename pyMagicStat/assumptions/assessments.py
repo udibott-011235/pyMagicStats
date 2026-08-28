@@ -134,6 +134,7 @@ class OutlierAssessment:
             scores = 0.6744897501960817 * absolute_deviation / mad
             indices = np.flatnonzero(scores > self.modified_z_threshold)
             method = "modified_z_score"
+            max_robust_score = float(np.max(scores))
         else:
             q1, q3 = np.percentile(data, [25, 75])
             iqr = float(q3 - q1)
@@ -144,6 +145,9 @@ class OutlierAssessment:
             else:
                 indices = np.array([], dtype=int)
             method = "extreme_iqr"
+            max_robust_score = (
+                float(np.max(absolute_deviation / iqr)) if iqr > 0.0 else 0.0
+            )
 
         count = int(indices.size)
         status = AssessmentStatus.WARN if count else AssessmentStatus.PASS
@@ -161,6 +165,7 @@ class OutlierAssessment:
                 "indices": indices,
                 "method": method,
                 "threshold": self.modified_z_threshold,
+                "max_robust_score": max_robust_score,
             },
             reasons=reasons,
         )
@@ -182,14 +187,37 @@ class VarianceAssessment:
                 reasons=("Variance comparison requires at least two groups.",),
             )
 
+        sizes = np.asarray([len(group) for group in groups], dtype=int)
         variances = np.asarray([np.var(group, ddof=1) for group in groups], dtype=float)
         min_variance = float(np.min(variances))
         ratio = float(np.max(variances) / min_variance) if min_variance > 0.0 else np.inf
-        statistic, p_value = stats.levene(*groups, center="median")
-        p_value = float(p_value)
-        heterogeneous = bool(p_value < self.alpha)
-        unbalanced = max(len(group) for group in groups) / min(len(group) for group in groups)
-        status = AssessmentStatus.WARN if heterogeneous or ratio > 4.0 else AssessmentStatus.PASS
+        levene_statistic, levene_p_value = stats.levene(*groups, center="median")
+        fligner_statistic, fligner_p_value = stats.fligner(*groups, center="median")
+        bartlett_statistic, bartlett_p_value = stats.bartlett(*groups)
+        levene_p_value = float(levene_p_value)
+        fligner_p_value = float(fligner_p_value)
+        bartlett_p_value = float(bartlett_p_value)
+        heterogeneous = bool(
+            levene_p_value < self.alpha or fligner_p_value < self.alpha
+        )
+        unbalanced = float(np.max(sizes) / np.min(sizes))
+        if len(groups) >= 3 and np.ptp(sizes) > 0 and np.ptp(variances) > 0.0:
+            size_variance_correlation = float(
+                stats.spearmanr(sizes, variances).statistic
+            )
+        else:
+            size_variance_correlation = np.nan
+        small_group_large_variance = bool(
+            np.isfinite(size_variance_correlation)
+            and size_variance_correlation <= -0.5
+            and ratio >= 2.0
+            and unbalanced >= 1.5
+        )
+        status = (
+            AssessmentStatus.WARN
+            if heterogeneous or ratio > 4.0 or small_group_large_variance
+            else AssessmentStatus.PASS
+        )
         reasons = (
             "Variance differences were detected; variance-robust inference is preferred."
             if status is AssessmentStatus.WARN
@@ -199,13 +227,22 @@ class VarianceAssessment:
             name="variance",
             status=status,
             metrics={
+                "sizes": sizes,
                 "variances": variances,
                 "variance_ratio": ratio,
-                "levene_statistic": float(statistic),
-                "levene_p_value": p_value,
+                "levene_statistic": float(levene_statistic),
+                "levene_p_value": levene_p_value,
+                "brown_forsythe_statistic": float(levene_statistic),
+                "brown_forsythe_p_value": levene_p_value,
+                "fligner_statistic": float(fligner_statistic),
+                "fligner_p_value": fligner_p_value,
+                "bartlett_statistic": float(bartlett_statistic),
+                "bartlett_p_value": bartlett_p_value,
                 "alpha": self.alpha,
                 "heterogeneous": heterogeneous,
-                "size_ratio": float(unbalanced),
+                "size_ratio": unbalanced,
+                "size_variance_spearman": size_variance_correlation,
+                "small_group_large_variance": small_group_large_variance,
             },
             reasons=reasons,
         )

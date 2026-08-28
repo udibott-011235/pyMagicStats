@@ -92,4 +92,55 @@ def test_one_way_validation_centralizes_residual_and_variance_diagnostics():
     assert result.report.estimand.value == "group_mean_differences"
     assert len(result.relevant_samples) == 3
     assert "shape_group_3" in result.report.assessments
+    assert "shape_standardized_residuals" in result.report.assessments
+    assert "outliers_standardized_residuals" in result.report.assessments
     assert "variance" in result.report.assessments
+    for residuals in result.relevant_samples:
+        assert np.mean(residuals) == pytest.approx(0.0, abs=1e-12)
+
+    metrics = result.report.assessments["variance"].metrics
+    assert set(
+        [
+            "sizes",
+            "variance_ratio",
+            "brown_forsythe_p_value",
+            "fligner_p_value",
+            "bartlett_p_value",
+            "size_variance_spearman",
+            "small_group_large_variance",
+        ]
+    ).issubset(metrics)
+
+
+def test_one_way_requires_at_least_three_independent_groups():
+    with pytest.raises(ValueError, match="at least three groups"):
+        InferenceValidator().validate_one_way([1.0, 2.0], [3.0, 4.0])
+
+
+def test_one_way_shape_diagnostics_do_not_pool_different_group_means():
+    offsets = (0.0, 100.0, 1_000.0)
+    base = np.array([-2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0])
+    result = InferenceValidator().validate_one_way(
+        *(base + offset for offset in offsets),
+        independence="assumed",
+    )
+
+    for residuals in result.relevant_samples:
+        np.testing.assert_allclose(residuals, base)
+    standardized_shape = result.report.assessments["shape_standardized_residuals"]
+    assert standardized_shape.status is AssessmentStatus.PASS
+
+
+def test_one_way_variance_assessment_flags_small_group_large_variance_alignment():
+    rng = np.random.default_rng(20260827)
+    result = InferenceValidator().validate_one_way(
+        rng.normal(scale=8.0, size=12),
+        rng.normal(scale=3.0, size=30),
+        rng.normal(scale=1.0, size=60),
+        independence="assumed",
+    )
+
+    variance = result.report.assessments["variance"]
+    assert variance.metrics["size_variance_spearman"] <= -0.5
+    assert variance.metrics["small_group_large_variance"] is True
+    assert variance.status is AssessmentStatus.WARN

@@ -114,8 +114,8 @@ class InferenceValidator:
         *groups: Any,
         independence: str = "unknown",
     ) -> ValidationResult:
-        if len(groups) < 2:
-            raise ValueError("One-way inference requires at least two groups")
+        if len(groups) < 3:
+            raise ValueError("One-way inference requires at least three groups")
 
         normalized = []
         assessments: Dict[str, Assessment] = {}
@@ -133,6 +133,20 @@ class InferenceValidator:
             label = f"group_{index}"
             assessments[f"shape_{label}"] = self.shape.assess(residuals, label)
             assessments[f"outliers_{label}"] = self.outliers.assess(residuals, label)
+        standardized_residuals = np.concatenate(
+            [
+                residuals / np.std(sample, ddof=1)
+                for sample, residuals in zip(normalized, centered)
+            ]
+        )
+        assessments["shape_standardized_residuals"] = self.shape.assess(
+            standardized_residuals,
+            "standardized_residuals",
+        )
+        assessments["outliers_standardized_residuals"] = self.outliers.assess(
+            standardized_residuals,
+            "standardized_residuals",
+        )
         assessments["variance"] = self.variance.assess(tuple(normalized))
         assessments["independence"] = self.independence.assess(independence)
 
