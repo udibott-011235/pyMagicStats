@@ -3,7 +3,11 @@ from typing import Any, Iterable, Sequence, Tuple
 import numpy as np
 import scipy.stats as stats
 
-from pyMagicStat._descriptive import sample_shape_statistics
+from pyMagicStat._descriptive import (
+    sample_shape_statistics,
+    sample_source,
+    univariate_sample,
+)
 from pyMagicStat.assumptions.models import Assessment, AssessmentStatus
 
 
@@ -15,7 +19,7 @@ class DataQualityAssessment:
 
     def normalize(self, data: Any, label: str = "sample") -> Tuple[np.ndarray, Assessment]:
         try:
-            array = np.asarray(data, dtype=float)
+            array = np.asarray(sample_source(data), dtype=float)
         except (TypeError, ValueError) as exc:
             raise ValueError(f"{label} must contain numeric data") from exc
 
@@ -79,8 +83,7 @@ class ShapeAssessment:
         self.alpha = float(alpha)
 
     def assess(self, data: Any, label: str = "sample") -> Assessment:
-        source = getattr(data, "data", data)
-        array = np.asarray(source)
+        array = univariate_sample(data, label=label)
 
         if all(
             hasattr(data, attribute)

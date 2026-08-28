@@ -6,7 +6,7 @@ import warnings
 from typing import Any, Dict, Optional, Union
 from pyMagicStat.utils.utils import output_format
 from pyMagicStat.assumptions import ShapeAssessment
-from pyMagicStat._descriptive import sample_descriptives
+from pyMagicStat._descriptive import sample_descriptives, univariate_sample
 
 
 
@@ -23,7 +23,7 @@ from pyMagicStat._descriptive import sample_descriptives
 #######################################
 class Distribution:
     """
-    Canonical dataset and sample-descriptive container.
+    Immutable snapshot of one univariate sample and its descriptives.
 
     ``type`` and :meth:`update_type` remain only for compatibility with legacy
     distribution validators. New code should store structured results in
@@ -32,9 +32,14 @@ class Distribution:
     """
     def __init__(self, data: Any, dist_type: Optional[Dict[str, Any]] = None) -> None:
         try:
-            self.data: np.ndarray = np.asarray(data).copy()
+            snapshot = univariate_sample(data, label="Distribution data").copy()
         except Exception as e:
-            raise ValueError("Error al convertir los datos a numpy array: " + str(e))
+            if isinstance(e, ValueError):
+                raise
+            raise ValueError("Error al convertir los datos a numpy array: " + str(e)) from e
+
+        snapshot.flags.writeable = False
+        self._data: np.ndarray = snapshot
 
         descriptive = sample_descriptives(self.data)
         self.type = dict(dist_type) if dist_type is not None else None
@@ -53,6 +58,12 @@ class Distribution:
         self.min = descriptive["min"]
         self.max = descriptive["max"]
         self.range = descriptive["range"]
+
+    @property
+    def data(self) -> np.ndarray:
+        """Read-only defensive snapshot used by every assessment layer."""
+
+        return self._data
 
     @property
     def kurtosis(self) -> float:
@@ -115,13 +126,11 @@ class DistributionValidator(ABC):
     Realiza la validación temprana (validate_data) y rechaza la instancia si ésta falla.
     """
     def __init__(self, data: Union['Distribution', np.ndarray, Any]) -> None:
-        # Permite recibir un objeto Distribution o un numpy array.
+        # Reuse a canonical snapshot or normalize any compatible array-like.
         if isinstance(data, Distribution):
             self.distribution = data
-        elif isinstance(data, np.ndarray):
-            self.distribution = Distribution(data)
         else:
-            raise ValueError("Los datos deben ser un objeto Distribution o un numpy array.")
+            self.distribution = Distribution(data)
         
         # Validación temprana: si validate_data() falla, se rechaza la instancia.
         if not self.validate_data():

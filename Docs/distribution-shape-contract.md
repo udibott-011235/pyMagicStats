@@ -2,14 +2,22 @@
 
 ## Fuente canónica
 
-`Distribution.data` conserva el ndarray observado y `Distribution` calcula una
-sola familia coherente de descriptivos muestrales: varianza y desviación con
+`Distribution.data` conserva una copia defensiva, univariada y de solo lectura
+del ndarray observado. Cambiar el array fuente no altera el snapshot y una
+mutación in-place de `Distribution.data` falla explícitamente. `Distribution`
+calcula una sola familia coherente de descriptivos muestrales: varianza y desviación con
 `ddof=1`, skewness con `bias=False`, y curtosis excedente con `fisher=True` y
 `bias=False`. El nombre público no ambiguo es `excess_kurtosis`.
 
 `ShapeAssessment.assess(distribution)` reutiliza los descriptivos de la
 instancia. `ShapeAssessment.assess(distribution.data)` sigue siendo compatible y
 aplica exactamente las mismas convenciones canónicas.
+
+Las capas de validación e inferencia desenvuelven ese mismo snapshot, por lo que
+`InferenceValidator`, `OneSampleTTest` y `TwoSampleTTest` aceptan instancias de
+`Distribution` además de los array-like existentes. Los datos vacíos y las
+matrices 2D se rechazan con `ValueError`: este contrato representa una sola
+muestra univariada y no aplana matrices silenciosamente.
 
 ## Dos preguntas distintas
 
