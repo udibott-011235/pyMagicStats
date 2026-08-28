@@ -5,7 +5,8 @@ import statsmodels.api as sm
 import warnings
 from typing import Any, Dict, Optional, Union
 from pyMagicStat.utils.utils import output_format
-from pyMagicStat.assumptions import AssessmentStatus, ShapeAssessment
+from pyMagicStat.assumptions import ShapeAssessment
+from pyMagicStat._descriptive import sample_descriptives
 
 
 
@@ -22,42 +23,60 @@ from pyMagicStat.assumptions import AssessmentStatus, ShapeAssessment
 #######################################
 class Distribution:
     """
-    Clase que encapsula los datos y algunos estadísticos básicos.
-    Se utiliza para almacenar y actualizar el estado de validación mediante update_type().
+    Canonical dataset and sample-descriptive container.
+
+    ``type`` and :meth:`update_type` remain only for compatibility with legacy
+    distribution validators. New code should store structured results in
+    ``assessments`` and must not interpret ``type["Normal"]`` as permission or
+    prohibition for parametric inference.
     """
     def __init__(self, data: Any, dist_type: Optional[Dict[str, Any]] = None) -> None:
         try:
-            self.data: np.ndarray = np.array(data)
+            self.data: np.ndarray = np.asarray(data).copy()
         except Exception as e:
             raise ValueError("Error al convertir los datos a numpy array: " + str(e))
-        
-        # Estadísticos básicos
-        self.type = dist_type
-        self.mean = np.mean(self.data)
-        self.std = np.std(self.data)
-        self.var = np.var(self.data)
-        self.skewness = stats.skew(self.data)
-        self.kurtosis = stats.kurtosis(self.data)
-        self.median = np.median(self.data)
+
+        descriptive = sample_descriptives(self.data)
+        self.type = dict(dist_type) if dist_type is not None else None
+        self.assessments: Dict[str, Any] = {}
+        self.n = descriptive["n"]
+        self.mean = descriptive["mean"]
+        self.median = descriptive["median"]
+        self.std = descriptive["std"]
+        self.var = descriptive["var"]
+        self.skewness = descriptive["skewness"]
+        self.excess_kurtosis = descriptive["excess_kurtosis"]
         self.mode = stats.mode(self.data)
-        self.min = np.min(self.data)
-        self.max = np.max(self.data)
-        self.q1 = np.percentile(self.data, 25)
-        self.q3 = np.percentile(self.data, 75)
-        self.iqr = self.q3 - self.q1
-        self.range = self.max - self.min
+        self.q1 = descriptive["q1"]
+        self.q3 = descriptive["q3"]
+        self.iqr = descriptive["iqr"]
+        self.min = descriptive["min"]
+        self.max = descriptive["max"]
+        self.range = descriptive["range"]
+
+    @property
+    def kurtosis(self) -> float:
+        """Deprecated alias for bias-corrected excess kurtosis."""
+
+        warnings.warn(
+            "Distribution.kurtosis is deprecated because it is ambiguous; "
+            "use Distribution.excess_kurtosis.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return float(self.excess_kurtosis)
     
     def __repr__(self):
         return output_format(data=f"""
             Distribution Summary:
-            count={len(self.data)},
+            count={self.n},
             type={self.type},
             stats:
             mean={self.mean},
             std={self.std},
             var={self.var},
             skewness={self.skewness},
-            kurtosis={self.kurtosis},
+            excess_kurtosis={self.excess_kurtosis},
             median={self.median},
             mode={self.mode},
             min={self.min},
@@ -71,8 +90,17 @@ class Distribution:
 
     def update_type(self, distribution_name: str, bool_result: bool, static_name: str, value: Any) -> None:
         """
-        Actualiza el diccionario type con la validación o resultado obtenido.
+        Update the legacy distribution-type dictionary.
+
+        This compatibility API records goodness-of-fit or exact-distribution
+        evidence. It is not an inferential method-selection contract.
         """
+        warnings.warn(
+            "Distribution.update_type() is deprecated; store structured "
+            "assessment results in Distribution.assessments instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if self.type is None:
             self.type = {}
         self.type.update({distribution_name: bool_result, static_name: value})
@@ -147,26 +175,46 @@ class NormalDistribution(ContinuousDistributionValidator):
 
     def evaluate_normality(self) -> Dict[str, Any]:
         data = self.distribution.data
-        assessment = ShapeAssessment(alpha=0.05).assess(data)
+        assessment = ShapeAssessment(alpha=0.05).assess(self.distribution)
         metrics = assessment.metrics
         resultados = {
             "assessment": assessment.to_dict(),
             "Shapiro": {
                 "p_value": metrics.get("shapiro_p_value"),
                 "alpha": metrics.get("alpha"),
+                "rejects_exact_normality": metrics.get(
+                    "shapiro_rejects_exact_normality"
+                ),
             },
             "D'Agostino": {
                 "p_value": metrics.get("dagostino_p_value"),
                 "alpha": metrics.get("alpha"),
+                "rejects_exact_normality": metrics.get(
+                    "dagostino_rejects_exact_normality"
+                ),
             },
             "shape": {
                 "skewness": metrics.get("skewness"),
                 "excess_kurtosis": metrics.get("excess_kurtosis"),
+                "departure_magnitude": metrics.get("departure_magnitude"),
             },
             "QQ": self.evaluate_qq(data),
         }
-        is_normal = assessment.status is AssessmentStatus.PASS
-        self.distribution.update_type('Normal', is_normal, 'normality_results', resultados)
+        self.distribution.assessments["normality"] = assessment
+
+        # Compatibility only: this boolean describes whether the available
+        # formal tests rejected exact normality. SamplingRobustness and
+        # MethodSelector do not consume it.
+        exact_rejected = metrics.get("exact_normality_rejected")
+        legacy_exact_normality = None if exact_rejected is None else not exact_rejected
+        if self.distribution.type is None:
+            self.distribution.type = {}
+        self.distribution.type.update(
+            {
+                "Normal": legacy_exact_normality,
+                "normality_results": resultados,
+            }
+        )
         return resultados
 
     def evaluate_qq(self, data):

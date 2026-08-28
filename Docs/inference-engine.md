@@ -21,6 +21,11 @@ El reporte incluye:
 - Levene, razón de varianzas y balance para diseños con grupos;
 - independencia como `verified`, `assumed` o `unknown`.
 
+Shapiro-Wilk y D'Agostino se interpretan como evidencia contra normalidad
+exacta, separada de la magnitud observada. Un rechazo formal no convierte por
+sí solo la desviación en material ni selecciona un método. Consulte el
+[contrato entre Distribution y shape](distribution-shape-contract.md).
+
 La independencia no se infiere mirando los valores. Si el diseño no la documenta,
 el reporte conserva `not_assessed`.
 
@@ -147,6 +152,11 @@ demuestra normalidad poblacional. Durante la transición compatible,
 `FutureWarning` y calcula un intervalo marcado como
 `chi_square_validated: false`. `strict=False` mantiene esa posibilidad de forma
 explícita; una versión futura hará estricto el default.
+
+Los campos históricos `is_normal` y `Distribution.type["Normal"]` son ayudas de
+compatibilidad, no entradas de `SamplingRobustness` ni `MethodSelector`. Pueden
+coexistir con una selección t basada en robustez sin representar un permiso o
+veto inferencial.
 
 ## Cambios de comportamiento
 

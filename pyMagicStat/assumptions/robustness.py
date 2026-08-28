@@ -99,15 +99,19 @@ class SamplingRobustness:
         max_abs_kurtosis = max(
             abs(float(item.metrics.get("excess_kurtosis", np.inf))) for item in shapes
         )
-        shape_departure = any(
-            item.status in {AssessmentStatus.WARN, AssessmentStatus.FAIL}
+        shape_directly_compatible = all(
+            (
+                item.metrics.get("departure_magnitude") == "mild"
+                if "departure_magnitude" in item.metrics
+                else item.status is AssessmentStatus.PASS
+            )
             for item in shapes
         )
 
         if extreme_count:
             reasons.append("Extreme observations may remain influential for mean-based inference.")
 
-        if not shape_departure and not extreme_count:
+        if shape_directly_compatible and not extreme_count:
             reasons.append("The relevant observations are compatible with direct t-based inference.")
             level = RobustnessLevel.CAUTION if independence_unknown else RobustnessLevel.ACCEPTABLE
             return RobustnessResult(level, tuple(reasons))

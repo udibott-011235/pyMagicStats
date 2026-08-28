@@ -3,6 +3,7 @@ from typing import Any, Iterable, Sequence, Tuple
 import numpy as np
 import scipy.stats as stats
 
+from pyMagicStat._descriptive import sample_shape_statistics
 from pyMagicStat.assumptions.models import Assessment, AssessmentStatus
 
 
@@ -70,39 +71,78 @@ class DataQualityAssessment:
 
 
 class ShapeAssessment:
-    """Describe departure from a Gaussian shape without deciding a method."""
+    """Separate exact-normality evidence from observed departure magnitude."""
 
     def __init__(self, alpha: float = 0.05) -> None:
         if not 0.0 < alpha < 1.0:
             raise ValueError("alpha must be between 0 and 1")
         self.alpha = float(alpha)
 
-    def assess(self, data: np.ndarray, label: str = "sample") -> Assessment:
-        n = int(data.size)
-        skewness = float(stats.skew(data, bias=False)) if n >= 3 else np.nan
-        excess_kurtosis = float(stats.kurtosis(data, fisher=True, bias=False)) if n >= 4 else np.nan
+    def assess(self, data: Any, label: str = "sample") -> Assessment:
+        source = getattr(data, "data", data)
+        array = np.asarray(source)
+
+        if all(
+            hasattr(data, attribute)
+            for attribute in ("n", "skewness", "excess_kurtosis")
+        ):
+            n = int(data.n)
+            skewness = float(data.skewness)
+            excess_kurtosis = float(data.excess_kurtosis)
+        else:
+            n, skewness, excess_kurtosis = sample_shape_statistics(array)
 
         shapiro_p = np.nan
         if 3 <= n <= 5000:
-            shapiro_p = float(stats.shapiro(data).pvalue)
+            shapiro_p = float(stats.shapiro(array).pvalue)
 
         dagostino_p = np.nan
         if n >= 8:
-            dagostino_p = float(stats.normaltest(data).pvalue)
+            dagostino_p = float(stats.normaltest(array).pvalue)
 
-        abs_skew = abs(skewness) if np.isfinite(skewness) else np.inf
-        abs_kurtosis = abs(excess_kurtosis) if np.isfinite(excess_kurtosis) else np.inf
-        rejects = [p < self.alpha for p in (shapiro_p, dagostino_p) if np.isfinite(p)]
+        shapiro_rejects = bool(shapiro_p < self.alpha) if np.isfinite(shapiro_p) else None
+        dagostino_rejects = (
+            bool(dagostino_p < self.alpha) if np.isfinite(dagostino_p) else None
+        )
+        available_rejections = [
+            rejects
+            for rejects in (shapiro_rejects, dagostino_rejects)
+            if rejects is not None
+        ]
+        exact_normality_rejected = (
+            bool(any(available_rejections)) if available_rejections else None
+        )
 
-        if abs_skew > 2.0 or abs_kurtosis > 7.0:
+        finite_shape = np.isfinite(skewness) or np.isfinite(excess_kurtosis)
+        abs_skew = abs(skewness) if np.isfinite(skewness) else 0.0
+        abs_kurtosis = abs(excess_kurtosis) if np.isfinite(excess_kurtosis) else 0.0
+
+        if not finite_shape:
+            departure_magnitude = "not_assessed"
+            status = AssessmentStatus.NOT_ASSESSED
+            shape_reason = "Observed shape magnitude could not be assessed at this sample size."
+        elif abs_skew > 2.0 or abs_kurtosis > 7.0:
+            departure_magnitude = "severe"
             status = AssessmentStatus.FAIL
-            reasons = ("Severe skewness or tail weight was detected.",)
-        elif abs_skew > 1.0 or abs_kurtosis > 3.0 or any(rejects):
+            shape_reason = "Observed skewness or tail weight indicates a severe shape departure."
+        elif abs_skew > 1.0 or abs_kurtosis > 3.0:
+            departure_magnitude = "moderate"
             status = AssessmentStatus.WARN
-            reasons = ("The data show a material departure from a Gaussian shape.",)
+            shape_reason = "Observed skewness or tail weight indicates a moderate shape departure."
         else:
+            departure_magnitude = "mild"
             status = AssessmentStatus.PASS
-            reasons = ("No material Gaussian-shape departure was detected.",)
+            shape_reason = "Observed skewness and tail weight indicate only a mild shape departure."
+
+        if exact_normality_rejected is True:
+            exact_reason = (
+                "At least one formal test rejects exact Gaussianity; this is evidence, "
+                "not an independent veto on mean-based inference."
+            )
+        elif exact_normality_rejected is False:
+            exact_reason = "The available formal tests do not reject exact Gaussianity."
+        else:
+            exact_reason = "Formal exact-normality tests were not available at this sample size."
 
         return Assessment(
             name=f"shape_{label}",
@@ -113,9 +153,13 @@ class ShapeAssessment:
                 "excess_kurtosis": excess_kurtosis,
                 "shapiro_p_value": shapiro_p,
                 "dagostino_p_value": dagostino_p,
+                "shapiro_rejects_exact_normality": shapiro_rejects,
+                "dagostino_rejects_exact_normality": dagostino_rejects,
+                "exact_normality_rejected": exact_normality_rejected,
+                "departure_magnitude": departure_magnitude,
                 "alpha": self.alpha,
             },
-            reasons=reasons,
+            reasons=(shape_reason, exact_reason),
         )
 
 
