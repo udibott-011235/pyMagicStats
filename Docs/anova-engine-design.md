@@ -8,6 +8,13 @@ estadísticos, tests y calibración, `MethodSelector` debe conservar
 `status="not_calibrated"` y `selected_method=None` para
 `InferenceDesign.ONE_WAY`.
 
+**Resultado de implementación:** el contrato se implementó en
+`feature/anova-engine`; la calibración `anova-v1-2026-08` habilitó Welch como
+default y Classical sólo bajo solicitud explícita compatible. Este documento
+conserva las decisiones previas al código; los resultados cuantitativos están en
+[`anova-calibration.md`](anova-calibration.md). La rama requiere todavía una
+revisión adversarial independiente y no está autoaprobada para merge.
+
 El alcance inicial son `k >= 3` grupos independientes. Se implementarán ANOVA
 clásico y ANOVA de Welch, sin pruebas post-hoc. Tukey, Games-Howell y otros
 procedimientos de comparaciones múltiples pertenecen a una fase posterior.
@@ -304,4 +311,3 @@ la política de una media.
 La rama no se declarará lista para merge al terminar la implementación. Debe
 quedar preparada para revisión adversarial independiente de fórmulas, API,
 tests, selector y calibración.
-

@@ -26,6 +26,13 @@ one-way validation assesses group-centered residuals.
 See [the inference-engine guide](Docs/inference-engine.md) for the contract,
 migration notes and examples.
 
+One-way inference for `k >= 3` independent groups is available through
+`OneWayANOVA` and `WelchANOVA`. Welch is the calibrated default selected by
+`MethodSelector`; Classical requires an explicit `equal_var=True` request and
+compatible joint variance diagnostics. See the
+[ANOVA calibration](Docs/anova-calibration.md). Post-hoc comparisons are not
+part of this release.
+
 ## Installation
 
 Python 3.10 or newer is required.
@@ -117,13 +124,11 @@ documented in [the calibration report](Docs/sampling-robustness-calibration.md).
 - distribution and shape assessment;
 - confidence intervals for means, proportions and variances;
 - one-sample, paired, Student and Welch t-tests;
+- classical one-way and Welch ANOVA with a calibrated selector;
 - bootstrap confidence intervals;
 - Kruskal-Wallis and Mann-Whitney utilities;
 - linear-regression diagnostics;
-- reusable one-way diagnostics in preparation for ANOVA/Welch ANOVA.
-
-The one-way validation engine is implemented; the ANOVA statistic itself is not
-part of this refactor.
+- one-way residual, influence, balance and variance diagnostics.
 
 ## License
 

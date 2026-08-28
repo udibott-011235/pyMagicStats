@@ -1,21 +1,5 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Guía completa de pyMagicStat</title>
-<style>
-body { color: #1f2937; background: #f8fafc; font: 16px/1.62 system-ui, sans-serif; margin: 0; }
-main { max-width: 1040px; margin: 0 auto; padding: 3rem 2rem 6rem; background: white; }
-h1, h2, h3, h4 { color: #0f172a; line-height: 1.25; margin-top: 2rem; }
-h1 { border-bottom: 3px solid #2563eb; padding-bottom: .6rem; }
-h2 { border-bottom: 1px solid #cbd5e1; padding-bottom: .35rem; }
-code { color: #7c2d12; background: #f1f5f9; padding: .08rem .28rem; border-radius: 4px; }
-pre.highlight { overflow-x: auto; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
-pre.highlight code { background: transparent; padding: 0; color: inherit; }
-.code-cell { margin: 1.2rem 0 2rem; }
-a { color: #1d4ed8; }
-pre { line-height: 125%; }
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Guía completa de pyMagicStat</title><style>
+body{color:#1f2937;background:#f8fafc;font:16px/1.62 system-ui,sans-serif;margin:0}main{max-width:1040px;margin:0 auto;padding:3rem 2rem 6rem;background:white}h1,h2,h3,h4{color:#0f172a;line-height:1.25;margin-top:2rem}h1{border-bottom:3px solid #2563eb;padding-bottom:.6rem}h2{border-bottom:1px solid #cbd5e1;padding-bottom:.35rem}code{color:#7c2d12;background:#f1f5f9;padding:.08rem .28rem;border-radius:4px}pre.highlight{overflow-x:auto;padding:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px}pre.highlight code{background:transparent;padding:0;color:inherit}.code-cell{margin:1.2rem 0 2rem}a{color:#1d4ed8}pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
 span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
 td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
@@ -89,11 +73,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 .highlight .vg { color: #19177C } /* Name.Variable.Global */
 .highlight .vi { color: #19177C } /* Name.Variable.Instance */
 .highlight .vm { color: #19177C } /* Name.Variable.Magic */
-.highlight .il { color: #666 } /* Literal.Number.Integer.Long */
-</style>
-</head>
-<body><main>
-<section class="markdown"><h1>Guía completa de uso y documentación de <code>pyMagicStat</code></h1>
+.highlight .il { color: #666 } /* Literal.Number.Integer.Long */</style></head><body><main><section class="markdown"><h1>Guía completa de uso y documentación de <code>pyMagicStat</code></h1>
 <p>Esta es la guía oficial e interactiva de <strong>pyMagicStat</strong>. Presenta distribución, inferencia, remuestreo, optimización experimental, regresión y visualización.</p>
 <h2>Contenido</h2>
 <ol>
@@ -106,7 +86,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>robustez muestral calibrada;</li>
 <li>selección del método;</li>
 <li>ejecución estadística;</li>
-<li>intervalos, pruebas t, bootstrap y estado de one-way.</li>
+<li>intervalos, pruebas t, bootstrap y ANOVA one-way.</li>
 </ul>
 <ol>
 <li>Inferencia no paramétrica (<code>pyMagicStat.inference.non_parametric</code>).</li>
@@ -144,6 +124,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyMagicStat.assumptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">InferenceDesign</span><span class="p">,</span>
     <span class="n">InferenceValidator</span><span class="p">,</span>
+    <span class="n">OneWayRobustness</span><span class="p">,</span>
     <span class="n">RobustnessLevel</span><span class="p">,</span>
     <span class="n">SamplingRobustness</span><span class="p">,</span>
 <span class="p">)</span>
@@ -158,6 +139,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     <span class="n">BootstrapCI</span><span class="p">,</span>
     <span class="n">BootstrapMeanDifferenceCI</span><span class="p">,</span>
     <span class="n">MethodSelector</span><span class="p">,</span>
+    <span class="n">OneWayANOVA</span><span class="p">,</span>
+    <span class="n">WelchANOVA</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyMagicStat.inference.non_parametric</span><span class="w"> </span><span class="kn">import</span> <span class="n">kruskalWallisTest</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyMagicStat.inference.parametric</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -390,12 +373,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
         <span class="n">method</span><span class="o">=</span><span class="n">variance_method</span><span class="p">,</span>
     <span class="p">)</span><span class="o">.</span><span class="n">run_test</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">variance_method</span><span class="p">,</span> <span class="n">diagnostic</span><span class="p">[</span><span class="s2">"p_value"</span><span class="p">])</span>
-</code></pre></section><section class="markdown"><h3>2.3 Bootstrap y estado actual de one-way</h3>
+</code></pre></section><section class="markdown"><h3>2.3 Bootstrap y ANOVA one-way</h3>
 <p>Bootstrap es una metodología de remuestreo independiente. Puede preservar una pregunta sobre la media o diferencia de medias; no «normaliza» la muestra y no se activa automáticamente cuando falla un diagnóstico.</p>
 <p><code>BootstrapCI</code> soporta los backends <code>scipy</code> y <code>numba</code>. SciPy permite intervalos <code>percentile</code>, <code>basic</code> y <code>bca</code>; Numba soporta actualmente <code>percentile</code>. <code>random_state</code> acepta un entero o un <code>numpy.random.Generator</code>. Un estado explícito hace repetibles llamadas equivalentes, incluso sobre la misma instancia, y no avanza el Generator entregado por el llamador.</p>
 <p>Para <code>stat=&quot;variance&quot;</code>, <code>ddof=1</code> es el default documentado y aplica el estimador de varianza muestral tanto a la muestra observada como a cada réplica. <code>ddof=0</code> solicita explícitamente el segundo momento central empírico/MLE.</p>
-<h4>One-way antes de ANOVA</h4>
-<p>La versión integrada aquí sólo prepara diagnósticos one-way. Para <code>InferenceDesign.ONE_WAY</code>, el selector devuelve <code>status=&quot;not_calibrated&quot;</code> y <code>selected_method=None</code>. No existe todavía selección automática de ANOVA ni de Welch ANOVA, y este guide no presenta sus estadísticos como funcionales.</p></section><section class="code-cell"><pre class="highlight"><code><span class="n">datos_sesgados</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+<h4>One-way ANOVA</h4>
+<p>Para <code>k &gt;= 3</code> grupos independientes, <code>validate_one_way</code> evalúa calidad por grupo, residuos centrados/estandarizados, influencia, balance y varianzas sin pooling de medias. <code>OneWayRobustness.POLICY_VERSION</code> es <code>&quot;anova-v1-2026-08&quot;</code>, calibrada separadamente con 27 000 réplicas.</p>
+<p><code>MethodSelector</code> usa Welch ANOVA como default calibrado. Classical requiere <code>equal_var=True</code> y evidencia conjunta compatible; Brown-Forsythe/Levene, Fligner, Bartlett y razones de magnitud son diagnósticos, y <code>p &gt; .05</code> no prueba varianza común. <code>OneWayANOVA</code> ejecuta Classical y <code>WelchANOVA</code> ejecuta Welch.</p>
+<p>La prueba es global: un rechazo indica que al menos una media difiere, no cuáles. Esta versión no implementa Tukey, Games-Howell ni otros post-hoc. Kruskal-Wallis responde una pregunta de rangos/distribuciones diferente.</p></section><section class="code-cell"><pre class="highlight"><code><span class="n">datos_sesgados</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
 
 <span class="c1"># SciPy: BCa reproducible.</span>
 <span class="n">scipy_boot</span> <span class="o">=</span> <span class="n">BootstrapCI</span><span class="p">(</span>
@@ -440,16 +425,35 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"ddof:"</span><span class="p">,</span> <span class="n">variance_boot</span><span class="p">[</span><span class="s2">"ddof"</span><span class="p">],</span> <span class="s2">"CI:"</span><span class="p">,</span> <span class="p">(</span><span class="n">variance_boot</span><span class="p">[</span><span class="s2">"lb"</span><span class="p">],</span> <span class="n">variance_boot</span><span class="p">[</span><span class="s2">"ub"</span><span class="p">]))</span>
 
-<span class="c1"># Estado pre-ANOVA: diagnóstico disponible, selección desactivada.</span>
+<span class="c1"># ANOVA: validar, seleccionar y ejecutar permanecen como pasos separados.</span>
+<span class="n">anova_groups</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">45</span><span class="p">),</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">110</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">55</span><span class="p">),</span>
+<span class="p">)</span>
 <span class="n">one_way_validation</span> <span class="o">=</span> <span class="n">InferenceValidator</span><span class="p">()</span><span class="o">.</span><span class="n">validate_one_way</span><span class="p">(</span>
-    <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
-    <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span>
-    <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+    <span class="o">*</span><span class="n">anova_groups</span><span class="p">,</span>
     <span class="n">independence</span><span class="o">=</span><span class="s2">"assumed"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">one_way_decision</span> <span class="o">=</span> <span class="n">MethodSelector</span><span class="p">()</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">one_way_validation</span><span class="o">.</span><span class="n">report</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">one_way_validation</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">design</span> <span class="ow">is</span> <span class="n">InferenceDesign</span><span class="o">.</span><span class="n">ONE_WAY</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">one_way_decision</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">one_way_decision</span><span class="o">.</span><span class="n">selected_method</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Política:"</span><span class="p">,</span> <span class="n">OneWayRobustness</span><span class="o">.</span><span class="n">POLICY_VERSION</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Default:"</span><span class="p">,</span> <span class="n">one_way_decision</span><span class="o">.</span><span class="n">selected_method</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">one_way_decision</span><span class="o">.</span><span class="n">selected_method</span> <span class="o">==</span> <span class="s2">"welch_anova"</span><span class="p">:</span>
+    <span class="n">anova_result</span> <span class="o">=</span> <span class="n">WelchANOVA</span><span class="p">(</span>
+        <span class="o">*</span><span class="n">anova_groups</span><span class="p">,</span>
+        <span class="n">independence</span><span class="o">=</span><span class="s2">"assumed"</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">run_test</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">anova_result</span><span class="p">[</span><span class="s2">"method"</span><span class="p">],</span> <span class="n">anova_result</span><span class="p">[</span><span class="s2">"p_value"</span><span class="p">])</span>
+
+<span class="c1"># Classical se solicita explícitamente y puede ser denegado si el modelo de</span>
+<span class="c1"># varianza común no está respaldado.</span>
+<span class="n">classical_decision</span> <span class="o">=</span> <span class="n">MethodSelector</span><span class="p">()</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">one_way_validation</span><span class="o">.</span><span class="n">report</span><span class="p">,</span>
+    <span class="n">equal_var</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Classical explícito:"</span><span class="p">,</span> <span class="n">classical_decision</span><span class="o">.</span><span class="n">selected_method</span><span class="p">)</span>
 </code></pre></section><section class="markdown"><h2>3. Inferencia no paramétrica y estimands</h2>
 <p>Una alternativa debe interpretarse según la pregunta que responde:</p>
 <ul>
@@ -460,7 +464,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>Kruskal-Wallis detecta diferencias de distribuciones de rangos. No es</li>
 <p>simplemente «ANOVA no paramétrico de medias».</p>
 </ul>
-<p>La clase histórica <code>kruskalWallisTest</code> incluye funcionalidad post-hoc propia; eso no implica que el futuro motor ANOVA paramétrico incluya post-hoc.</p>
+<p>La clase histórica <code>kruskalWallisTest</code> incluye funcionalidad post-hoc propia; el motor ANOVA paramétrico actual no incluye ni ejecuta post-hoc.</p>
 <h3>Limitación numérica conocida</h3>
 <p>La tolerancia de degeneración de <code>DataQualityAssessment</code> puede perder invariancia de escala en la región subnormal de float64, aproximadamente desde <code>1e-139</code> y especialmente alrededor de <code>1e-146</code> o menos. No es un riesgo material para el alcance actual de BI y analítica comercial. El alcance, causa, ejemplos y estrategia futura están registrados en <code>Docs/technical-debt.md</code> bajo «Numerical hardening for subnormal float64 scales».</p></section><section class="code-cell"><pre class="highlight"><code><span class="c1"># Intervalo bootstrap de la diferencia de medias, preservando grupos independientes.</span>
 <span class="n">mean_difference</span> <span class="o">=</span> <span class="n">BootstrapMeanDifferenceCI</span><span class="p">(</span>
@@ -631,6 +635,4 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="n">resultado_limpio</span> <span class="o">=</span> <span class="n">output_format</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mf">1.25</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mf">3.90</span><span class="p">,</span> <span class="n">p_value</span><span class="o">=</span><span class="mf">0.012</span><span class="p">,</span> <span class="n">bool_result</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="s2">"Proceso completado exitosamente"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Estructura formateada por output_format:"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">resultado_limpio</span><span class="p">)</span>
-</code></pre></section>
-</main></body>
-</html>
+</code></pre></section></main></body></html>

@@ -18,7 +18,8 @@ El reporte incluye:
 - skewness y kurtosis excedente;
 - Shapiro-Wilk y D'Agostino cuando sus tamaños mínimos lo permiten;
 - outliers extremos mediante MAD, con fallback IQR;
-- Levene, razón de varianzas y balance para diseños con grupos;
+- Brown-Forsythe/Levene, Fligner, Bartlett, razón de varianzas, balance y
+  alineación tamaño-varianza para diseños con grupos;
 - independencia como `verified`, `assumed` o `unknown`.
 
 La independencia no se infiere mirando los valores. Si el diseño no la documenta,
@@ -29,13 +30,35 @@ el reporte conserva `not_assessed`.
 - Una muestra: observaciones usadas para estimar la media.
 - Pareada: diferencias dentro de cada par.
 - Dos muestras: residuos centrados dentro de cada grupo.
-- Una vía: residuos centrados por grupo, balance y heterocedasticidad.
+- Una vía: residuos centrados y estandarizados dentro de grupo, influencia,
+  balance y heterocedasticidad.
 
-`validate_one_way` prepara los diagnósticos compartidos para ANOVA, pero esta rama
-no implementa todavía el estadístico ANOVA. `MethodSelector` devuelve
-`selected_method: null` y `status: "not_calibrated"` para ese diseño: no
-recomienda ANOVA/Welch ANOVA hasta que existan implementación y calibración
-específicas.
+`validate_one_way` exige al menos tres grupos independientes. La política
+`anova-v1-2026-08` es independiente de la política de una media. El selector usa
+Welch ANOVA por defecto cuando la robustez es suficiente; Classical sólo se
+selecciona mediante `equal_var=True` y diagnóstico conjunto compatible. Un
+`p > .05` aislado no demuestra varianza común. Consulte el
+[informe ANOVA](anova-calibration.md) y su
+[runner](../experiments/anova_calibration.py).
+
+```python
+from pyMagicStat.assumptions import InferenceValidator
+from pyMagicStat.inference import MethodSelector, WelchANOVA
+
+validation = InferenceValidator().validate_one_way(
+    group_a, group_b, group_c, independence="assumed"
+)
+decision = MethodSelector().select(validation.report)
+# selected_method: "welch_anova"
+
+result = WelchANOVA(
+    group_a, group_b, group_c, independence="assumed"
+).run_test()
+```
+
+El resultado es una prueba global de igualdad de medias. No identifica pares y
+no ejecuta post-hoc. Kruskal-Wallis conserva un estimand de rangos/distribuciones
+diferente y no es un reemplazo automático de medias.
 
 ## Ejemplo
 
@@ -164,3 +187,7 @@ Los umbrales de robustez son una política versionada. La versión
 [el informe de calibración](sampling-robustness-calibration.md) y el
 [runner reproducible](../experiments/robustness_calibration.py). Nuevas versiones
 deben repetir esa matriz o documentar expresamente su ampliación.
+
+Para one-way, `anova-v1-2026-08` se calibró separadamente con 27 000 réplicas,
+15 escenarios y tres seeds. No reutiliza automáticamente los umbrales de
+`mean-v2.1-2026-08`.
