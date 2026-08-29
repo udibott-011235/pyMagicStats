@@ -1,15 +1,15 @@
 {
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.0.0",
-  "knowledge_base_version": "1.0.0",
+  "knowledge_base_version": "1.1.0",
   "last_updated": "2026-08-29",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
     "decision-owner",
-    "architecture-implementation",
-    "adversarial-statistical-qa",
-    "research-reproduction"
+    "statistical-software-architecture",
+    "implementation-engineering",
+    "adversarial-statistical-qa"
   ],
   "records": [
     {
@@ -24,7 +24,10 @@
         "Docs/sampling-robustness-calibration.md"
       ],
       "owner_role": "decision-owner",
-      "reviewer_roles": ["architecture-implementation", "adversarial-statistical-qa"],
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["estimand", "assumptions", "robustness", "method-selection"]
     },
@@ -48,9 +51,16 @@
       "status": "accepted",
       "scope": "Arquitectura del motor de inferencia",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "pyMagicStat/inference/selector.py"],
+      "evidence_paths": [
+        "pyMagicStat/assumptions/validator.py",
+        "pyMagicStat/inference/selector.py"
+      ],
       "owner_role": "decision-owner",
-      "reviewer_roles": ["architecture-implementation", "adversarial-statistical-qa"],
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["architecture", "auditability"]
     },
@@ -61,7 +71,10 @@
       "status": "accepted",
       "scope": "Pruebas t de dos grupos independientes",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_parametric.py"],
+      "evidence_paths": [
+        "pyMagicStat/inference/parametric.py",
+        "tests/test_parametric.py"
+      ],
       "owner_role": "decision-owner",
       "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
@@ -74,9 +87,16 @@
       "status": "accepted",
       "scope": "Intervalos bootstrap disponibles en main",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_bootstrap.py"],
+      "evidence_paths": [
+        "pyMagicStat/inference/parametric.py",
+        "tests/test_bootstrap.py"
+      ],
       "owner_role": "decision-owner",
-      "reviewer_roles": ["architecture-implementation", "adversarial-statistical-qa"],
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["bootstrap", "reproducibility", "estimand", "rng"]
     },
@@ -87,9 +107,15 @@
       "status": "accepted",
       "scope": "ANOVA y Welch ANOVA",
       "path": "knowledge/theory/inference-principles.md",
-      "evidence_paths": ["Docs/inference-engine.md", "Docs/sampling-robustness-calibration.md"],
+      "evidence_paths": [
+        "Docs/inference-engine.md",
+        "Docs/sampling-robustness-calibration.md"
+      ],
       "owner_role": "decision-owner",
-      "reviewer_roles": ["adversarial-statistical-qa", "research-reproduction"],
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["anova", "welch-anova", "calibration", "residuals"]
     },
@@ -105,8 +131,11 @@
         "experiments/results/sampling_robustness_metadata.json",
         "experiments/results/sampling_robustness_summary.csv"
       ],
-      "owner_role": "architecture-implementation",
-      "reviewer_roles": ["adversarial-statistical-qa"],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["coverage", "type-i-error", "calibration"]
     },
@@ -117,9 +146,15 @@
       "status": "validated_with_limits",
       "scope": "Diagnóstico implementado; no valida el estadístico ANOVA",
       "path": "knowledge/evidence/current-evidence.md",
-      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "tests/test_assumptions.py"],
-      "owner_role": "architecture-implementation",
-      "reviewer_roles": ["adversarial-statistical-qa"],
+      "evidence_paths": [
+        "pyMagicStat/assumptions/validator.py",
+        "tests/test_assumptions.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["anova", "residuals", "assumptions"]
     },
@@ -130,9 +165,14 @@
       "status": "validated_with_limits",
       "scope": "Matriz documentada en EV-001",
       "path": "experiments/robustness_calibration.py",
-      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
-      "owner_role": "architecture-implementation",
-      "reviewer_roles": ["adversarial-statistical-qa"],
+      "evidence_paths": [
+        "experiments/results/sampling_robustness_metadata.json"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["simulation", "reproducibility"]
     },
@@ -143,9 +183,12 @@
       "status": "accepted",
       "scope": "Datos generados por réplica; raw reconstruible, no almacenado",
       "path": "knowledge/datasets/README.md",
-      "evidence_paths": ["experiments/robustness_calibration.py", "experiments/results/sampling_robustness_metadata.json"],
-      "owner_role": "architecture-implementation",
-      "reviewer_roles": ["research-reproduction"],
+      "evidence_paths": [
+        "experiments/robustness_calibration.py",
+        "experiments/results/sampling_robustness_metadata.json"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["synthetic", "calibration"]
     },
@@ -156,8 +199,10 @@
       "status": "accepted",
       "scope": "152 celdas derivadas; no es input",
       "path": "experiments/results/sampling_robustness_summary.csv",
-      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
-      "owner_role": "architecture-implementation",
+      "evidence_paths": [
+        "experiments/results/sampling_robustness_metadata.json"
+      ],
+      "owner_role": "implementation-engineering",
       "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["derived", "summary"]
@@ -171,7 +216,10 @@
       "path": "examples/df_test_2way_t_test.xlsx",
       "evidence_paths": [],
       "owner_role": "decision-owner",
-      "reviewer_roles": ["research-reproduction"],
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["fixture", "provenance-gap"]
     },
@@ -183,11 +231,33 @@
       "scope": "DataQualityAssessment; no bloqueante para retail/BI",
       "path": "Docs/technical-debt.md",
       "evidence_paths": ["pyMagicStat/assumptions/assessments.py"],
-      "owner_role": "architecture-implementation",
-      "reviewer_roles": ["adversarial-statistical-qa"],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
       "supersedes": [],
       "tags": ["numerical", "float64", "underflow"]
+    },
+    {
+      "id": "ROLE-001",
+      "kind": "role-note",
+      "title": "System prompts y fronteras de autoridad del equipo",
+      "status": "under_review",
+      "scope": "Gobernanza de ChatGPT, Cortex y Antigravity en pyMagicStats",
+      "path": "knowledge/SYSTEM_PROMPTS.md",
+      "evidence_paths": [
+        "knowledge/GOVERNANCE.md",
+        "knowledge/AGENT_PROTOCOL.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["governance", "roles", "system-prompts", "git-safety"]
     }
   ]
 }
-

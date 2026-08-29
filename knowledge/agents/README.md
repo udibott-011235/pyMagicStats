@@ -1,15 +1,16 @@
 # Espacios por perspectiva de rol
 
 Estos espacios contienen guías y notas de trabajo, no teorías alternativas.
-Cada nota debe enlazar IDs de `registry.json`, separar hecho/interpretación y
-terminar con una transferencia al siguiente rol.
+Cada nota enlaza IDs de `registry.json`, separa hecho de interpretación y
+termina con una transferencia al siguiente rol.
 
-- [`architecture-implementation/`](architecture-implementation/README.md) —
-  Codex/GPT.
+- [`statistical-software-architecture/`](statistical-software-architecture/README.md)
+  — ChatGPT, arquitectura matemática y de software.
+- [`implementation-engineering/`](implementation-engineering/README.md) —
+  Cortex, ingeniería de implementación.
 - [`adversarial-statistical-qa/`](adversarial-statistical-qa/README.md) —
-  Antigravity.
-- [`research-reproduction/`](research-reproduction/README.md) — Cortex.
+  Antigravity, QA adversarial estadístico y de software.
 
-El owner estadístico decide sobre los registros compartidos; sus decisiones
-quedan en `decisions/`, no en un diario privado.
-
+El Project Owner decide sobre los registros compartidos; sus decisiones quedan
+en `decisions/`, no en un diario privado. Los prompts normativos viven sólo en
+[`../SYSTEM_PROMPTS.md`](../SYSTEM_PROMPTS.md).
