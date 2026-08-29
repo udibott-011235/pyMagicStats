@@ -53,6 +53,9 @@ def validate_shard_manifests(
         "confidence_level": run_manifest["confidence_level"],
         "scenario_registry_digest": run_manifest["scenario_registry_digest"],
         "method_versions_digest": method_digest,
+        "seed_derivation_scheme": run_manifest["seed_derivation_scheme"],
+        "seed_namespace": run_manifest["seed_namespace"],
+        "el_accounting_version": run_manifest["el_accounting_version"],
         "num_shards": run_manifest["num_shards"],
         "storage_format": run_manifest["storage_format"],
     }
@@ -148,35 +151,83 @@ def summarize_cell(frame: pd.DataFrame) -> tuple[dict[str, object], dict[str, ob
         "n": int(first["n"]),
         "R": int(len(frame)),
     }
-    for method in ("t", "el"):
-        type1 = _proportion(frame[f"{method}_reject"])
-        coverage = _proportion(frame[f"{method}_ci_covers_mu0"])
-        summary.update(
-            {
-                f"{method}_type1_denominator": type1["denominator"],
-                f"{method}_type1_rejections": type1["successes"],
-                f"{method}_type1": type1["rate"],
-                f"{method}_type1_mcse": type1["mcse"],
-                f"{method}_coverage_denominator": coverage["denominator"],
-                f"{method}_coverage_successes": coverage["successes"],
-                f"{method}_coverage": coverage["rate"],
-                f"{method}_coverage_mcse": coverage["mcse"],
-                f"{method}_test_numerical_failure_rate": float(
-                    frame[f"{method}_test_numerical_failure"].astype(float).mean()
-                ),
-                f"{method}_ci_numerical_failure_rate": float(
-                    frame[f"{method}_ci_numerical_failure"].astype(float).mean()
-                ),
-            }
-        )
-        widths = _quantiles(frame[f"{method}_ci_width"], f"{method}_ci_width")
-        summary.update(widths)
-        summary[f"{method}_mean_width"] = widths[f"{method}_ci_width_mean"]
-        summary[f"{method}_median_width"] = widths[f"{method}_ci_width_median"]
+    t_type1 = _proportion(frame["t_reject"])
+    t_coverage = _proportion(frame["t_ci_covers_mu0"])
+    summary.update(
+        {
+            "t_type1_denominator": t_type1["denominator"],
+            "t_type1_rejections": t_type1["successes"],
+            "t_type1": t_type1["rate"],
+            "t_type1_mcse": t_type1["mcse"],
+            "t_coverage_denominator": t_coverage["denominator"],
+            "t_coverage_successes": t_coverage["successes"],
+            "t_coverage": t_coverage["rate"],
+            "t_coverage_mcse": t_coverage["mcse"],
+            "t_test_numerical_failure_rate": float(
+                frame["t_test_numerical_failure"].astype(float).mean()
+            ),
+            "t_ci_numerical_failure_rate": float(
+                frame["t_ci_numerical_failure"].astype(float).mean()
+            ),
+        }
+    )
+    t_widths = _quantiles(frame["t_ci_width"], "t_ci_width")
+    summary.update(t_widths)
+    summary["t_mean_width"] = t_widths["t_ci_width_mean"]
+    summary["t_median_width"] = t_widths["t_ci_width_median"]
+
+    el_type1_unconditional = _proportion(frame["el_reject_unconditional"])
+    el_type1_regular = _proportion(frame["el_reject_regular"])
+    el_coverage_unconditional = _proportion(
+        frame["el_ci_covers_mu0_unconditional"]
+    )
+    el_coverage_regular = _proportion(frame["el_ci_covers_mu0_regular"])
+    expected_type1_denominator = int(
+        frame["el_type1_unconditional_eligible"].astype(int).sum()
+    )
+    expected_coverage_denominator = int(
+        frame["el_coverage_unconditional_eligible"].astype(int).sum()
+    )
+    if el_type1_unconditional["denominator"] != expected_type1_denominator:
+        raise ValueError("EL unconditional Type-I eligibility/denominator mismatch")
+    if el_coverage_unconditional["denominator"] != expected_coverage_denominator:
+        raise ValueError("EL unconditional coverage eligibility/denominator mismatch")
+    summary.update(
+        {
+            "el_type1_unconditional_denominator": el_type1_unconditional["denominator"],
+            "el_type1_unconditional_rejections": el_type1_unconditional["successes"],
+            "el_type1_unconditional": el_type1_unconditional["rate"],
+            "el_type1_unconditional_mcse": el_type1_unconditional["mcse"],
+            "el_type1_regular_denominator": el_type1_regular["denominator"],
+            "el_type1_regular_rejections": el_type1_regular["successes"],
+            "el_type1_regular": el_type1_regular["rate"],
+            "el_type1_regular_mcse": el_type1_regular["mcse"],
+            "el_coverage_unconditional_denominator": el_coverage_unconditional["denominator"],
+            "el_coverage_unconditional_successes": el_coverage_unconditional["successes"],
+            "el_coverage_unconditional": el_coverage_unconditional["rate"],
+            "el_coverage_unconditional_mcse": el_coverage_unconditional["mcse"],
+            "el_coverage_regular_denominator": el_coverage_regular["denominator"],
+            "el_coverage_regular_successes": el_coverage_regular["successes"],
+            "el_coverage_regular": el_coverage_regular["rate"],
+            "el_coverage_regular_mcse": el_coverage_regular["mcse"],
+            "el_test_numerical_failure_rate": float(
+                frame["el_test_numerical_failure"].astype(float).mean()
+            ),
+            "el_ci_numerical_failure_rate": float(
+                frame["el_ci_numerical_failure"].astype(float).mean()
+            ),
+        }
+    )
+    el_widths = _quantiles(frame["el_ci_width"], "el_ci_width")
+    summary.update(el_widths)
+    summary["el_mean_width"] = el_widths["el_ci_width_mean"]
+    summary["el_median_width"] = el_widths["el_ci_width_median"]
 
     summary.update(
         {
-            "el_hull_outside_rate": float((frame["mu0_hull_location"] == "outside").mean()),
+            "el_regular_rate": float(frame["el_regular"].astype(float).mean()),
+            "el_ci_available_rate": float(frame["el_ci_available"].astype(float).mean()),
+            "el_hull_outside_rate": float(frame["el_hull_outside"].astype(float).mean()),
             "el_boundary_rate": float(frame["el_boundary"].astype(float).mean()),
             "el_nonregular_rate": float((frame["el_regular"].astype(int) == 0).mean()),
             "el_solver_failure_rate": float(frame["el_solver_failure"].astype(float).mean()),
@@ -190,41 +241,43 @@ def summarize_cell(frame: pd.DataFrame) -> tuple[dict[str, object], dict[str, ob
         "n": summary["n"],
         "R": summary["R"],
     }
-    rejection_valid = frame["t_reject"].notna() & frame["el_reject"].notna()
+    rejection_valid = frame["t_reject"].notna() & frame["el_reject_unconditional"].notna()
     t_reject = frame.loc[rejection_valid, "t_reject"].astype(int)
-    el_reject = frame.loc[rejection_valid, "el_reject"].astype(int)
+    el_reject = frame.loc[rejection_valid, "el_reject_unconditional"].astype(int)
     rejection_categories = {
-        "both_reject": (t_reject == 1) & (el_reject == 1),
-        "t_only_reject": (t_reject == 1) & (el_reject == 0),
-        "el_only_reject": (t_reject == 0) & (el_reject == 1),
-        "neither_reject": (t_reject == 0) & (el_reject == 0),
+        "both_reject_unconditional": (t_reject == 1) & (el_reject == 1),
+        "t_only_reject_unconditional": (t_reject == 1) & (el_reject == 0),
+        "el_only_reject_unconditional": (t_reject == 0) & (el_reject == 1),
+        "neither_reject_unconditional": (t_reject == 0) & (el_reject == 0),
     }
-    disagreement["rejection_pair_denominator"] = int(rejection_valid.sum())
+    disagreement["rejection_unconditional_pair_denominator"] = int(rejection_valid.sum())
     for name, mask in rejection_categories.items():
         count = int(mask.sum())
         disagreement[f"{name}_count"] = count
         disagreement[f"{name}_rate"] = (
             count / int(rejection_valid.sum()) if rejection_valid.any() else math.nan
         )
-    disagreement["rejection_rate_difference_el_minus_t"] = (
+    disagreement["rejection_unconditional_rate_difference_el_minus_t"] = (
         float((el_reject - t_reject).mean()) if rejection_valid.any() else math.nan
     )
 
-    coverage_valid = frame["t_ci_covers_mu0"].notna() & frame["el_ci_covers_mu0"].notna()
+    coverage_valid = frame["t_ci_covers_mu0"].notna() & frame[
+        "el_ci_covers_mu0_unconditional"
+    ].notna()
     t_cover = frame.loc[coverage_valid, "t_ci_covers_mu0"].astype(int)
-    el_cover = frame.loc[coverage_valid, "el_ci_covers_mu0"].astype(int)
+    el_cover = frame.loc[coverage_valid, "el_ci_covers_mu0_unconditional"].astype(int)
     coverage_categories = {
-        "both_cover": (t_cover == 1) & (el_cover == 1),
-        "t_only_cover": (t_cover == 1) & (el_cover == 0),
-        "el_only_cover": (t_cover == 0) & (el_cover == 1),
-        "neither_cover": (t_cover == 0) & (el_cover == 0),
+        "both_cover_unconditional": (t_cover == 1) & (el_cover == 1),
+        "t_only_cover_unconditional": (t_cover == 1) & (el_cover == 0),
+        "el_only_cover_unconditional": (t_cover == 0) & (el_cover == 1),
+        "neither_cover_unconditional": (t_cover == 0) & (el_cover == 0),
     }
-    disagreement["coverage_pair_denominator"] = int(coverage_valid.sum())
+    disagreement["coverage_unconditional_pair_denominator"] = int(coverage_valid.sum())
     for name, mask in coverage_categories.items():
         count = int(mask.sum())
         disagreement[f"{name}_count"] = count
         disagreement[f"{name}_rate"] = count / int(coverage_valid.sum()) if coverage_valid.any() else math.nan
-    disagreement["coverage_rate_difference_el_minus_t"] = (
+    disagreement["coverage_unconditional_rate_difference_el_minus_t"] = (
         float((el_cover - t_cover).mean()) if coverage_valid.any() else math.nan
     )
 
@@ -321,11 +374,10 @@ def _validate_cell_frame(
         replicates_per_cell=int(run_manifest["replicates_per_cell"]),
         num_shards=int(run_manifest["num_shards"]),
     )
-    for row in frame.loc[:, ["scenario_id", "shard_id", "replicate_id", "seed_identity"]].itertuples(index=False):
+    for row in frame.loc[:, ["scenario_id", "replicate_id", "seed_identity"]].itertuples(index=False):
         expected = derive_seed(
             int(run_manifest["master_seed"]),
             str(row.scenario_id),
-            int(row.shard_id),
             int(row.replicate_id),
         ).identity
         if str(row.seed_identity) != expected:
@@ -346,8 +398,12 @@ def _report(summary: pd.DataFrame, metadata_name: str) -> str:
             "",
             f"Validated {len(summary)} canonical calibration cells containing {total} paired replicates.",
             "Each replicate applied Student t and raw empirical likelihood to the same generated sample.",
-            "Cell estimates, MCSEs, explicit denominators, width quantiles, failure rates, and hull evidence are in `el_vs_t_summary.csv`.",
-            "Paired rejection, coverage, and interval-width outcomes are in `el_vs_t_disagreement.csv`.",
+            "PRIMARY EL metrics are `el_type1_unconditional` and `el_coverage_unconditional` with explicit eligible-replicate denominators.",
+            "A null mean outside the sample hull is an unconditional EL rejection and an unconditional CI noncoverage.",
+            "DIAGNOSTIC metrics `el_type1_regular` and `el_coverage_regular` condition on a regular converged EL evaluation and regular available CI.",
+            "Numerical failures are exposed separately and reduce a denominator only when no hull-based outcome is independently determined.",
+            "Width quantiles, failure rates, hull evidence, and regular/available rates are in `el_vs_t_summary.csv`.",
+            "Paired unconditional rejection/coverage and regular finite interval-width outcomes are in `el_vs_t_disagreement.csv`.",
             f"Provenance and compatibility checks are recorded in `{metadata_name}`.",
             "",
             "## INTERPRETATION",
@@ -418,6 +474,17 @@ def aggregate_calibration(input_dir: Path, output_dir: Path) -> dict[str, object
         "alpha": run_manifest["alpha"],
         "confidence_level": run_manifest["confidence_level"],
         "scenario_registry_digest": run_manifest["scenario_registry_digest"],
+        "el_accounting_version": run_manifest["el_accounting_version"],
+        "el_accounting_semantics": {
+            "primary": ["el_type1_unconditional", "el_coverage_unconditional"],
+            "diagnostic": ["el_type1_regular", "el_coverage_regular"],
+            "hull_outside_type1": "rejection",
+            "hull_outside_coverage": "noncoverage",
+            "numerical_failures": (
+                "reported separately; denominator exclusion occurs only when no "
+                "independent hull-based outcome is determined"
+            ),
+        },
         "method_versions": run_manifest["method_versions"],
         "replicates_per_cell": run_manifest["replicates_per_cell"],
         "num_shards": run_manifest["num_shards"],

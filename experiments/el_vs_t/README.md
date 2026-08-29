@@ -26,13 +26,14 @@ metadata include the complete exclusion policy.
 shard. Shard `s` of `S` owns exactly the global IDs `s, s+S, s+2S, ... < R`.
 This modulo allocation is independent of machine, order, and wall-clock time.
 
-Each seed identity is BLAKE2b-derived from the master seed, canonical scenario
-ID, shard ID, and global replicate ID using canonical JSON. Python `hash()` is
-never used. Each sample can be reconstructed from the recorded seed identity,
-backend metadata/version, scenario metadata, and replicate coordinates. CPU
-and GPU RNG streams need not be bit-identical, but each backend is internally
-deterministic. A paired-sample fingerprint is persisted as an additional audit
-check.
+Each seed identity is BLAKE2b-derived from a versioned experiment namespace,
+the master seed, canonical scenario ID, and global replicate ID using canonical
+JSON. Python `hash()` is never used. Shard count, shard ID, worker, process,
+batch, and execution order never enter the statistical seed. Changing the
+physical shard topology changes only ownership; for a fixed backend it cannot
+change the sample represented by a global replicate ID. CPU and GPU RNG streams
+need not be bit-identical, but each backend is internally deterministic. A
+paired-sample fingerprint is persisted as an additional audit check.
 
 ## Running shards on Quantum
 
@@ -120,12 +121,21 @@ paths were actually measured.
 
 ## Statistical output contract
 
-Per-cell summaries expose relevant denominators, Type I error and MCSE,
-coverage and MCSE, CI-width mean/median/quantiles, and numerical-failure rates.
-EL adds hull-outside, boundary, nonregular, and solver-failure rates. Paired
-outputs count/rate both/t-only/EL-only/neither rejection and coverage outcomes,
-plus finite regular width ratios and paired differences. Descriptive sample
-moments are observational only and never influence execution or grouping.
+The primary EL measures are explicitly named `el_type1_unconditional` and
+`el_coverage_unconditional`. A true null outside the sample convex hull counts
+as an unconditional rejection and noncoverage. Their denominators contain all
+eligible generated null replicates; genuine numerical failures remain visible
+and reduce a denominator only when no mathematical outcome can be determined
+independently. A known hull exclusion remains eligible even if an auxiliary
+solver also fails, with that failure still reported separately.
+
+Diagnostic measures `el_type1_regular` and `el_coverage_regular` condition on a
+regular converged EL evaluation and regular available CI. The summary also
+reports `el_regular_rate`, CI availability, hull-outside, boundary, nonregular,
+and solver-failure rates. Paired outputs use the unconditional rejection and
+coverage definitions; width ratios still require finite regular intervals.
+Descriptive sample moments are observational only and never influence execution
+or grouping.
 
 The report explicitly separates **OBSERVATION**, **INTERPRETATION**, and
 **POLICY — NOT DETERMINED**. No routing threshold can be inferred or activated

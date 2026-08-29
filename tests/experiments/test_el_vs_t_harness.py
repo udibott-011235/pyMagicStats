@@ -40,9 +40,32 @@ def _normal_cell():
     return select_cells(("normal",), (5,))[0]
 
 
+def _record_for_sample(sample: np.ndarray) -> dict[str, object]:
+    cell = _normal_cell()
+    values = np.asarray(sample, dtype=float).reshape(1, -1)
+    seed = derive_seed(321, cell.scenario.name, 0)
+    backend = SampleBackend("cpu")
+    diagnostics = backend.diagnostics(backends.NativeBatch(values, "cpu"))
+    with MethodExecutor(1) as executor:
+        records, _ = evaluate_batch(
+            values,
+            diagnostics,
+            cell.scenario,
+            (0,),
+            (seed,),
+            shard_id=0,
+            num_shards=1,
+            alpha=0.05,
+            confidence_level=0.95,
+            generation_backend="cpu",
+            executor=executor,
+        )
+    return records[0]
+
+
 def _evaluate_one(monkeypatch: pytest.MonkeyPatch):
     cell = _normal_cell()
-    seed = derive_seed(123, cell.scenario.name, 0, 0)
+    seed = derive_seed(123, cell.scenario.name, 0)
     backend = SampleBackend("cpu")
     native = backend.generate_native(cell.scenario, cell.n, (seed,))
     diagnostics = backend.diagnostics(native)
@@ -93,13 +116,61 @@ def test_same_replicate_is_supplied_to_student_t_and_both_el_operations(monkeypa
     assert record["paired_sample_fingerprint"]
 
 
+def test_hull_outside_has_unconditional_noncoverage_and_rejection_with_diagnostics():
+    record = _record_for_sample(np.array([1.0, 2.0, 4.0]))
+    summary, _ = summarize_cell(pd.DataFrame([record]))
+
+    assert record["mu0_hull_location"] == "outside"
+    assert record["el_hull_outside"] == 1
+    assert record["el_regular"] == 0
+    assert record["el_ci_available"] == 1
+    assert record["el_test_numerical_failure"] == 0
+    assert record["el_solver_failure"] == 0
+    assert record["el_ci_covers_mu0_unconditional"] == 0
+    assert record["el_coverage_unconditional_eligible"] == 1
+    assert record["el_reject_unconditional"] == 1
+    assert record["el_type1_unconditional_eligible"] == 1
+    assert math.isnan(record["el_ci_covers_mu0_regular"])
+    assert math.isnan(record["el_reject_regular"])
+    assert summary["el_coverage_unconditional_denominator"] == 1
+    assert summary["el_coverage_unconditional"] == 0.0
+    assert summary["el_coverage_regular_denominator"] == 0
+    assert summary["el_type1_unconditional_denominator"] == 1
+    assert summary["el_type1_unconditional"] == 1.0
+    assert summary["el_type1_regular_denominator"] == 0
+    assert summary["el_hull_outside_rate"] == 1.0
+    assert summary["el_nonregular_rate"] == 1.0
+
+
+def test_numerical_failures_remain_missing_from_unconditional_metrics(monkeypatch):
+    def fail_numerically(*args, **kwargs):
+        raise FloatingPointError("synthetic solver failure")
+
+    monkeypatch.setattr(metrics, "empirical_likelihood_mean_test", fail_numerically)
+    monkeypatch.setattr(metrics, "empirical_likelihood_mean_ci", fail_numerically)
+    record = _record_for_sample(np.array([-1.0, 0.5, 2.0]))
+    summary, _ = summarize_cell(pd.DataFrame([record]))
+
+    assert record["el_hull_outside"] == 0
+    assert record["el_test_numerical_failure"] == 1
+    assert record["el_ci_numerical_failure"] == 1
+    assert record["el_solver_failure"] == 1
+    assert record["el_type1_unconditional_eligible"] == 0
+    assert math.isnan(record["el_reject_unconditional"])
+    assert record["el_coverage_unconditional_eligible"] == 0
+    assert math.isnan(record["el_ci_covers_mu0_unconditional"])
+    assert summary["el_type1_unconditional_denominator"] == 0
+    assert summary["el_coverage_unconditional_denominator"] == 0
+    assert summary["el_solver_failure_rate"] == 1.0
+
+
 def test_seed_derivation_is_stable_and_coordinate_sensitive():
-    first = derive_seed(20260829, "normal", 3, 17)
-    second = derive_seed(20260829, "normal", 3, 17)
+    first = derive_seed(20260829, "normal", 17)
+    second = derive_seed(20260829, "normal", 17)
 
     assert first == second
-    assert first != derive_seed(20260829, "normal", 3, 18)
-    assert first != derive_seed(20260829, "normal", 4, 17)
+    assert first != derive_seed(20260829, "normal", 18)
+    assert first != derive_seed(20260829, "student_t_df_5", 17)
 
 
 def test_shards_are_disjoint_and_cover_global_replicate_ids():
@@ -112,11 +183,30 @@ def test_shards_are_disjoint_and_cover_global_replicate_ids():
 def test_same_shard_rerun_has_identical_ids_and_seed_identities():
     ids_first = tuple(owned_replicate_ids(31, 2, 5))
     ids_second = tuple(owned_replicate_ids(31, 2, 5))
-    seeds_first = [derive_seed(9, "normal", 2, value).identity for value in ids_first]
-    seeds_second = [derive_seed(9, "normal", 2, value).identity for value in ids_second]
+    seeds_first = [derive_seed(9, "normal", value).identity for value in ids_first]
+    seeds_second = [derive_seed(9, "normal", value).identity for value in ids_second]
 
     assert ids_first == ids_second
     assert seeds_first == seeds_second
+
+
+def test_seed_and_cpu_sample_are_invariant_to_shard_count():
+    cell = _normal_cell()
+    replicate_id = 17
+    backend = SampleBackend("cpu")
+    identities = []
+    samples = []
+    for num_shards in (1, 2, 7, 20):
+        shard_id = replicate_id % num_shards
+        assert replicate_id in owned_replicate_ids(40, shard_id, num_shards)
+        seed = derive_seed(20260829, cell.scenario.name, replicate_id)
+        identities.append(seed.identity)
+        batch = backend.generate_native(cell.scenario, cell.n, (seed,))
+        samples.append(backend.to_cpu(batch)[0])
+
+    assert len(set(identities)) == 1
+    for sample in samples[1:]:
+        np.testing.assert_array_equal(sample, samples[0])
 
 
 @pytest.mark.parametrize("sample_size", [6, 12, 25, 35, 45, 65, 90, 150, 350, 1000, 5000])
@@ -183,6 +273,9 @@ def _compatible_manifests():
         "confidence_level": 0.95,
         "scenario_registry_digest": "registry",
         "method_versions": methods,
+        "seed_derivation_scheme": "seed-v2",
+        "seed_namespace": "experiment-v1",
+        "el_accounting_version": "accounting-v2",
         "storage_format": "csv.gz",
         "holdout_used": False,
     }
@@ -198,6 +291,9 @@ def _compatible_manifests():
         "method_versions_digest": __import__("hashlib").sha256(
             __import__("json").dumps(methods, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest(),
+        "seed_derivation_scheme": "seed-v2",
+        "seed_namespace": "experiment-v1",
+        "el_accounting_version": "accounting-v2",
         "num_shards": 1,
         "storage_format": "csv.gz",
     }
@@ -212,6 +308,9 @@ def _compatible_manifests():
         ("confidence_level", 0.90),
         ("scenario_registry_digest", "different"),
         ("method_versions_digest", "different"),
+        ("seed_derivation_scheme", "different"),
+        ("seed_namespace", "different"),
+        ("el_accounting_version", "different"),
     ],
 )
 def test_aggregation_detects_incompatible_metadata(field, bad_value):
@@ -258,7 +357,7 @@ def test_resume_skips_complete_blocks_and_force_recomputes(tmp_path, monkeypatch
 def test_cpu_backend_requires_no_gpu_library():
     backend = SampleBackend("cpu")
     cell = _normal_cell()
-    seeds = (derive_seed(1, "normal", 0, 0), derive_seed(1, "normal", 0, 1))
+    seeds = (derive_seed(1, "normal", 0), derive_seed(1, "normal", 1))
     batch = backend.generate_native(cell.scenario, cell.n, seeds)
 
     assert batch.engine == "cpu"
@@ -280,7 +379,7 @@ def test_gpu_backend_schema_and_inputs_when_available():
     except RuntimeError:
         pytest.skip("CuPy/CUDA is not available in this environment")
     cell = _normal_cell()
-    seeds = (derive_seed(5, "normal", 0, 0),)
+    seeds = (derive_seed(5, "normal", 0),)
     native = backend.generate_native(cell.scenario, cell.n, seeds)
     samples = backend.to_cpu(native)
 
@@ -293,7 +392,7 @@ def test_gpu_backend_schema_and_inputs_when_available():
 def test_method_outputs_are_backend_label_invariant(monkeypatch):
     sample, _, first = _evaluate_one(monkeypatch)
     cell = _normal_cell()
-    seed = derive_seed(123, "normal", 0, 0)
+    seed = derive_seed(123, "normal", 0)
     diagnostics = SampleBackend("cpu").diagnostics(
         backends.NativeBatch(sample.reshape(1, -1), "cpu")
     )
@@ -339,19 +438,25 @@ def test_summary_uses_relevant_denominators_and_mcse():
             "parameters_json": ["{}"] * 4,
             "n": [5] * 4,
             "t_reject": [1.0, 0.0, 1.0, 0.0],
-            "el_reject": [1.0, 0.0, math.nan, 0.0],
+            "el_reject_unconditional": [1.0, 0.0, 1.0, 0.0],
+            "el_reject_regular": [1.0, 0.0, math.nan, 0.0],
+            "el_type1_unconditional_eligible": [1, 1, 1, 1],
             "t_ci_covers_mu0": [1.0, 1.0, 0.0, 0.0],
-            "el_ci_covers_mu0": [1.0, 0.0, math.nan, 0.0],
+            "el_ci_covers_mu0_unconditional": [1.0, 0.0, 0.0, 0.0],
+            "el_ci_covers_mu0_regular": [1.0, 0.0, math.nan, 0.0],
+            "el_coverage_unconditional_eligible": [1, 1, 1, 1],
             "t_test_numerical_failure": [0, 0, 0, 0],
             "el_test_numerical_failure": [0, 0, 1, 0],
             "t_ci_numerical_failure": [0, 0, 0, 0],
             "el_ci_numerical_failure": [0, 0, 1, 0],
             "t_ci_width": [2.0, 2.0, 2.0, 2.0],
             "el_ci_width": [1.0, 2.0, math.nan, 4.0],
-            "mu0_hull_location": ["inside"] * 4,
+            "mu0_hull_location": ["inside", "inside", "outside", "inside"],
+            "el_hull_outside": [0, 0, 1, 0],
             "el_boundary": [0] * 4,
             "el_regular": [1, 1, 0, 1],
-            "el_solver_failure": [0, 0, 1, 0],
+            "el_ci_available": [1, 1, 0, 1],
+            "el_solver_failure": [0, 0, 0, 0],
         }
     )
     summary, disagreement = summarize_cell(frame)
@@ -359,9 +464,13 @@ def test_summary_uses_relevant_denominators_and_mcse():
     assert summary["t_type1_denominator"] == 4
     assert summary["t_type1"] == 0.5
     assert summary["t_type1_mcse"] == 0.25
-    assert summary["el_type1_denominator"] == 3
-    assert summary["el_type1_mcse"] == pytest.approx(math.sqrt((1 / 3) * (2 / 3) / 3))
-    assert disagreement["rejection_pair_denominator"] == 3
+    assert summary["el_type1_unconditional_denominator"] == 4
+    assert summary["el_type1_unconditional"] == 0.5
+    assert summary["el_type1_regular_denominator"] == 3
+    assert summary["el_type1_regular_mcse"] == pytest.approx(math.sqrt((1 / 3) * (2 / 3) / 3))
+    assert summary["el_coverage_unconditional_denominator"] == 4
+    assert summary["el_coverage_regular_denominator"] == 3
+    assert disagreement["rejection_unconditional_pair_denominator"] == 4
     assert disagreement["width_pair_denominator"] == 3
 
 

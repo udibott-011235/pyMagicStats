@@ -22,6 +22,7 @@ from pyMagicStat.inference.capabilities import capability_for
 
 from .backends import SampleBackend, resolve_backend
 from .metrics import (
+    EL_ACCOUNTING_VERSION,
     EL_METHOD_VERSION,
     REPLICATE_COLUMNS,
     REPLICATE_SCHEMA_VERSION,
@@ -37,6 +38,7 @@ from .scenarios import (
 )
 from .seeds import (
     SEED_DERIVATION_SCHEME,
+    SEED_NAMESPACE,
     derive_seed,
     owned_replicate_ids,
     replicate_blocks,
@@ -51,7 +53,7 @@ from .storage import (
 )
 
 
-RUN_SCHEMA_VERSION = "el-vs-t-run-v1"
+RUN_SCHEMA_VERSION = "el-vs-t-run-v2"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -178,6 +180,9 @@ def build_run_manifest(
         "confidence_level": config.confidence_level,
         "master_seed": config.master_seed,
         "seed_derivation_scheme": SEED_DERIVATION_SCHEME,
+        "seed_namespace": SEED_NAMESPACE,
+        "seed_identity_inputs": ["seed_namespace", "master_seed", "scenario_id", "replicate_id"],
+        "el_accounting_version": EL_ACCOUNTING_VERSION,
         "replicates_per_cell": config.replicates_per_cell,
         "replicate_id_semantics": (
             "global IDs 0..replicates_per_cell-1; shard owns IDs where "
@@ -232,6 +237,9 @@ def _shard_config_payload(
         "confidence_level": run_manifest["confidence_level"],
         "scenario_registry_digest": run_manifest["scenario_registry_digest"],
         "method_versions_digest": _stable_digest(run_manifest["method_versions"]),
+        "seed_derivation_scheme": run_manifest["seed_derivation_scheme"],
+        "seed_namespace": run_manifest["seed_namespace"],
+        "el_accounting_version": run_manifest["el_accounting_version"],
         "num_shards": run_manifest["num_shards"],
         "pandas_version": pd.__version__,
         "parquet_engine_used": parquet_backend,
@@ -342,7 +350,6 @@ def run_shard(config: RunConfig) -> RunOutcome:
                     derive_seed(
                         config.master_seed,
                         cell.scenario.name,
-                        config.shard_id,
                         replicate_id,
                     )
                     for replicate_id in replicate_ids

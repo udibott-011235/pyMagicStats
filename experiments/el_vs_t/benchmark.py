@@ -33,7 +33,7 @@ def benchmark_backend(
     backend = resolve_backend(backend_name)
     replicate_ids = tuple(range(replicates))
     seeds = tuple(
-        derive_seed(master_seed, scenario_id, 0, replicate_id)
+        derive_seed(master_seed, scenario_id, replicate_id)
         for replicate_id in replicate_ids
     )
     timings: dict[str, float] = {}

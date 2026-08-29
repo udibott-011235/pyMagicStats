@@ -24,7 +24,8 @@ from experiments.adversarial_robustness_calibration import Scenario
 from .seeds import SeedMaterial
 
 
-REPLICATE_SCHEMA_VERSION = "el-vs-t-replicates-v1"
+REPLICATE_SCHEMA_VERSION = "el-vs-t-replicates-v2"
+EL_ACCOUNTING_VERSION = "unconditional-hull-accounting-v2"
 T_METHOD_VERSION = "two-sided-one-sample-student-t-scipy-v1"
 EL_METHOD_VERSION = "uncorrected-owen-mean-el-production-engine-v1"
 NUMERICAL_EXCEPTIONS = (FloatingPointError, OverflowError, RuntimeError, ValueError)
@@ -46,6 +47,8 @@ REPLICATE_COLUMNS = (
     "sample_min",
     "sample_max",
     "mu0_hull_location",
+    "el_hull_outside",
+    "el_hull_boundary",
     "sample_mean",
     "sample_variance",
     "sample_skewness",
@@ -62,7 +65,10 @@ REPLICATE_COLUMNS = (
     "t_ci_numerical_failure",
     "el_statistic",
     "el_p_value",
-    "el_reject",
+    "el_test_available",
+    "el_reject_regular",
+    "el_type1_unconditional_eligible",
+    "el_reject_unconditional",
     "el_lambda",
     "el_lambda_residual",
     "el_feasible",
@@ -73,7 +79,10 @@ REPLICATE_COLUMNS = (
     "el_test_failure_reason",
     "el_ci_lower",
     "el_ci_upper",
-    "el_ci_covers_mu0",
+    "el_ci_available",
+    "el_ci_covers_mu0_regular",
+    "el_coverage_unconditional_eligible",
+    "el_ci_covers_mu0_unconditional",
     "el_ci_width",
     "el_ci_feasible",
     "el_ci_regular",
@@ -235,6 +244,13 @@ def evaluate_batch(
             el_test is None or (el_test.feasible and el_test.regular and not el_test.converged)
         )
         el_test_available = el_p_value is not None and np.isfinite(el_p_value)
+        el_regular_test_available = bool(
+            el_test is not None
+            and el_test_available
+            and el_test.regular
+            and el_test.converged
+            and not el_test.boundary
+        )
         el_lower = None if el_ci is None else el_ci.lower
         el_upper = None if el_ci is None else el_ci.upper
         el_ci_available = bool(
@@ -245,11 +261,48 @@ def evaluate_batch(
             and el_upper is not None
             and np.all(np.isfinite([el_lower, el_upper]))
         )
-        el_ci_numerical_failure = not el_ci_available
-        el_width = float(el_upper - el_lower) if el_ci_available else math.nan
         regular_continuous_sample = sample.size >= 2 and sample_min < sample_max
+        el_ci_numerical_failure = bool(
+            el_ci is None or (not el_ci_available and regular_continuous_sample)
+        )
+        el_width = float(el_upper - el_lower) if el_ci_available else math.nan
         el_solver_failure = bool(
             el_test_solver_failure or (el_ci_numerical_failure and regular_continuous_sample)
+        )
+        hull_outside = hull_location == "outside"
+        hull_boundary = hull_location == "boundary"
+        hull_excludes_regular_null = hull_outside or (
+            hull_boundary and sample_min < sample_max
+        )
+        if hull_excludes_regular_null:
+            el_reject_unconditional = 1
+            el_type1_unconditional_eligible = 1
+        elif el_regular_test_available:
+            el_reject_unconditional = int(float(el_p_value) < alpha)
+            el_type1_unconditional_eligible = 1
+        else:
+            el_reject_unconditional = math.nan
+            el_type1_unconditional_eligible = 0
+
+        el_ci_covers = bool(
+            el_ci_available and float(el_lower) <= mu0 <= float(el_upper)
+        )
+        if hull_outside:
+            el_coverage_unconditional = 0
+            el_coverage_unconditional_eligible = 1
+        elif el_ci_available:
+            el_coverage_unconditional = int(el_ci_covers)
+            el_coverage_unconditional_eligible = 1
+        elif el_ci_numerical_failure:
+            el_coverage_unconditional = math.nan
+            el_coverage_unconditional_eligible = 0
+        else:
+            el_coverage_unconditional = 0
+            el_coverage_unconditional_eligible = 1
+        el_coverage_regular = (
+            int(el_ci_covers)
+            if el_regular_test_available and el_ci_available
+            else math.nan
         )
 
         contiguous = np.ascontiguousarray(sample, dtype=np.float64)
@@ -272,6 +325,8 @@ def evaluate_batch(
             "sample_min": sample_min,
             "sample_max": sample_max,
             "mu0_hull_location": hull_location,
+            "el_hull_outside": int(hull_outside),
+            "el_hull_boundary": int(hull_boundary),
             "sample_mean": float(diagnostics[index, 0]),
             "sample_variance": float(diagnostics[index, 1]),
             "sample_skewness": float(diagnostics[index, 2]),
@@ -288,7 +343,10 @@ def evaluate_batch(
             "t_ci_numerical_failure": int(t_failed),
             "el_statistic": math.nan if el_test is None else el_test.statistic,
             "el_p_value": math.nan if not el_test_available else float(el_p_value),
-            "el_reject": math.nan if not el_test_available else int(float(el_p_value) < alpha),
+            "el_test_available": int(el_test_available),
+            "el_reject_regular": int(float(el_p_value) < alpha) if el_regular_test_available else math.nan,
+            "el_type1_unconditional_eligible": el_type1_unconditional_eligible,
+            "el_reject_unconditional": el_reject_unconditional,
             "el_lambda": math.nan if el_test is None or el_test.lambda_value is None else el_test.lambda_value,
             "el_lambda_residual": math.nan if el_test is None or el_test.lambda_residual is None else el_test.lambda_residual,
             "el_feasible": int(el_test.feasible) if el_test is not None else 0,
@@ -299,7 +357,10 @@ def evaluate_batch(
             "el_test_failure_reason": el_test_error or ("" if el_test is None else el_test.reason or ""),
             "el_ci_lower": float(el_lower) if el_ci_available else math.nan,
             "el_ci_upper": float(el_upper) if el_ci_available else math.nan,
-            "el_ci_covers_mu0": int(float(el_lower) <= mu0 <= float(el_upper)) if el_ci_available else math.nan,
+            "el_ci_available": int(el_ci_available),
+            "el_ci_covers_mu0_regular": el_coverage_regular,
+            "el_coverage_unconditional_eligible": el_coverage_unconditional_eligible,
+            "el_ci_covers_mu0_unconditional": el_coverage_unconditional,
             "el_ci_width": el_width,
             "el_ci_feasible": int(el_ci.feasible) if el_ci is not None else 0,
             "el_ci_regular": int(el_ci.regular) if el_ci is not None else 0,

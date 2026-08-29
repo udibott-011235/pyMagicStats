@@ -10,7 +10,8 @@ from typing import Iterator
 import numpy as np
 
 
-SEED_DERIVATION_SCHEME = "blake2b-128-json-v1"
+SEED_DERIVATION_SCHEME = "blake2b-128-json-shard-independent-v2"
+SEED_NAMESPACE = "pyMagicStats-el-vs-t-calibration-v1"
 
 
 @dataclass(frozen=True)
@@ -22,19 +23,18 @@ class SeedMaterial:
 def derive_seed(
     master_seed: int,
     scenario_id: str,
-    shard_id: int,
     replicate_id: int,
 ) -> SeedMaterial:
-    """Derive a persistent seed without Python's randomized ``hash()``."""
+    """Derive a persistent statistical seed independent of execution topology."""
 
-    if min(int(master_seed), int(shard_id), int(replicate_id)) < 0:
-        raise ValueError("master_seed, shard_id and replicate_id must be non-negative")
+    if min(int(master_seed), int(replicate_id)) < 0:
+        raise ValueError("master_seed and replicate_id must be non-negative")
     payload = {
+        "experiment_namespace": SEED_NAMESPACE,
         "master_seed": int(master_seed),
         "replicate_id": int(replicate_id),
         "scenario_id": str(scenario_id),
         "scheme": SEED_DERIVATION_SCHEME,
-        "shard_id": int(shard_id),
     }
     digest = hashlib.blake2b(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(),
