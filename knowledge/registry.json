@@ -1,0 +1,193 @@
+{
+  "$schema": "schema/registry.schema.json",
+  "schema_version": "1.0.0",
+  "knowledge_base_version": "1.0.0",
+  "last_updated": "2026-08-29",
+  "repository": "udibott-011235/pyMagicStats",
+  "canonical_branch": "main",
+  "roles": [
+    "decision-owner",
+    "architecture-implementation",
+    "adversarial-statistical-qa",
+    "research-reproduction"
+  ],
+  "records": [
+    {
+      "id": "TH-001",
+      "kind": "theory",
+      "title": "Principios de inferencia vigentes",
+      "status": "accepted",
+      "scope": "Inferencia de medias y diagnósticos de diseños de una vía en main",
+      "path": "knowledge/theory/inference-principles.md",
+      "evidence_paths": [
+        "Docs/inference-engine.md",
+        "Docs/sampling-robustness-calibration.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["architecture-implementation", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["estimand", "assumptions", "robustness", "method-selection"]
+    },
+    {
+      "id": "DEC-001",
+      "kind": "decision",
+      "title": "No usar n>=30 como interruptor de normalidad",
+      "status": "accepted",
+      "scope": "Selección de inferencia de medias",
+      "path": "knowledge/decisions/README.md",
+      "evidence_paths": ["Docs/sampling-robustness-calibration.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["sample-size", "normality", "clt"]
+    },
+    {
+      "id": "DEC-002",
+      "kind": "decision",
+      "title": "Separar diagnóstico, política de robustez y selección",
+      "status": "accepted",
+      "scope": "Arquitectura del motor de inferencia",
+      "path": "Docs/inference-engine.md",
+      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "pyMagicStat/inference/selector.py"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["architecture-implementation", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["architecture", "auditability"]
+    },
+    {
+      "id": "DEC-003",
+      "kind": "decision",
+      "title": "Welch por defecto y Levene como diagnóstico",
+      "status": "accepted",
+      "scope": "Pruebas t de dos grupos independientes",
+      "path": "Docs/inference-engine.md",
+      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_parametric.py"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["welch", "student", "heteroscedasticity", "levene"]
+    },
+    {
+      "id": "DEC-004",
+      "kind": "decision",
+      "title": "Bootstrap explícito, reproducible y fiel al estimando",
+      "status": "accepted",
+      "scope": "Intervalos bootstrap disponibles en main",
+      "path": "Docs/inference-engine.md",
+      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_bootstrap.py"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["architecture-implementation", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["bootstrap", "reproducibility", "estimand", "rng"]
+    },
+    {
+      "id": "DEC-005",
+      "kind": "decision",
+      "title": "No transferir la calibración de una media a ANOVA",
+      "status": "accepted",
+      "scope": "ANOVA y Welch ANOVA",
+      "path": "knowledge/theory/inference-principles.md",
+      "evidence_paths": ["Docs/inference-engine.md", "Docs/sampling-robustness-calibration.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["adversarial-statistical-qa", "research-reproduction"],
+      "supersedes": [],
+      "tags": ["anova", "welch-anova", "calibration", "residuals"]
+    },
+    {
+      "id": "EV-001",
+      "kind": "evidence",
+      "title": "Calibración mean-v2.1-2026-08 de 152000 réplicas",
+      "status": "validated_with_limits",
+      "scope": "Inferencia t bilateral de una media independiente; 19 escenarios y n=10..200",
+      "path": "knowledge/evidence/current-evidence.md",
+      "evidence_paths": [
+        "experiments/robustness_calibration.py",
+        "experiments/results/sampling_robustness_metadata.json",
+        "experiments/results/sampling_robustness_summary.csv"
+      ],
+      "owner_role": "architecture-implementation",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["coverage", "type-i-error", "calibration"]
+    },
+    {
+      "id": "EV-002",
+      "kind": "evidence",
+      "title": "Diagnósticos de residuos para diseño de una vía",
+      "status": "validated_with_limits",
+      "scope": "Diagnóstico implementado; no valida el estadístico ANOVA",
+      "path": "knowledge/evidence/current-evidence.md",
+      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "tests/test_assumptions.py"],
+      "owner_role": "architecture-implementation",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["anova", "residuals", "assumptions"]
+    },
+    {
+      "id": "EXP-001",
+      "kind": "experiment",
+      "title": "Runner de calibración de robustez de la media",
+      "status": "validated_with_limits",
+      "scope": "Matriz documentada en EV-001",
+      "path": "experiments/robustness_calibration.py",
+      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
+      "owner_role": "architecture-implementation",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["simulation", "reproducibility"]
+    },
+    {
+      "id": "DS-001",
+      "kind": "dataset",
+      "title": "Escenarios sintéticos de calibración",
+      "status": "accepted",
+      "scope": "Datos generados por réplica; raw reconstruible, no almacenado",
+      "path": "knowledge/datasets/README.md",
+      "evidence_paths": ["experiments/robustness_calibration.py", "experiments/results/sampling_robustness_metadata.json"],
+      "owner_role": "architecture-implementation",
+      "reviewer_roles": ["research-reproduction"],
+      "supersedes": [],
+      "tags": ["synthetic", "calibration"]
+    },
+    {
+      "id": "DS-002",
+      "kind": "dataset",
+      "title": "Resumen agregado de robustez",
+      "status": "accepted",
+      "scope": "152 celdas derivadas; no es input",
+      "path": "experiments/results/sampling_robustness_summary.csv",
+      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
+      "owner_role": "architecture-implementation",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["derived", "summary"]
+    },
+    {
+      "id": "DS-003",
+      "kind": "dataset",
+      "title": "Fixture df_test_2way_t_test.xlsx",
+      "status": "open",
+      "scope": "Ejemplo existente; procedencia y licencia pendientes",
+      "path": "examples/df_test_2way_t_test.xlsx",
+      "evidence_paths": [],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["research-reproduction"],
+      "supersedes": [],
+      "tags": ["fixture", "provenance-gap"]
+    },
+    {
+      "id": "DEBT-001",
+      "kind": "debt",
+      "title": "TD-NUM-001: hardening de escalas subnormales float64",
+      "status": "open",
+      "scope": "DataQualityAssessment; no bloqueante para retail/BI",
+      "path": "Docs/technical-debt.md",
+      "evidence_paths": ["pyMagicStat/assumptions/assessments.py"],
+      "owner_role": "architecture-implementation",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["numerical", "float64", "underflow"]
+    }
+  ]
+}
+
