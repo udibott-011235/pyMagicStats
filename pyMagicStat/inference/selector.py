@@ -1,15 +1,27 @@
 from typing import Optional, Tuple, Union
 
-from pyMagicStat.assumptions.models import AssumptionReport, InferenceDesign
+from pyMagicStat.assumptions.models import (
+    AssessmentStatus,
+    AssumptionReport,
+    InferenceDesign,
+)
 from pyMagicStat.assumptions.robustness import (
     RobustnessLevel,
     RobustnessResult,
     SamplingRobustness,
 )
 from pyMagicStat.assumptions.robustness_v3 import (
+    AssumptionProvenance,
     EmpiricalSupport,
     RobustnessResultV3,
     SamplingRobustnessV3,
+)
+from pyMagicStat.inference.capabilities import (
+    INFERENCE_ROUTING_VERSION,
+    InferenceCapability,
+    InferenceGuarantee,
+    capabilities_for,
+    capability_for,
 )
 from pyMagicStat.inference.decision import (
     InferenceDecision,
@@ -35,6 +47,16 @@ class MethodSelector:
         *,
         equal_var: Optional[bool] = None,
     ) -> InferenceDecision:
+        capabilities = capabilities_for(report.design, report.estimand)
+        decision_metadata = {
+            "capabilities": capabilities,
+            "policy_version": getattr(
+                self.robustness_policy,
+                "POLICY_VERSION",
+                None,
+            ),
+            "routing_version": INFERENCE_ROUTING_VERSION,
+        }
         if report.design is InferenceDesign.ONE_WAY:
             reason = (
                 "One-way inference is not calibrated or implemented in this release."
@@ -49,25 +71,39 @@ class MethodSelector:
                 reasons=(reason,),
                 alternatives=(),
                 status=InferenceDecisionStatus.NOT_CALIBRATED,
+                guarantee=InferenceGuarantee.NOT_CALIBRATED,
+                **decision_metadata,
             )
 
         robustness = self.robustness_policy.evaluate(report)
         alternatives = self._alternatives(report.design)
-        reasons = list(robustness.reasons)
-
-        if (
-            isinstance(robustness, RobustnessResultV3)
-            and robustness.empirical_support is EmpiricalSupport.NOT_CALIBRATED
-        ):
-            return InferenceDecision(
-                selected_method=None,
-                robustness=robustness,
-                report=report,
-                reasons=tuple(reasons),
-                alternatives=alternatives,
-                status=InferenceDecisionStatus.NOT_CALIBRATED,
+        if isinstance(robustness, RobustnessResultV3):
+            return self._select_v3(
+                report,
+                robustness,
+                alternatives,
+                capabilities,
+                decision_metadata,
             )
+        return self._select_v2(
+            report,
+            robustness,
+            alternatives,
+            equal_var,
+            decision_metadata,
+        )
 
+    @staticmethod
+    def _select_v2(
+        report: AssumptionReport,
+        robustness: RobustnessResult,
+        alternatives: Tuple[MethodAlternative, ...],
+        equal_var: Optional[bool],
+        decision_metadata: dict[str, object],
+    ) -> InferenceDecision:
+        """Preserve the production v2 routing behavior exactly."""
+
+        reasons = list(robustness.reasons)
         if robustness.level is RobustnessLevel.INSUFFICIENT:
             reasons.append("A mean-preserving resampling or robust procedure should be considered.")
             return InferenceDecision(
@@ -77,22 +113,7 @@ class MethodSelector:
                 reasons=tuple(reasons),
                 alternatives=alternatives,
                 status=InferenceDecisionStatus.INSUFFICIENT,
-            )
-
-        if (
-            isinstance(robustness, RobustnessResultV3)
-            and robustness.level is RobustnessLevel.CAUTION
-        ):
-            reasons.append(
-                "SamplingRobustnessV3 requires review before a method is selected."
-            )
-            return InferenceDecision(
-                selected_method=None,
-                robustness=robustness,
-                report=report,
-                reasons=tuple(reasons),
-                alternatives=alternatives,
-                status=InferenceDecisionStatus.REVIEW_REQUIRED,
+                **decision_metadata,
             )
 
         if report.design is InferenceDesign.ONE_SAMPLE:
@@ -116,7 +137,132 @@ class MethodSelector:
             reasons=tuple(reasons),
             alternatives=alternatives,
             status=InferenceDecisionStatus.SELECTED,
+            **decision_metadata,
         )
+
+    @staticmethod
+    def _select_v3(
+        report: AssumptionReport,
+        robustness: RobustnessResultV3,
+        alternatives: Tuple[MethodAlternative, ...],
+        capabilities: Tuple[InferenceCapability, ...],
+        decision_metadata: dict[str, object],
+    ) -> InferenceDecision:
+        """Route v3 through explicit capabilities rather than shape fields."""
+
+        reasons = list(robustness.reasons)
+        if robustness.empirical_support is EmpiricalSupport.NOT_CALIBRATED:
+            return InferenceDecision(
+                selected_method=None,
+                robustness=robustness,
+                report=report,
+                reasons=tuple(reasons),
+                alternatives=alternatives,
+                status=InferenceDecisionStatus.NOT_CALIBRATED,
+                guarantee=InferenceGuarantee.NOT_CALIBRATED,
+                **decision_metadata,
+            )
+
+        if robustness.level is RobustnessLevel.INSUFFICIENT:
+            reasons.append(
+                "A mean-preserving resampling or robust procedure should be considered."
+            )
+            return InferenceDecision(
+                selected_method=None,
+                robustness=robustness,
+                report=report,
+                reasons=tuple(reasons),
+                alternatives=alternatives,
+                status=InferenceDecisionStatus.INSUFFICIENT,
+                guarantee=InferenceGuarantee.INSUFFICIENT,
+                **decision_metadata,
+            )
+
+        if robustness.level is RobustnessLevel.CAUTION:
+            reasons.append(
+                "SamplingRobustnessV3 requires review before a method is selected."
+            )
+            return InferenceDecision(
+                selected_method=None,
+                robustness=robustness,
+                report=report,
+                reasons=tuple(reasons),
+                alternatives=alternatives,
+                status=InferenceDecisionStatus.REVIEW_REQUIRED,
+                **decision_metadata,
+            )
+
+        supported = set(MethodSelector._supported_assumptions(report, robustness))
+        one_sample_t = capability_for(
+            "one_sample_t",
+            report.design,
+            report.estimand,
+        )
+        if (
+            one_sample_t is not None
+            and one_sample_t in capabilities
+            and one_sample_t.calibrated
+            and one_sample_t.automatic_selection_allowed
+            and set(one_sample_t.assumptions_required) <= supported
+        ):
+            reasons.append(
+                "The registered exact-parametric capability matches the available assumptions."
+            )
+            return InferenceDecision(
+                selected_method=one_sample_t.method,
+                robustness=robustness,
+                report=report,
+                reasons=tuple(reasons),
+                alternatives=alternatives,
+                status=InferenceDecisionStatus.SELECTED,
+                guarantee=one_sample_t.guarantee,
+                assumptions_used=one_sample_t.assumptions_required,
+                **decision_metadata,
+            )
+
+        reasons.append(
+            "No calibrated automatic inference capability matches the available guarantees."
+        )
+        return InferenceDecision(
+            selected_method=None,
+            robustness=robustness,
+            report=report,
+            reasons=tuple(reasons),
+            alternatives=alternatives,
+            status=InferenceDecisionStatus.REVIEW_REQUIRED,
+            **decision_metadata,
+        )
+
+    @staticmethod
+    def _supported_assumptions(
+        report: AssumptionReport,
+        robustness: RobustnessResultV3,
+    ) -> Tuple[str, ...]:
+        """Resolve structural/model evidence without inspecting sample shape."""
+
+        supported: list[str] = []
+        data_quality = [
+            item
+            for name, item in report.assessments.items()
+            if name.startswith("data_quality")
+        ]
+        if data_quality and all(
+            item.status is AssessmentStatus.PASS for item in data_quality
+        ):
+            supported.append("structural_data_supported")
+
+        independence_supported = any(
+            name.startswith("independence")
+            and item.status is AssessmentStatus.PASS
+            and item.metrics.get("independence") in {"assumed", "verified"}
+            for name, item in report.assessments.items()
+        )
+        if independence_supported:
+            supported.append("independence_supported")
+
+        if robustness.model_support is AssumptionProvenance.EXTERNAL:
+            supported.append("external_gaussian_model")
+        return tuple(supported)
 
     @staticmethod
     def _alternatives(design: InferenceDesign) -> Tuple[MethodAlternative, ...]:
