@@ -1,0 +1,3334 @@
+{
+  "alpha": 0.05,
+  "cell_count": 368,
+  "commit_sha_at_start": "5a0bca910b09451a3e037b313ee70afe3e3757ca",
+  "numpy_version": "2.5.2",
+  "outputs": {
+    "replicates": "robustness_calibration_replicates.csv.gz",
+    "summary": "robustness_calibration_summary.csv",
+    "threshold_cliffs": "robustness_threshold_cliffs.csv"
+  },
+  "profile": "calibration",
+  "python_version": "3.12.13",
+  "replications_by_cell": [
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        0
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        1
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        2
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        3
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        4
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        5
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        6
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        7
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        8
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        9
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        10
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        11
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        12
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "bimodal_asymmetric",
+      "seed_spawn_key": [
+        13
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        14
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        15
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        16
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        17
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        18
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        19
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        20
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        21
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        22
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        23
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        24
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_10000",
+      "n": 300,
+      "replications": 10000,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        25
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        26
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        27
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "bimodal_symmetric",
+      "seed_spawn_key": [
+        28
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        29
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        30
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        31
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        32
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        33
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        34
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        35
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        36
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        37
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        38
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        39
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        40
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        41
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p001",
+      "seed_spawn_key": [
+        42
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        43
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        44
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        45
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        46
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        47
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        48
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        49
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        50
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        51
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        52
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        53
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        54
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        55
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p005",
+      "seed_spawn_key": [
+        56
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        57
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        58
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        59
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        60
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        61
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        62
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        63
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        64
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        65
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        66
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        67
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        68
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        69
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p01",
+      "seed_spawn_key": [
+        70
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        71
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        72
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        73
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        74
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        75
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        76
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        77
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        78
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        79
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        80
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        81
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        82
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        83
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p025",
+      "seed_spawn_key": [
+        84
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        85
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        86
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        87
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        88
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        89
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        90
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        91
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        92
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        93
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        94
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        95
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        96
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        97
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p05",
+      "seed_spawn_key": [
+        98
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        99
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        100
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        101
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        102
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        103
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        104
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        105
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        106
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        107
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        108
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        109
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        110
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        111
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_asymmetric_eps_0p1",
+      "seed_spawn_key": [
+        112
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        113
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        114
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        115
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        116
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        117
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        118
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        119
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        120
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        121
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        122
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        123
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        124
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        125
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p001",
+      "seed_spawn_key": [
+        126
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        127
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        128
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        129
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        130
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        131
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        132
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        133
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        134
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        135
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        136
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        137
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        138
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        139
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p005",
+      "seed_spawn_key": [
+        140
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        141
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        142
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        143
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        144
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        145
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        146
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        147
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        148
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        149
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        150
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        151
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        152
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        153
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p01",
+      "seed_spawn_key": [
+        154
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        155
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        156
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        157
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        158
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        159
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        160
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        161
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        162
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        163
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        164
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        165
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        166
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        167
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p025",
+      "seed_spawn_key": [
+        168
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        169
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        170
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        171
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        172
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        173
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        174
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        175
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        176
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        177
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        178
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        179
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        180
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        181
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p05",
+      "seed_spawn_key": [
+        182
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        183
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        184
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        185
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        186
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        187
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        188
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        189
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        190
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        191
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        192
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        193
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        194
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        195
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "contamination_symmetric_eps_0p1",
+      "seed_spawn_key": [
+        196
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        197
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        198
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        199
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        200
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        201
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        202
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        203
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        204
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        205
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        206
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        207
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        208
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        209
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "gamma_shape_2",
+      "seed_spawn_key": [
+        210
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        211
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        212
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        213
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        214
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        215
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        216
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        217
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        218
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        219
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        220
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        221
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        222
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        223
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "gamma_shape_4",
+      "seed_spawn_key": [
+        224
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        225
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        226
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        227
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        228
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_10000",
+      "n": 20,
+      "replications": 10000,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        229
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        230
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        231
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        232
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        233
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        234
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        235
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        236
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        237
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.25",
+      "seed_spawn_key": [
+        238
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        239
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        240
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        241
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        242
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        243
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        244
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        245
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_10000",
+      "n": 50,
+      "replications": 10000,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        246
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        247
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        248
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        249
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        250
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        251
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "lognormal_sigma_0.50",
+      "seed_spawn_key": [
+        252
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        253
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        254
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        255
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        256
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        257
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_10000",
+      "n": 30,
+      "replications": 10000,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        258
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        259
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        260
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        261
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        262
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        263
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        264
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        265
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "lognormal_sigma_1.00",
+      "seed_spawn_key": [
+        266
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        267
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        268
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        269
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        270
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        271
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        272
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        273
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        274
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        275
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        276
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        277
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        278
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        279
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "mixture_distinct_means",
+      "seed_spawn_key": [
+        280
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        281
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        282
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        283
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        284
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        285
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        286
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        287
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        288
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        289
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        290
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        291
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        292
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        293
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "mixture_distinct_variances",
+      "seed_spawn_key": [
+        294
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 3,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        295
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 4,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        296
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 5,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        297
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 8,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        298
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 10,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        299
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 15,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        300
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 20,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        301
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 30,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        302
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        303
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        304
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        305
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 100,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        306
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        307
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        308
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 750,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        309
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 2000,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        310
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_5000",
+      "n": 10000,
+      "replications": 5000,
+      "scenario": "normal",
+      "seed_spawn_key": [
+        311
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        312
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        313
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        314
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        315
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        316
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        317
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        318
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        319
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        320
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        321
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        322
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        323
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        324
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "student_t_df_10",
+      "seed_spawn_key": [
+        325
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        326
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        327
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        328
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        329
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        330
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        331
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        332
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        333
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        334
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        335
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        336
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        337
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        338
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "student_t_df_3",
+      "seed_spawn_key": [
+        339
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        340
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        341
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        342
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        343
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 20,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        344
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        345
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        346
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        347
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        348
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        349
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        350
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        351
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        352
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "student_t_df_30",
+      "seed_spawn_key": [
+        353
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 5,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        354
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 8,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        355
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 10,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        356
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 15,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        357
+      ]
+    },
+    {
+      "evidence_tier": "confirmatory_10000",
+      "n": 20,
+      "replications": 10000,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        358
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 30,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        359
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 40,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        360
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 50,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        361
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 80,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        362
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 100,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        363
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 200,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        364
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 500,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        365
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 750,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        366
+      ]
+    },
+    {
+      "evidence_tier": "exploratory",
+      "n": 2000,
+      "replications": 200,
+      "scenario": "student_t_df_5",
+      "seed_spawn_key": [
+        367
+      ]
+    }
+  ],
+  "sampling_robustness_policy": "mean-v2.1-2026-08",
+  "scenario_count": 26,
+  "scipy_version": "1.18.1",
+  "seed": 20260828,
+  "seed_strategy": "numpy.random.SeedSequence(global seed), one spawned stream per sorted cell; each stream generates one recorded uint64 seed per replicate",
+  "timestamp_utc": "2026-08-28T13:12:05.065323+00:00",
+  "total_replications": 237800
+}

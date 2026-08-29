@@ -20,6 +20,16 @@ from pyMagicStat.assumptions.robustness import (
     RobustnessResult,
     SamplingRobustness,
 )
+from pyMagicStat.assumptions.robustness_v3 import (
+    AssumptionProvenance,
+    CalibrationAnchors,
+    EmpiricalSupport,
+    InfluenceRisk,
+    ProcessUncertainty,
+    RobustnessContext,
+    RobustnessResultV3,
+    SamplingRobustnessV3,
+)
 from pyMagicStat.assumptions.validator import InferenceValidator
 from pyMagicStat.assumptions.variance_policy import (
     PopulationNormality,
@@ -31,17 +41,25 @@ from pyMagicStat.assumptions.variance_policy import (
 __all__ = [
     "Assessment",
     "AssessmentStatus",
+    "AssumptionProvenance",
     "AssumptionReport",
     "DataQualityAssessment",
+    "CalibrationAnchors",
+    "EmpiricalSupport",
     "Estimand",
     "IndependenceAssessment",
     "InferenceDesign",
     "InferenceValidator",
+    "InfluenceRisk",
     "OutlierAssessment",
     "PopulationNormality",
+    "ProcessUncertainty",
     "RobustnessLevel",
+    "RobustnessContext",
     "RobustnessResult",
+    "RobustnessResultV3",
     "SamplingRobustness",
+    "SamplingRobustnessV3",
     "ShapeAssessment",
     "ValidationResult",
     "VarianceAssessment",
