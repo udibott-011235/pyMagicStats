@@ -82,7 +82,7 @@ _ONE_SAMPLE_MEAN_CAPABILITIES = (
         calibrated=False,
         automatic_selection_allowed=False,
         notes=(
-            "Candidate registration only; the numerical engine is not implemented.",
+            "Numerical engine available; automatic routing is not calibrated.",
         ),
     ),
     InferenceCapability(
