@@ -1,7 +1,4 @@
----
-name: Knowledge base change
-about: Theory, evidence, datasets, experiments or decisions
----
+# Knowledge base change
 
 ## Claim or question
 
@@ -21,4 +18,3 @@ about: Theory, evidence, datasets, experiments or decisions
 - Author role:
 - Next reviewer role:
 - Acceptance criteria:
-
