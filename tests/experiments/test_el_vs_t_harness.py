@@ -36,8 +36,67 @@ from pyMagicStat.inference.capabilities import capability_for
 from pyMagicStat.inference.selector import MethodSelector
 
 
+class _CuPy136GeneratorDouble:
+    """NumPy-backed double exposing only the CuPy 13.6 primitives we use."""
+
+    def __init__(self, seed: int) -> None:
+        self._rng = np.random.default_rng(seed)
+
+    def standard_normal(self, size=None):
+        return self._rng.standard_normal(size=size)
+
+    def gamma(self, shape, scale=1.0, size=None):
+        return self._rng.gamma(shape, scale, size=size)
+
+    def random(self, size=None):
+        return self._rng.random(size=size)
+
+
+class _FakeCuPyRandom:
+    @staticmethod
+    def default_rng(seed):
+        return _CuPy136GeneratorDouble(seed)
+
+
+class _FakeCuPy136:
+    """Minimal array surface needed to exercise SampleBackend without CUDA."""
+
+    __version__ = "13.6.0-test-double"
+    float64 = np.float64
+    nan = np.nan
+    random = _FakeCuPyRandom()
+    all = staticmethod(np.all)
+    asnumpy = staticmethod(np.asarray)
+    empty = staticmethod(np.empty)
+    exp = staticmethod(np.exp)
+    full_like = staticmethod(np.full_like)
+    isfinite = staticmethod(np.isfinite)
+    mean = staticmethod(np.mean)
+    power = staticmethod(np.power)
+    sqrt = staticmethod(np.sqrt)
+    stack = staticmethod(np.stack)
+    sum = staticmethod(np.sum)
+    where = staticmethod(np.where)
+
+
 def _normal_cell():
     return select_cells(("normal",), (5,))[0]
+
+
+def _fake_gpu_backend(monkeypatch: pytest.MonkeyPatch) -> SampleBackend:
+    monkeypatch.setattr(
+        backends,
+        "_load_cupy",
+        lambda: (_FakeCuPy136, None, "CuPy 13.6 test double"),
+    )
+    return SampleBackend("gpu")
+
+
+def _gpu_backend_or_skip() -> SampleBackend:
+    try:
+        return SampleBackend("gpu")
+    except RuntimeError as error:
+        pytest.skip(f"real CuPy/CUDA backend unavailable: {error}")
 
 
 def _record_for_sample(sample: np.ndarray) -> dict[str, object]:
@@ -373,20 +432,148 @@ def test_auto_backend_falls_back_safely_without_cupy(monkeypatch):
     assert backend.info.gpu_available is False
 
 
-def test_gpu_backend_schema_and_inputs_when_available():
-    try:
-        backend = SampleBackend("gpu")
-    except RuntimeError:
-        pytest.skip("CuPy/CUDA is not available in this environment")
-    cell = _normal_cell()
-    seeds = (derive_seed(5, "normal", 0),)
-    native = backend.generate_native(cell.scenario, cell.n, seeds)
-    samples = backend.to_cpu(native)
+def test_cupy_13_6_generator_primitives_cover_every_canonical_scenario(monkeypatch):
+    generator = _CuPy136GeneratorDouble(1)
+    assert not hasattr(generator, "normal")
+    assert not hasattr(generator, "standard_t")
+    assert not hasattr(generator, "lognormal")
 
-    assert native.engine == "gpu"
-    assert samples.shape == (1, 5)
-    assert np.isfinite(samples).all()
-    assert np.isfinite(backend.diagnostics(native)).all()
+    backend = _fake_gpu_backend(monkeypatch)
+    for scenario in scenario_registry():
+        seeds = (
+            derive_seed(5, scenario.name, 0),
+            derive_seed(5, scenario.name, 1),
+        )
+        native = backend.generate_native(scenario, 8, seeds)
+        samples = backend.to_cpu(native)
+
+        assert native.engine == "gpu"
+        assert samples.shape == (2, 8)
+        assert np.isfinite(samples).all()
+        assert backend.diagnostics(native).shape == (2, 4)
+        assert np.isfinite(backend.diagnostics(native)).all()
+
+
+def test_cupy_13_6_compatible_formulas_have_canonical_population_moments(monkeypatch):
+    backend = _fake_gpu_backend(monkeypatch)
+    scenarios = {scenario.name: scenario for scenario in scenario_registry()}
+    representative_ids = (
+        "normal",
+        "student_t_df_10",
+        "lognormal_sigma_0.50",
+        "gamma_shape_4",
+        "bimodal_symmetric",
+        "mixture_distinct_means",
+        "contamination_symmetric_eps_0p1",
+        "contamination_asymmetric_eps_0p1",
+    )
+
+    for replicate_id, scenario_id in enumerate(representative_ids):
+        seed = derive_seed(20260829, scenario_id, replicate_id)
+        native = backend.generate_native(scenarios[scenario_id], 200_000, (seed,))
+        sample = backend.to_cpu(native)[0]
+
+        assert abs(float(np.mean(sample))) < 0.06
+        assert 0.82 < float(np.var(sample)) < 1.18
+
+
+def test_auto_backend_threshold_routes_below_to_cpu_and_at_threshold_to_gpu(monkeypatch):
+    monkeypatch.setattr(
+        backends,
+        "_load_cupy",
+        lambda: (_FakeCuPy136, None, "CuPy 13.6 test double"),
+    )
+    backend = SampleBackend("auto")
+    calls: list[str] = []
+
+    def fake_cpu(scenario, n, seeds):
+        calls.append("cpu")
+        return object()
+
+    def fake_gpu(scenario, n, seeds):
+        calls.append("gpu")
+        return object()
+
+    monkeypatch.setattr(backend, "_generate_cpu", fake_cpu)
+    monkeypatch.setattr(backend, "_generate_gpu", fake_gpu)
+    cell = _normal_cell()
+    seed = derive_seed(5, "normal", 0)
+
+    below = backend.generate_native(
+        cell.scenario,
+        backends.AUTO_GPU_MIN_ELEMENTS - 1,
+        (seed,),
+    )
+    at_threshold = backend.generate_native(
+        cell.scenario,
+        backends.AUTO_GPU_MIN_ELEMENTS,
+        (seed,),
+    )
+
+    assert backends.AUTO_GPU_MIN_ELEMENTS == 250_000
+    assert below.engine == "cpu"
+    assert at_threshold.engine == "gpu"
+    assert calls == ["cpu", "gpu"]
+
+
+def test_all_canonical_scenarios_gpu_smoke_when_available():
+    backend = _gpu_backend_or_skip()
+    for scenario in scenario_registry():
+        seeds = (
+            derive_seed(5, scenario.name, 0),
+            derive_seed(5, scenario.name, 1),
+        )
+        native = backend.generate_native(scenario, 8, seeds)
+        samples = backend.to_cpu(native)
+        diagnostics = backend.diagnostics(native)
+
+        assert native.engine == "gpu"
+        assert samples.shape == (2, 8)
+        assert np.isfinite(samples).all()
+        assert diagnostics.shape == (2, 4)
+        assert np.isfinite(diagnostics).all()
+
+
+def test_gpu_generation_is_reproducible_and_shard_invariant_when_available():
+    backend = _gpu_backend_or_skip()
+    cell = _normal_cell()
+    replicate_id = 17
+    samples = []
+    identities = []
+    for num_shards in (1, 2, 7, 20):
+        shard_id = replicate_id % num_shards
+        assert replicate_id in owned_replicate_ids(40, shard_id, num_shards)
+        seed = derive_seed(20260829, cell.scenario.name, replicate_id)
+        identities.append(seed.identity)
+        native = backend.generate_native(cell.scenario, cell.n, (seed,))
+        samples.append(backend.to_cpu(native)[0])
+
+    assert len(set(identities)) == 1
+    for sample in samples[1:]:
+        np.testing.assert_array_equal(sample, samples[0])
+
+
+def test_gpu_canonical_family_population_moments_when_available():
+    backend = _gpu_backend_or_skip()
+    scenarios = {scenario.name: scenario for scenario in scenario_registry()}
+    representative_ids = (
+        "normal",
+        "student_t_df_10",
+        "lognormal_sigma_0.50",
+        "gamma_shape_4",
+        "bimodal_symmetric",
+        "mixture_distinct_means",
+        "contamination_symmetric_eps_0p1",
+        "contamination_asymmetric_eps_0p1",
+    )
+
+    for replicate_id, scenario_id in enumerate(representative_ids):
+        seed = derive_seed(20260829, scenario_id, replicate_id)
+        native = backend.generate_native(scenarios[scenario_id], 200_000, (seed,))
+        sample = backend.to_cpu(native)[0]
+
+        assert abs(float(np.mean(sample))) < 0.06
+        assert 0.82 < float(np.var(sample)) < 1.18
 
 
 def test_method_outputs_are_backend_label_invariant(monkeypatch):

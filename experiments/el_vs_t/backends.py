@@ -184,19 +184,29 @@ def _draw_gpu(scenario: Scenario, rng: Any, n: int, cp: Any) -> Any:
     family = scenario.family
     parameters = scenario.parameters
     if family == "normal":
-        return rng.normal(float(parameters["mean"]), float(parameters["sd"]), n)
+        return _gpu_normal(
+            rng,
+            float(parameters["mean"]),
+            float(parameters["sd"]),
+            n,
+        )
     if family == "student_t":
         df = float(parameters["df"])
-        return rng.standard_t(df, n) * np.sqrt((df - 2.0) / df)
+        numerator = rng.standard_normal(size=n)
+        chi_squared = 2.0 * rng.gamma(df / 2.0, 1.0, size=n)
+        student_t = numerator / cp.sqrt(chi_squared / df)
+        return student_t * np.sqrt((df - 2.0) / df)
     if family == "lognormal":
         sigma = float(parameters["sigma"])
         mean = np.exp(sigma * sigma / 2.0)
         variance = (np.exp(sigma * sigma) - 1.0) * np.exp(sigma * sigma)
-        return (rng.lognormal(0.0, sigma, n) - mean) / np.sqrt(variance)
+        raw = cp.exp(sigma * rng.standard_normal(size=n))
+        return (raw - mean) / np.sqrt(variance)
     if family == "gamma":
         shape = float(parameters["shape"])
         scale = float(parameters["scale"])
-        return (rng.gamma(shape, scale, n) - shape * scale) / (np.sqrt(shape) * scale)
+        raw = rng.gamma(shape, scale, size=n)
+        return (raw - shape * scale) / (np.sqrt(shape) * scale)
     if family in {
         "bimodal",
         "normal_mixture",
@@ -212,8 +222,8 @@ def _draw_gpu(scenario: Scenario, rng: Any, n: int, cp: Any) -> Any:
             base_mean, base_sd = _parse_normal(parameters["base"])
             component_mean, component_sd = _parse_normal(parameters["contaminant"])
         indicator = rng.random(n) < probability
-        base = rng.normal(base_mean, base_sd, n)
-        component = rng.normal(component_mean, component_sd, n)
+        base = _gpu_normal(rng, base_mean, base_sd, n)
+        component = _gpu_normal(rng, component_mean, component_sd, n)
         mixture_mean = (1.0 - probability) * base_mean + probability * component_mean
         second = (1.0 - probability) * (base_sd**2 + base_mean**2) + probability * (
             component_sd**2 + component_mean**2
@@ -221,6 +231,12 @@ def _draw_gpu(scenario: Scenario, rng: Any, n: int, cp: Any) -> Any:
         mixture_sd = np.sqrt(second - mixture_mean**2)
         return (cp.where(indicator, component, base) - mixture_mean) / mixture_sd
     raise ValueError(f"no GPU generator for canonical family {family!r}")
+
+
+def _gpu_normal(rng: Any, mean: float, sd: float, size: int) -> Any:
+    """Draw a normal array using the CuPy 13.6 Generator primitive API."""
+
+    return mean + sd * rng.standard_normal(size=size)
 
 
 def _parse_normal(value: object) -> tuple[float, float]:

@@ -103,6 +103,13 @@ uses GPU generation/diagnostic moments only for batches of at least 250,000
 sample elements, avoiding launch/transfer overhead on small cells. GPU data
 moves to host once per batch, never observation by observation.
 
+The GPU generator compatibility path targets the `cupy.random.Generator` API
+in CuPy 13.6.0 deployed on Quantum. It uses per-replicate `default_rng`
+instances and the supported `standard_normal`, `gamma`, and `random`
+primitives; it does not depend on NumPy Generator API parity. Final CUDA
+execution and CPU-versus-GPU performance measurements must be run on Quantum;
+no GPU speedup is inferred from development environments without CUDA.
+
 Student t, the production `empirical_likelihood_mean_test`, the production
 `empirical_likelihood_mean_ci`, and all scalar SciPy root solving intentionally
 stay on CPU. No GPU EL solver exists in this harness.
