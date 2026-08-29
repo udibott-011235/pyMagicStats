@@ -28,11 +28,18 @@ from experiments.el_vs_t.scenarios import (
 )
 from experiments.el_vs_t.seeds import (
     derive_seed,
+    numpy_rng,
     owned_replicate_ids,
 )
 from experiments.el_vs_t.storage import read_json
 from pyMagicStat.assumptions.models import Estimand, InferenceDesign
 from pyMagicStat.inference.capabilities import capability_for
+from pyMagicStat.inference.empirical_likelihood import (
+    CI_ENDPOINT_RESIDUAL_TOLERANCE,
+    LAMBDA_RESIDUAL_TOLERANCE,
+    empirical_likelihood_mean_ci,
+    empirical_likelihood_mean_test,
+)
 from pyMagicStat.inference.selector import MethodSelector
 
 
@@ -97,6 +104,44 @@ def _gpu_backend_or_skip() -> SampleBackend:
         return SampleBackend("gpu")
     except RuntimeError as error:
         pytest.skip(f"real CuPy/CUDA backend unavailable: {error}")
+
+
+def _pilot_sample(scenario_id: str, n: int, replicate_id: int) -> np.ndarray:
+    scenarios = {scenario.name: scenario for scenario in scenario_registry()}
+    seed = derive_seed(20260829, scenario_id, replicate_id)
+    return scenarios[scenario_id].draw(numpy_rng(seed), n)
+
+
+def _independent_dual_lambda(sample: np.ndarray, mu: float) -> float:
+    """Reference bisection with ``math.fsum``, independent of production brentq."""
+
+    centered = sample - mu
+    scale = float(np.max(np.abs(centered)))
+    normalized = centered / scale
+    positive = normalized[normalized > 0.0]
+    negative = normalized[normalized < 0.0]
+    lower = float(np.max(-1.0 / positive))
+    upper = float(np.min(-1.0 / negative))
+    left = lower * (1.0 - 1e-12)
+    right = upper * (1.0 - 1e-12)
+
+    def equation(tau: float) -> float:
+        terms = normalized / (1.0 + tau * normalized)
+        return math.fsum(float(value) for value in terms) / normalized.size
+
+    assert equation(left) > 0.0
+    assert equation(right) < 0.0
+    midpoint = 0.0
+    for _ in range(256):
+        midpoint = left + 0.5 * (right - left)
+        value = equation(midpoint)
+        if abs(value) <= 1e-13:
+            break
+        if value > 0.0:
+            left = midpoint
+        else:
+            right = midpoint
+    return midpoint / scale
 
 
 def _record_for_sample(sample: np.ndarray) -> dict[str, object]:
@@ -266,6 +311,90 @@ def test_seed_and_cpu_sample_are_invariant_to_shard_count():
     assert len(set(identities)) == 1
     for sample in samples[1:]:
         np.testing.assert_array_equal(sample, samples[0])
+
+
+@pytest.mark.parametrize(
+    ("scenario_id", "replicate_id"),
+    [
+        ("gamma_shape_2", 1),
+        ("student_t_df_5", 0),
+        ("mixture_distinct_variances", 0),
+        ("lognormal_sigma_1.00", 9),
+        ("normal", 569),
+    ],
+)
+def test_quantum_pilot_formerly_failing_n2000_ci_has_independent_solution(
+    scenario_id,
+    replicate_id,
+):
+    sample = _pilot_sample(scenario_id, 2_000, replicate_id)
+    interval = empirical_likelihood_mean_ci(sample)
+
+    assert interval.feasible is True
+    assert interval.regular is True
+    assert interval.reason is None
+    for endpoint in (interval.lower, interval.upper):
+        result = empirical_likelihood_mean_test(sample, endpoint)
+        reference_lambda = _independent_dual_lambda(sample, endpoint)
+        centered = sample - endpoint
+        denominators = 1.0 + reference_lambda * centered
+        weights = 1.0 / (sample.size * denominators)
+        reference_statistic = 2.0 * math.fsum(
+            math.log1p(reference_lambda * float(value)) for value in centered
+        )
+
+        assert result.converged is True
+        assert result.lambda_residual <= LAMBDA_RESIDUAL_TOLERANCE
+        assert result.lambda_value == pytest.approx(
+            reference_lambda,
+            rel=1e-9,
+            abs=1e-12,
+        )
+        assert np.all(weights > 0.0)
+        assert math.fsum(float(value) for value in weights) == pytest.approx(
+            1.0,
+            abs=1e-11,
+        )
+        assert math.fsum(
+            float(weight * value) for weight, value in zip(weights, centered)
+        ) == pytest.approx(0.0, abs=1e-10)
+        assert result.statistic == pytest.approx(reference_statistic, abs=1e-9)
+        assert result.statistic == pytest.approx(
+            interval.critical_value,
+            abs=CI_ENDPOINT_RESIDUAL_TOLERANCE,
+        )
+
+
+@pytest.mark.parametrize(
+    ("scenario_id", "n", "replicate_id"),
+    [
+        ("normal", 5, 0),
+        ("normal", 30, 0),
+        ("normal", 2_000, 569),
+        ("normal", 10_000, 0),
+        ("gamma_shape_2", 5, 0),
+        ("gamma_shape_2", 30, 0),
+        ("gamma_shape_2", 2_000, 1),
+        ("student_t_df_5", 5, 0),
+        ("student_t_df_5", 30, 0),
+        ("student_t_df_5", 2_000, 0),
+        ("lognormal_sigma_1.00", 5, 0),
+        ("lognormal_sigma_1.00", 30, 0),
+        ("lognormal_sigma_1.00", 2_000, 9),
+    ],
+)
+def test_el_ci_convergence_is_stable_across_canonical_non_holdout_n(
+    scenario_id,
+    n,
+    replicate_id,
+):
+    sample = _pilot_sample(scenario_id, n, replicate_id)
+    interval = empirical_likelihood_mean_ci(sample)
+
+    assert interval.feasible is True
+    assert interval.regular is True
+    assert interval.lower_endpoint_residual <= CI_ENDPOINT_RESIDUAL_TOLERANCE
+    assert interval.upper_endpoint_residual <= CI_ENDPOINT_RESIDUAL_TOLERANCE
 
 
 @pytest.mark.parametrize("sample_size", [6, 12, 25, 35, 45, 65, 90, 150, 350, 1000, 5000])

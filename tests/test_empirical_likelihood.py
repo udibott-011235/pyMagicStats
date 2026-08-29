@@ -121,6 +121,17 @@ def test_profile_ci_contains_estimate_stays_in_hull_and_hits_critical_value(samp
     )
 
 
+def test_previously_passing_profile_and_test_outputs_are_numerically_unchanged(sample):
+    interval = empirical_likelihood_mean_ci(sample)
+    result = empirical_likelihood_mean_test(sample, 3.0)
+
+    assert interval.lower == pytest.approx(2.0647311844578904, abs=1e-12)
+    assert interval.upper == pytest.approx(6.122212094661059, abs=1e-12)
+    assert result.lambda_value == pytest.approx(0.1680211505260294, abs=1e-13)
+    assert result.statistic == pytest.approx(0.6120993671480545, abs=1e-13)
+    assert result.p_value == pytest.approx(0.43399845454391506, abs=1e-13)
+
+
 def test_affine_translation_invariance(sample):
     mu = 3.0
     shift = 1234.5
@@ -159,6 +170,37 @@ def test_positive_scale_invariance(sample):
     )
 
 
+@pytest.mark.parametrize(("factor", "shift"), [(17.25, 1234.5), (-4.5, -81.0)])
+def test_profile_ci_is_affine_invariant_for_positive_and_negative_scales(
+    sample,
+    factor,
+    shift,
+):
+    baseline = empirical_likelihood_mean_ci(sample)
+    transformed = empirical_likelihood_mean_ci(factor * sample + shift)
+    expected = sorted(
+        (
+            factor * baseline.lower + shift,
+            factor * baseline.upper + shift,
+        )
+    )
+
+    assert transformed.estimate == pytest.approx(
+        factor * baseline.estimate + shift,
+        abs=1e-12,
+    )
+    assert transformed.lower == pytest.approx(expected[0], abs=1e-10)
+    assert transformed.upper == pytest.approx(expected[1], abs=1e-10)
+    assert transformed.lower_statistic == pytest.approx(
+        baseline.upper_statistic if factor < 0 else baseline.lower_statistic,
+        abs=CI_ENDPOINT_RESIDUAL_TOLERANCE,
+    )
+    assert transformed.upper_statistic == pytest.approx(
+        baseline.lower_statistic if factor < 0 else baseline.upper_statistic,
+        abs=CI_ENDPOINT_RESIDUAL_TOLERANCE,
+    )
+
+
 def test_permutation_invariance(sample):
     permutation = np.array([3, 0, 4, 1, 2])
 
@@ -167,6 +209,24 @@ def test_permutation_invariance(sample):
 
     assert permuted.statistic == pytest.approx(baseline.statistic, abs=1e-14)
     assert permuted.lambda_value == pytest.approx(baseline.lambda_value, abs=1e-14)
+
+
+def test_profile_ci_is_permutation_invariant(sample):
+    permutation = np.array([3, 0, 4, 1, 2])
+
+    baseline = empirical_likelihood_mean_ci(sample)
+    permuted = empirical_likelihood_mean_ci(sample[permutation])
+
+    assert permuted.lower == pytest.approx(baseline.lower, abs=1e-13)
+    assert permuted.upper == pytest.approx(baseline.upper, abs=1e-13)
+    assert permuted.lower_statistic == pytest.approx(
+        baseline.lower_statistic,
+        abs=1e-12,
+    )
+    assert permuted.upper_statistic == pytest.approx(
+        baseline.upper_statistic,
+        abs=1e-12,
+    )
 
 
 def test_repeated_values_do_not_create_order_dependence():
@@ -189,7 +249,7 @@ def test_lambda_equation_residual_matches_declared_tolerance(sample):
     scale = np.max(np.abs(centered))
     normalized = centered / scale
     tau = result.lambda_value * scale
-    residual = abs(np.sum(normalized / (1.0 + tau * normalized)))
+    residual = abs(np.mean(normalized / (1.0 + tau * normalized)))
 
     assert residual == pytest.approx(result.lambda_residual, abs=1e-15)
     assert residual <= LAMBDA_RESIDUAL_TOLERANCE

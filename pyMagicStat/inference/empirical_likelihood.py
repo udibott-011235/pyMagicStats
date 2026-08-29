@@ -17,12 +17,17 @@ LAMBDA_RESIDUAL_TOLERANCE = 1e-10
 CI_ENDPOINT_RESIDUAL_TOLERANCE = 1e-8
 STATISTIC_ZERO_TOLERANCE = 1e-10
 _ROOT_RTOL = 8.0 * np.finfo(float).eps
-_ROOT_XTOL = np.finfo(float).tiny
+_ROOT_XTOL = 1e-14
+_ROOT_MAXITER = 100
 
 
 @dataclass(frozen=True)
 class EmpiricalLikelihoodMeanResult:
-    """Profile empirical-likelihood test result for one candidate mean."""
+    """Profile empirical-likelihood test result for one candidate mean.
+
+    ``lambda_residual`` is the absolute mean of the dimensionless normalized
+    estimating equation. Its scale therefore does not grow with sample size.
+    """
 
     estimate: float
     null_value: float
@@ -189,8 +194,9 @@ def empirical_likelihood_mean_ci(
                 lambda candidate: profile(candidate) - critical_value,
                 lower_edge,
                 0.0,
-                xtol=1e-14,
+                xtol=_ROOT_XTOL,
                 rtol=_ROOT_RTOL,
+                maxiter=_ROOT_MAXITER,
             )
         )
         upper_root = float(
@@ -198,8 +204,9 @@ def empirical_likelihood_mean_ci(
                 lambda candidate: profile(candidate) - critical_value,
                 0.0,
                 upper_edge,
-                xtol=1e-14,
+                xtol=_ROOT_XTOL,
                 rtol=_ROOT_RTOL,
+                maxiter=_ROOT_MAXITER,
             )
         )
         lower_statistic = float(profile(lower_root))
@@ -395,6 +402,8 @@ def _evaluate_validated(
 
 
 def _solve_normalized_lambda(normalized: np.ndarray) -> tuple[float, float]:
+    """Solve the dual equation and return its sample-size-stable mean residual."""
+
     positive = normalized[normalized > 0.0]
     negative = normalized[normalized < 0.0]
     if positive.size == 0 or negative.size == 0:
@@ -407,7 +416,7 @@ def _solve_normalized_lambda(normalized: np.ndarray) -> tuple[float, float]:
         denominators = 1.0 + tau * normalized
         if np.any(denominators <= 0.0):
             return np.inf if tau < 0.0 else -np.inf
-        value = np.sum(
+        value = np.mean(
             normalized / denominators,
             dtype=np.longdouble,
         )
@@ -428,6 +437,7 @@ def _solve_normalized_lambda(normalized: np.ndarray) -> tuple[float, float]:
             endpoint,
             xtol=_ROOT_XTOL,
             rtol=_ROOT_RTOL,
+            maxiter=_ROOT_MAXITER,
         )
     else:
         endpoint = _finite_lambda_endpoint(
@@ -441,6 +451,7 @@ def _solve_normalized_lambda(normalized: np.ndarray) -> tuple[float, float]:
             0.0,
             xtol=_ROOT_XTOL,
             rtol=_ROOT_RTOL,
+            maxiter=_ROOT_MAXITER,
         )
     root = float(root)
     return root, abs(equation(root))
