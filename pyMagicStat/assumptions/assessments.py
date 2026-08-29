@@ -193,6 +193,25 @@ class OutlierAssessment:
             method = "extreme_iqr"
 
         count = int(indices.size)
+        mean_full = float(np.mean(data))
+        standard_error_full = float(np.std(data, ddof=1) / np.sqrt(data.size))
+        retained = np.delete(data, indices)
+        if retained.size >= 2:
+            mean_without_extremes = float(np.mean(retained))
+            standard_error_without_extremes = float(
+                np.std(retained, ddof=1) / np.sqrt(retained.size)
+            )
+            delta_mean_remove_extremes = abs(mean_full - mean_without_extremes)
+            influence_ratio = (
+                delta_mean_remove_extremes / standard_error_full
+                if standard_error_full > 0.0
+                else np.nan
+            )
+        else:
+            mean_without_extremes = np.nan
+            standard_error_without_extremes = np.nan
+            delta_mean_remove_extremes = np.nan
+            influence_ratio = np.nan
         status = AssessmentStatus.WARN if count else AssessmentStatus.PASS
         reasons = (
             (f"{count} extreme observation(s) may materially influence mean-based inference.")
@@ -208,6 +227,13 @@ class OutlierAssessment:
                 "indices": indices,
                 "method": method,
                 "threshold": self.modified_z_threshold,
+                "mean_full": mean_full,
+                "standard_error_full": standard_error_full,
+                "mean_without_extremes": mean_without_extremes,
+                "standard_error_without_extremes": standard_error_without_extremes,
+                "delta_mean_remove_extremes": delta_mean_remove_extremes,
+                "influence_ratio": influence_ratio,
+                "influence_is_counterfactual": True,
             },
             reasons=reasons,
         )

@@ -1,9 +1,10 @@
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 from pyMagicStat.assumptions.models import AssumptionReport
 from pyMagicStat.assumptions.robustness import RobustnessResult
+from pyMagicStat.assumptions.robustness_v3 import RobustnessResultV3
 
 
 @dataclass(frozen=True)
@@ -22,7 +23,7 @@ class InferenceDecisionStatus(str, Enum):
 @dataclass(frozen=True)
 class InferenceDecision:
     selected_method: Optional[str]
-    robustness: RobustnessResult
+    robustness: Union[RobustnessResult, RobustnessResultV3]
     report: AssumptionReport
     reasons: Tuple[str, ...] = ()
     alternatives: Tuple[MethodAlternative, ...] = field(default_factory=tuple)

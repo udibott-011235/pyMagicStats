@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 from pyMagicStat.assumptions.models import AssumptionReport, InferenceDesign
 from pyMagicStat.assumptions.robustness import (
@@ -6,6 +6,7 @@ from pyMagicStat.assumptions.robustness import (
     RobustnessResult,
     SamplingRobustness,
 )
+from pyMagicStat.assumptions.robustness_v3 import SamplingRobustnessV3
 from pyMagicStat.inference.decision import (
     InferenceDecision,
     InferenceDecisionStatus,
@@ -16,7 +17,12 @@ from pyMagicStat.inference.decision import (
 class MethodSelector:
     """Select an inferential procedure without changing observed data."""
 
-    def __init__(self, robustness_policy: Optional[SamplingRobustness] = None) -> None:
+    def __init__(
+        self,
+        robustness_policy: Optional[
+            Union[SamplingRobustness, SamplingRobustnessV3]
+        ] = None,
+    ) -> None:
         self.robustness_policy = robustness_policy or SamplingRobustness()
 
     def select(

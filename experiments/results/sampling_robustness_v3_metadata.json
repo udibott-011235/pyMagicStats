@@ -1,0 +1,82 @@
+{
+  "anchor_derivation": {
+    "adverse_quantile": 0.25,
+    "adverse_reference_cells": [
+      [
+        "lognormal_sigma_1.00",
+        30
+      ],
+      [
+        "contamination_asymmetric_eps_0p01",
+        100
+      ],
+      [
+        "contamination_asymmetric_eps_0p025",
+        100
+      ]
+    ],
+    "compatible_quantile": 0.9,
+    "safe_reference_cells": [
+      [
+        "normal",
+        30
+      ],
+      [
+        "normal",
+        100
+      ],
+      [
+        "normal",
+        750
+      ],
+      [
+        "normal",
+        2000
+      ],
+      [
+        "normal",
+        10000
+      ],
+      [
+        "student_t_df_5",
+        20
+      ],
+      [
+        "bimodal_symmetric",
+        300
+      ]
+    ]
+  },
+  "anchors": {
+    "influence_compatible": 0.167155,
+    "influence_elevated": 0.689094,
+    "positive_kurtosis_adverse": 2.371427,
+    "positive_kurtosis_compatible": 1.054041,
+    "skewness_adverse": 1.624111,
+    "skewness_compatible": 0.66422,
+    "uncertainty_z": 1.959964
+  },
+  "calibration_input": "experiments/results/robustness_calibration_replicates.csv.gz",
+  "calibration_only": true,
+  "candidate_policy": "mean-v3-candidate-2026-08",
+  "cell_count": 368,
+  "holdout_used": false,
+  "legacy_policy": "mean-v2.1-2026-08",
+  "numpy_version": "2.5.2",
+  "pandas_version": "3.0.5",
+  "profiles": {
+    "v3_default": {
+      "model_provenance": "unknown",
+      "process_uncertainty": "unknown"
+    },
+    "v3_scenario_context": "External simulation-truth provenance; process elevated for prespecified asymmetric/skew scenarios and low otherwise"
+  },
+  "provisional_targets": {
+    "acceptable_coverage_min": 0.935,
+    "acceptable_type_i_max": 0.065
+  },
+  "python_version": "3.12.13",
+  "replications": 237800,
+  "scipy_version": "1.18.1",
+  "timestamp_utc": "2026-08-29T00:42:25.828738+00:00"
+}
