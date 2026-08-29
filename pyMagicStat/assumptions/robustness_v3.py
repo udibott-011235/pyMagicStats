@@ -208,11 +208,13 @@ class SamplingRobustnessV3:
         outliers = [
             item for name, item in report.assessments.items() if name.startswith("outliers")
         ]
-        independence_unknown = any(
+        independence_supported = any(
             name.startswith("independence")
-            and item.status is AssessmentStatus.NOT_ASSESSED
+            and item.status is AssessmentStatus.PASS
+            and item.metrics.get("independence") in {"assumed", "verified"}
             for name, item in report.assessments.items()
         )
+        independence_unknown = not independence_supported
         if not shapes:
             reasons.append("No shape assessment is available in the calibrated domain.")
             return RobustnessResultV3(

@@ -7,10 +7,10 @@ verifies the constants embedded in v3, and compares v2 with two v3 views:
 ``v3_default``
     No external model or process knowledge (the API default).
 
-``v3_scenario_context``
-    Simulation-truth context supplied explicitly to demonstrate the distinct
-    effect of model/process provenance.  It is calibration evidence, not a
-    claim that real callers know their data-generating process.
+``v3_oracle_simulation_truth``
+    Oracle sensitivity context supplied from the true simulation generator.
+    It is excluded from headline real-world safety claims because callers do
+    not ordinarily know their data-generating process.
 
 The per-replicate input is reproduced by
 ``experiments/adversarial_robustness_calibration.py`` and is intentionally
@@ -76,6 +76,8 @@ SPECIAL_COMPARISON_CELLS = (
     ("contamination_asymmetric_eps_0p025", 100),
     ("contamination_symmetric_eps_0p1", 100),
 )
+V3_DEFAULT_PROFILE = "v3_default"
+V3_ORACLE_PROFILE = "v3_oracle_simulation_truth"
 
 
 def _cell_mask(frame: pd.DataFrame, cells: Sequence[tuple[str, int]]) -> pd.Series:
@@ -167,8 +169,8 @@ def _assessment_report(row: object) -> AssumptionReport:
     )
 
 
-def _scenario_policy(scenario: str, family: str) -> SamplingRobustnessV3:
-    """Supply explicit calibration-scenario knowledge, never inferred values."""
+def _oracle_policy(scenario: str, family: str) -> SamplingRobustnessV3:
+    """Supply simulation-generator truth for an oracle sensitivity profile."""
 
     process_elevated = (
         family == "lognormal"
@@ -184,7 +186,7 @@ def _scenario_policy(scenario: str, family: str) -> SamplingRobustnessV3:
 
 
 def classify_replicates(replicates: pd.DataFrame) -> pd.DataFrame:
-    """Return the original rows plus v2 and two candidate classifications."""
+    """Return rows plus legacy, sample-default, and oracle classifications."""
 
     output = replicates.copy()
     output["v2"] = output["sampling_robustness_level"]
@@ -198,17 +200,17 @@ def classify_replicates(replicates: pd.DataFrame) -> pd.DataFrame:
         key = (str(row.scenario), str(row.distribution_family))
         policy = scenario_policies.get(key)
         if policy is None:
-            policy = _scenario_policy(*key)
+            policy = _oracle_policy(*key)
             scenario_policies[key] = policy
         contextual_levels.append(policy.evaluate(report).level.value)
-    output["v3_default"] = default_levels
-    output["v3_scenario_context"] = contextual_levels
+    output[V3_DEFAULT_PROFILE] = default_levels
+    output[V3_ORACLE_PROFILE] = contextual_levels
     return output
 
 
 def summarize_classifications(classified: pd.DataFrame) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
-    policies = ("v2", "v3_default", "v3_scenario_context")
+    policies = ("v2", V3_DEFAULT_PROFILE, V3_ORACLE_PROFILE)
     for (scenario, family, n), cell in classified.groupby(
         ["scenario", "distribution_family", "n"],
         sort=True,
@@ -253,13 +255,52 @@ def flag_operating_regions(summary: pd.DataFrame) -> pd.DataFrame:
     conditional = summary[summary["level"] != "all"].copy()
     conditional["denominator_sufficient"] = conditional["conditional_denominator"] >= 200
     conditional["confirmatory_cell"] = conditional["total_replications"] >= 5_000
+    policy_totals = (
+        summary[summary["level"] == "all"]
+        .groupby("policy")["total_replications"]
+        .sum()
+    )
+    acceptable_totals = (
+        conditional[conditional["level"] == "acceptable"]
+        .groupby("policy")["conditional_denominator"]
+        .sum()
+    )
+    conditional["policy_total_replications"] = conditional["policy"].map(policy_totals)
+    conditional["acceptable_denominator"] = (
+        conditional["policy"].map(acceptable_totals).fillna(0).astype(int)
+    )
+    conditional["overall_acceptable_rate"] = (
+        conditional["acceptable_denominator"]
+        / conditional["policy_total_replications"]
+    )
     meets_target = (
         (conditional["type_i_error"] <= SamplingRobustnessV3.CALIBRATION_TYPE_I_TARGET)
         & (conditional["ci_coverage"] >= SamplingRobustnessV3.CALIBRATION_COVERAGE_TARGET)
     )
     conditional["operating_region"] = "unclassified"
+    conditional["false_safe_evaluation"] = "not_applicable"
+    acceptable = conditional["level"] == "acceptable"
+    vacuous = acceptable & (conditional["conditional_denominator"] == 0)
+    underpowered = (
+        acceptable
+        & (conditional["conditional_denominator"] > 0)
+        & ~conditional["denominator_sufficient"]
+    )
+    evaluable = acceptable & conditional["denominator_sufficient"]
     conditional.loc[
-        (conditional["level"] == "acceptable") & ~meets_target,
+        vacuous,
+        ["operating_region", "false_safe_evaluation"],
+    ] = ["not_evaluable_vacuous", "NOT EVALUABLE / VACUOUS"]
+    conditional.loc[
+        underpowered,
+        ["operating_region", "false_safe_evaluation"],
+    ] = [
+        "not_evaluable_insufficient_denominator",
+        "NOT EVALUABLE / INSUFFICIENT DENOMINATOR",
+    ]
+    conditional.loc[evaluable, "false_safe_evaluation"] = "EVALUATED"
+    conditional.loc[
+        evaluable & ~meets_target,
         "operating_region",
     ] = "false_safe"
     conditional.loc[
@@ -267,6 +308,70 @@ def flag_operating_regions(summary: pd.DataFrame) -> pd.DataFrame:
         "operating_region",
     ] = "false_insufficient"
     return conditional[conditional["operating_region"] != "unclassified"]
+
+
+def summarize_false_safe_metrics(summary: pd.DataFrame) -> list[dict[str, object]]:
+    """Report false-safe evidence with exposure and headline eligibility."""
+
+    flagged = flag_operating_regions(summary)
+    total_rows = summary[summary["level"] == "all"]
+    acceptable_rows = summary[summary["level"] == "acceptable"]
+    rows: list[dict[str, object]] = []
+    for policy in ("v2", V3_DEFAULT_PROFILE, V3_ORACLE_PROFILE):
+        total_replications = int(
+            total_rows.loc[
+                total_rows["policy"] == policy,
+                "total_replications",
+            ].sum()
+        )
+        acceptable_denominator = int(
+            acceptable_rows.loc[
+                acceptable_rows["policy"] == policy,
+                "conditional_denominator",
+            ].sum()
+        )
+        acceptable_rate = (
+            acceptable_denominator / total_replications
+            if total_replications
+            else 0.0
+        )
+        is_oracle = policy == V3_ORACLE_PROFILE
+        if acceptable_denominator == 0:
+            false_safe_regions: int | None = None
+            evaluation = "NOT EVALUABLE / VACUOUS"
+        else:
+            reliable_false_safe = flagged[
+                (flagged["policy"] == policy)
+                & (flagged["operating_region"] == "false_safe")
+                & flagged["denominator_sufficient"]
+                & flagged["confirmatory_cell"]
+            ]
+            false_safe_regions = int(len(reliable_false_safe))
+            evaluation = "EVALUATED"
+        rows.append(
+            {
+                "policy": policy,
+                "profile_kind": (
+                    "oracle_simulation_truth"
+                    if is_oracle
+                    else "sample_default"
+                    if policy == V3_DEFAULT_PROFILE
+                    else "legacy"
+                ),
+                "headline_eligible": not is_oracle,
+                "total_replications": total_replications,
+                "acceptable_denominator": acceptable_denominator,
+                "overall_acceptable_rate": acceptable_rate,
+                "confirmatory_false_safe_regions": false_safe_regions,
+                "false_safe_evaluation": evaluation,
+                "supports_zero_false_safe_claim": (
+                    not is_oracle
+                    and acceptable_denominator > 0
+                    and false_safe_regions == 0
+                ),
+            }
+        )
+    return rows
 
 
 def _write_csv(path: Path, rows: Iterable[Mapping[str, object]]) -> None:
@@ -304,6 +409,7 @@ def run(input_path: Path, output_dir: Path) -> dict[str, object]:
     summary_rows = summarize_classifications(classified)
     summary = pd.DataFrame(summary_rows)
     flagged = flag_operating_regions(summary)
+    false_safe_metrics = summarize_false_safe_metrics(summary)
     special_mask = pd.Series(False, index=summary.index)
     for scenario, n in SPECIAL_COMPARISON_CELLS:
         special_mask |= (summary["scenario"] == scenario) & (summary["n"] == n)
@@ -312,6 +418,10 @@ def run(input_path: Path, output_dir: Path) -> dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
     summary.to_csv(output_dir / "sampling_robustness_v3_comparison.csv", index=False)
     flagged.to_csv(output_dir / "sampling_robustness_v3_flagged_regions.csv", index=False)
+    pd.DataFrame(false_safe_metrics).to_csv(
+        output_dir / "sampling_robustness_v3_false_safe_metrics.csv",
+        index=False,
+    )
     special.to_csv(output_dir / "sampling_robustness_v3_special_cells.csv", index=False)
 
     metadata = {
@@ -331,6 +441,7 @@ def run(input_path: Path, output_dir: Path) -> dict[str, object]:
             "acceptable_type_i_max": SamplingRobustnessV3.CALIBRATION_TYPE_I_TARGET,
             "acceptable_coverage_min": SamplingRobustnessV3.CALIBRATION_COVERAGE_TARGET,
         },
+        "false_safe_metrics": false_safe_metrics,
         "replications": len(replicates),
         "cell_count": int(replicates.groupby(["scenario", "n"]).ngroups),
         "python_version": platform.python_version(),
@@ -339,14 +450,28 @@ def run(input_path: Path, output_dir: Path) -> dict[str, object]:
         "pandas_version": pd.__version__,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "profiles": {
-            "v3_default": {
+            V3_DEFAULT_PROFILE: {
+                "profile_kind": "sample_default",
+                "headline_eligible": True,
                 "model_provenance": "unknown",
                 "process_uncertainty": "unknown",
             },
-            "v3_scenario_context": (
-                "External simulation-truth provenance; process elevated for prespecified "
-                "asymmetric/skew scenarios and low otherwise"
-            ),
+            "realistic_external_context": {
+                "available": False,
+                "reason": (
+                    "No external study metadata independent of simulation-generator "
+                    "truth is available in this calibration artifact."
+                ),
+            },
+            V3_ORACLE_PROFILE: {
+                "profile_kind": "oracle_simulation_truth",
+                "headline_eligible": False,
+                "uses_true_generator_knowledge": True,
+                "description": (
+                    "Sensitivity profile using true generator family/scenario to set "
+                    "external provenance and process uncertainty."
+                ),
+            },
         },
     }
     (output_dir / "sampling_robustness_v3_metadata.json").write_text(

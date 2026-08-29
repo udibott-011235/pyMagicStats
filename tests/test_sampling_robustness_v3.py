@@ -1,7 +1,14 @@
 import numpy as np
+import pandas as pd
 import pytest
 
-from experiments.sampling_robustness_v3_calibration import run
+from experiments.sampling_robustness_v3_calibration import (
+    V3_DEFAULT_PROFILE,
+    V3_ORACLE_PROFILE,
+    flag_operating_regions,
+    run,
+    summarize_false_safe_metrics,
+)
 from pyMagicStat.assumptions import (
     Assessment,
     AssessmentStatus,
@@ -18,7 +25,7 @@ from pyMagicStat.assumptions import (
     SamplingRobustness,
     SamplingRobustnessV3,
 )
-from pyMagicStat.inference import MethodSelector
+from pyMagicStat.inference import InferenceDecisionStatus, MethodSelector
 
 
 def _policy(
@@ -41,6 +48,7 @@ def _report(
     extreme_fraction=0.0,
     influence_ratio=0.0,
     independence=AssessmentStatus.PASS,
+    independence_metric=None,
     quality=AssessmentStatus.PASS,
     design=InferenceDesign.ONE_SAMPLE,
     estimand=Estimand.MEAN,
@@ -51,42 +59,51 @@ def _report(
         shape_status, magnitude = AssessmentStatus.WARN, "moderate"
     else:
         shape_status, magnitude = AssessmentStatus.PASS, "mild"
+    assessments = {
+        "data_quality": Assessment(
+            "data_quality_sample",
+            quality,
+            {"n": n},
+        ),
+        "shape": Assessment(
+            "shape_sample",
+            shape_status,
+            {
+                "n": n,
+                "skewness": skewness,
+                "excess_kurtosis": kurtosis,
+                "departure_magnitude": magnitude,
+                "exact_normality_rejected": exact_rejected,
+                "shapiro_p_value": 0.001 if exact_rejected else 0.5,
+            },
+        ),
+        "outliers": Assessment(
+            "outliers_sample",
+            AssessmentStatus.WARN if extreme_count else AssessmentStatus.PASS,
+            {
+                "count": extreme_count,
+                "fraction": extreme_fraction,
+                "influence_ratio": influence_ratio,
+            },
+        ),
+    }
+    if independence is not None:
+        metric = independence_metric
+        if metric is None:
+            metric = (
+                "unknown"
+                if independence is AssessmentStatus.NOT_ASSESSED
+                else "assumed"
+            )
+        assessments["independence"] = Assessment(
+            "independence",
+            independence,
+            {"independence": metric},
+        )
     return AssumptionReport(
         design=design,
         estimand=estimand,
-        assessments={
-            "data_quality": Assessment(
-                "data_quality_sample",
-                quality,
-                {"n": n},
-            ),
-            "shape": Assessment(
-                "shape_sample",
-                shape_status,
-                {
-                    "n": n,
-                    "skewness": skewness,
-                    "excess_kurtosis": kurtosis,
-                    "departure_magnitude": magnitude,
-                    "exact_normality_rejected": exact_rejected,
-                    "shapiro_p_value": 0.001 if exact_rejected else 0.5,
-                },
-            ),
-            "outliers": Assessment(
-                "outliers_sample",
-                AssessmentStatus.WARN if extreme_count else AssessmentStatus.PASS,
-                {
-                    "count": extreme_count,
-                    "fraction": extreme_fraction,
-                    "influence_ratio": influence_ratio,
-                },
-            ),
-            "independence": Assessment(
-                "independence",
-                independence,
-                {"independence": "unknown" if independence is AssessmentStatus.NOT_ASSESSED else "assumed"},
-            ),
-        },
+        assessments=assessments,
     )
 
 
@@ -281,6 +298,16 @@ def test_v2_legacy_policy_and_method_selector_default_are_unchanged():
     assert set(legacy.evaluate(_report()).to_dict()) == {"level", "reasons"}
 
 
+def test_v2_caution_preserves_legacy_automatic_t_selection():
+    decision = MethodSelector().select(
+        _report(independence=AssessmentStatus.NOT_ASSESSED)
+    )
+
+    assert decision.robustness.level is RobustnessLevel.CAUTION
+    assert decision.selected_method == "one_sample_t"
+    assert decision.status is InferenceDecisionStatus.SELECTED
+
+
 def test_method_selector_accepts_injected_v3_and_serializes_rich_result():
     selector = MethodSelector(_policy())
     decision = selector.select(_report())
@@ -289,6 +316,94 @@ def test_method_selector_accepts_injected_v3_and_serializes_rich_result():
     assert decision.selected_method == "one_sample_t"
     assert serialized["robustness"]["policy_version"] == "mean-v3-candidate-2026-08"
     assert serialized["robustness"]["model_support"] == "external"
+
+
+def test_v3_caution_requires_review_and_does_not_select_a_method():
+    decision = MethodSelector(SamplingRobustnessV3()).select(_report())
+
+    assert decision.robustness.level is RobustnessLevel.CAUTION
+    assert decision.selected_method is None
+    assert decision.status is InferenceDecisionStatus.REVIEW_REQUIRED
+    assert decision.alternatives
+
+
+def test_v3_insufficient_does_not_select_a_method():
+    decision = MethodSelector(
+        _policy(AssumptionProvenance.EMPIRICAL)
+    ).select(_report(n=100, skewness=3.0, kurtosis=10.0))
+
+    assert decision.robustness.level is RobustnessLevel.INSUFFICIENT
+    assert decision.selected_method is None
+    assert decision.status is InferenceDecisionStatus.INSUFFICIENT
+
+
+def test_v3_not_calibrated_estimand_does_not_select_a_method():
+    decision = MethodSelector(_policy()).select(
+        _report(estimand=Estimand.VARIANCE)
+    )
+
+    assert decision.robustness.empirical_support is EmpiricalSupport.NOT_CALIBRATED
+    assert decision.selected_method is None
+    assert decision.status is InferenceDecisionStatus.NOT_CALIBRATED
+
+
+def test_v3_paired_design_is_not_calibrated_and_never_selects_paired_t():
+    decision = MethodSelector(_policy()).select(
+        _report(
+            design=InferenceDesign.PAIRED,
+            estimand=Estimand.MEAN_DIFFERENCE,
+        )
+    )
+
+    assert decision.robustness.empirical_support is EmpiricalSupport.NOT_CALIBRATED
+    assert decision.selected_method is None
+    assert decision.status is InferenceDecisionStatus.NOT_CALIBRATED
+    assert decision.selected_method != "paired_t"
+
+
+@pytest.mark.parametrize("equal_var", [False, True])
+def test_v3_two_sample_design_never_selects_welch_or_student_t(equal_var):
+    decision = MethodSelector(_policy()).select(
+        _report(
+            design=InferenceDesign.TWO_SAMPLE,
+            estimand=Estimand.MEAN_DIFFERENCE,
+        ),
+        equal_var=equal_var,
+    )
+
+    assert decision.robustness.empirical_support is EmpiricalSupport.NOT_CALIBRATED
+    assert decision.selected_method is None
+    assert decision.status is InferenceDecisionStatus.NOT_CALIBRATED
+    assert decision.selected_method not in {"student_t", "welch_t"}
+
+
+def test_v3_missing_independence_assessment_cannot_be_acceptable():
+    result = _policy().evaluate(_report(independence=None))
+
+    assert result.level is RobustnessLevel.CAUTION
+    assert result.diagnostics["independence_unknown"] is True
+
+
+def test_v3_not_assessed_independence_cannot_be_acceptable():
+    result = _policy().evaluate(
+        _report(independence=AssessmentStatus.NOT_ASSESSED)
+    )
+
+    assert result.level is RobustnessLevel.CAUTION
+    assert result.diagnostics["independence_unknown"] is True
+
+
+@pytest.mark.parametrize("metric", ["assumed", "verified"])
+def test_v3_explicit_supported_independence_can_satisfy_component(metric):
+    result = _policy().evaluate(
+        _report(
+            independence=AssessmentStatus.PASS,
+            independence_metric=metric,
+        )
+    )
+
+    assert result.level is RobustnessLevel.ACCEPTABLE
+    assert result.diagnostics["independence_unknown"] is False
 
 
 def test_v3_marks_non_one_sample_design_as_not_calibrated_caution():
@@ -302,6 +417,69 @@ def test_v3_marks_non_one_sample_design_as_not_calibrated_caution():
     assert result.level is RobustnessLevel.CAUTION
     assert result.empirical_support is EmpiricalSupport.NOT_CALIBRATED
     assert result.diagnostics["calibrated_domain"] is False
+
+
+def _reporting_summary() -> pd.DataFrame:
+    rows = []
+    for policy, acceptable in (
+        ("v2", 50),
+        (V3_DEFAULT_PROFILE, 0),
+        (V3_ORACLE_PROFILE, 80),
+    ):
+        rows.extend(
+            [
+                {
+                    "policy": policy,
+                    "level": "all",
+                    "total_replications": 100,
+                    "conditional_denominator": 100,
+                    "type_i_error": 0.05,
+                    "ci_coverage": 0.95,
+                },
+                {
+                    "policy": policy,
+                    "level": "acceptable",
+                    "total_replications": 100,
+                    "conditional_denominator": acceptable,
+                    "type_i_error": 0.05 if acceptable else np.nan,
+                    "ci_coverage": 0.95 if acceptable else np.nan,
+                },
+            ]
+        )
+    return pd.DataFrame(rows)
+
+
+def test_false_safe_reporting_marks_zero_acceptance_as_vacuous():
+    summary = _reporting_summary()
+    metrics = summarize_false_safe_metrics(summary)
+    default = next(
+        item for item in metrics if item["policy"] == V3_DEFAULT_PROFILE
+    )
+    flagged = flag_operating_regions(summary)
+    default_flag = flagged[
+        (flagged["policy"] == V3_DEFAULT_PROFILE)
+        & (flagged["level"] == "acceptable")
+    ].iloc[0]
+
+    assert default["acceptable_denominator"] == 0
+    assert default["overall_acceptable_rate"] == 0.0
+    assert default["confirmatory_false_safe_regions"] is None
+    assert default["false_safe_evaluation"] == "NOT EVALUABLE / VACUOUS"
+    assert default["supports_zero_false_safe_claim"] is False
+    assert default_flag["operating_region"] == "not_evaluable_vacuous"
+
+
+def test_oracle_profile_is_labeled_and_excluded_from_headline_claims():
+    oracle = next(
+        item
+        for item in summarize_false_safe_metrics(_reporting_summary())
+        if item["policy"] == V3_ORACLE_PROFILE
+    )
+
+    assert V3_ORACLE_PROFILE == "v3_oracle_simulation_truth"
+    assert oracle["profile_kind"] == "oracle_simulation_truth"
+    assert oracle["headline_eligible"] is False
+    assert oracle["supports_zero_false_safe_claim"] is False
 
 
 def test_v3_calibration_runner_rejects_any_holdout_path(tmp_path):

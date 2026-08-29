@@ -6,7 +6,11 @@ from pyMagicStat.assumptions.robustness import (
     RobustnessResult,
     SamplingRobustness,
 )
-from pyMagicStat.assumptions.robustness_v3 import SamplingRobustnessV3
+from pyMagicStat.assumptions.robustness_v3 import (
+    EmpiricalSupport,
+    RobustnessResultV3,
+    SamplingRobustnessV3,
+)
 from pyMagicStat.inference.decision import (
     InferenceDecision,
     InferenceDecisionStatus,
@@ -51,6 +55,19 @@ class MethodSelector:
         alternatives = self._alternatives(report.design)
         reasons = list(robustness.reasons)
 
+        if (
+            isinstance(robustness, RobustnessResultV3)
+            and robustness.empirical_support is EmpiricalSupport.NOT_CALIBRATED
+        ):
+            return InferenceDecision(
+                selected_method=None,
+                robustness=robustness,
+                report=report,
+                reasons=tuple(reasons),
+                alternatives=alternatives,
+                status=InferenceDecisionStatus.NOT_CALIBRATED,
+            )
+
         if robustness.level is RobustnessLevel.INSUFFICIENT:
             reasons.append("A mean-preserving resampling or robust procedure should be considered.")
             return InferenceDecision(
@@ -60,6 +77,22 @@ class MethodSelector:
                 reasons=tuple(reasons),
                 alternatives=alternatives,
                 status=InferenceDecisionStatus.INSUFFICIENT,
+            )
+
+        if (
+            isinstance(robustness, RobustnessResultV3)
+            and robustness.level is RobustnessLevel.CAUTION
+        ):
+            reasons.append(
+                "SamplingRobustnessV3 requires review before a method is selected."
+            )
+            return InferenceDecision(
+                selected_method=None,
+                robustness=robustness,
+                report=report,
+                reasons=tuple(reasons),
+                alternatives=alternatives,
+                status=InferenceDecisionStatus.REVIEW_REQUIRED,
             )
 
         if report.design is InferenceDesign.ONE_SAMPLE:

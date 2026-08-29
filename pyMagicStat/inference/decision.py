@@ -16,6 +16,7 @@ class MethodAlternative:
 
 class InferenceDecisionStatus(str, Enum):
     SELECTED = "selected"
+    REVIEW_REQUIRED = "review_required"
     INSUFFICIENT = "insufficient"
     NOT_CALIBRATED = "not_calibrated"
 

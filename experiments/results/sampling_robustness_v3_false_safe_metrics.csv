@@ -1,0 +1,4 @@
+policy,profile_kind,headline_eligible,total_replications,acceptable_denominator,overall_acceptable_rate,confirmatory_false_safe_regions,false_safe_evaluation,supports_zero_false_safe_claim
+v2,legacy,True,237800,112694,0.4739024390243902,5.0,EVALUATED,False
+v3_default,sample_default,True,237800,0,0.0,,NOT EVALUABLE / VACUOUS,False
+v3_oracle_simulation_truth,oracle_simulation_truth,False,237800,82814,0.3482506307821699,0.0,EVALUATED,False
