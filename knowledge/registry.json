@@ -266,6 +266,59 @@
       "tags": ["gate2", "integration", "pr-3", "validated-with-limits"]
     },
     {
+      "id": "EV-006",
+      "kind": "evidence",
+      "title": "Censo del contrato actual de intervalos de proporción — CP-01",
+      "status": "validated_with_limits",
+      "scope": "Censo read-only del contrato de proporción sobre baseline 402e4601, hallazgos de diseño/routing y ausencia de calibración frecuentista en STAGE-PROP-CI-001",
+      "path": "knowledge/evidence/proportion-ci-cp01-census.md",
+      "evidence_paths": ["knowledge/decisions/proportion-ci-stage.md"],
+      "owner_role": "adversarial-statistical-qa",
+      "reviewer_roles": ["statistical-software-architecture", "decision-owner"],
+      "supersedes": [],
+      "tags": ["proportion-ci", "census", "read-only", "validated-with-limits", "cp-01"]
+    },
+    {
+      "id": "DEC-007",
+      "kind": "decision",
+      "title": "Especificación estadística aprobada para intervalos de proporción — CP-02",
+      "status": "accepted",
+      "scope": "Estimando p=P(Y=1) Bernoulli/binomial, candidatos Wilson, Clopper-Pearson y Wald legacy, comparador Jeffreys, routing fail-closed y exclusión de routing automático en STAGE-PROP-CI-001",
+      "path": "knowledge/decisions/proportion-ci-cp02-spec.md",
+      "evidence_paths": [
+        "knowledge/evidence/proportion-ci-cp01-census.md",
+        "knowledge/decisions/proportion-ci-stage.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": [
+        "proportion-ci",
+        "specification",
+        "wilson",
+        "clopper-pearson",
+        "wald",
+        "cp-02"
+      ]
+    },
+    {
+      "id": "DEC-008",
+      "kind": "decision",
+      "title": "Contrato de API y compatibilidad para intervalos de proporción — CP-03",
+      "status": "accepted",
+      "scope": "Constructor from_counts, compatibilidad legacy, export público, métodos wilson/clopper_pearson/wald, transición incidences, metadata, 71 tests, selector fail-closed y paso a CP-04",
+      "path": "knowledge/decisions/proportion-ci-cp03-api-contract.md",
+      "evidence_paths": [
+        "knowledge/decisions/proportion-ci-cp03-acceptance.md",
+        "knowledge/decisions/proportion-ci-cp02-spec.md",
+        "knowledge/decisions/proportion-ci-stage.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["proportion-ci", "api-contract", "from-counts", "compatibility", "cp-03"]
+    },
+    {
       "id": "BR-001",
       "kind": "branch",
       "title": "Branch lifecycle — main",
