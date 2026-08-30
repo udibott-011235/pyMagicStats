@@ -30,17 +30,17 @@ EXPECTED_BRANCH_NAMES = {
 
 EXPECTED_LIFECYCLE = {
     "BR-001": ("accepted", "canonical", "not_applicable"),
-    "BR-002": ("archived", "same_head", "not_applicable"),
-    "BR-003": ("under_review", "diverged", "merge_candidate"),
+    "BR-002": ("archived", "fully_contained", "not_applicable"),
+    "BR-003": ("archived", "fully_contained", "merged"),
     "BR-004": ("archived", "fully_contained", "merged"),
     "BR-005": ("under_review", "diverged", "pending"),
     "BR-006": ("archived", "fully_contained", "merged"),
     "BR-007": ("archived", "fully_contained", "merged"),
     "BR-008": ("archived", "fully_contained", "merged"),
     "BR-009": ("archived", "fully_contained", "merged"),
-    "BR-010": ("superseded", "same_head", "not_planned"),
-    "BR-011": ("superseded", "contains_main", "not_planned"),
-    "BR-012": ("validated_with_limits", "contains_main", "merge_candidate"),
+    "BR-010": ("superseded", "fully_contained", "not_planned"),
+    "BR-011": ("superseded", "fully_contained", "merged"),
+    "BR-012": ("archived", "fully_contained", "merged"),
     "BR-013": ("archived", "fully_contained", "merged"),
     "BR-014": ("archived", "fully_contained", "merged"),
     "BR-015": ("archived", "fully_contained", "merged"),
@@ -66,9 +66,9 @@ def test_schema_and_registry_versions_define_conditional_branch_records():
     item_schema = schema["properties"]["records"]["items"]
 
     assert registry["schema_version"] == "1.1.0"
-    assert registry["knowledge_base_version"] == "1.2.0"
+    assert registry["knowledge_base_version"] == "1.3.0"
     assert schema["properties"]["schema_version"]["const"] == "1.1.0"
-    assert schema["properties"]["knowledge_base_version"]["const"] == "1.2.0"
+    assert schema["properties"]["knowledge_base_version"]["const"] == "1.3.0"
     assert "branch" in item_schema["properties"]["kind"]["enum"]
     assert item_schema["allOf"][0]["then"] == {"required": ["branch"]}
     assert item_schema["allOf"][0]["else"] == {"not": {"required": ["branch"]}}
@@ -112,20 +112,24 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert registry["canonical_branch"] == "main"
     assert main["status"] == "accepted"
     assert main["branch"]["relation_to_main"] == "canonical"
-    assert knowledge["status"] == "under_review"
-    assert knowledge["branch"]["integration_state"] == "merge_candidate"
+    assert main["branch"]["head_sha_at_decision"] == "f1725ebdfebcb667c053420e4cb4c1e35048f9e0"
+    assert knowledge["status"] == "archived"
+    assert knowledge["branch"]["integration_state"] == "merged"
+    assert knowledge["branch"]["merged_via"] == "PR #1"
     assert knowledge["branch"]["pr_number"] == 1
     assert anova["status"] == "under_review"
     assert anova["branch"]["integration_state"] == "pending"
     assert gate2_placeholder["status"] == "superseded"
     assert gate2_distribution["supersedes"] == ["BR-010"]
+    assert gate2_distribution["branch"]["integration_state"] == "merged"
     assert gate2_adversarial["supersedes"] == ["BR-011"]
-    assert gate2_adversarial["status"] == "validated_with_limits"
-    assert gate2_adversarial["branch"]["integration_state"] == "merge_candidate"
-    assert gate2_adversarial["branch"]["parent_sha"] == (
-        "0fc71c90c15f7c82b55ba650de742265d492df33"
+    assert gate2_adversarial["status"] == "archived"
+    assert gate2_adversarial["branch"]["integration_state"] == "merged"
+    assert gate2_adversarial["branch"]["merged_via"] == "PR #3"
+    assert gate2_adversarial["branch"]["head_sha_at_decision"] == (
+        "9a87c5d48dba8b8a172b5386d7318e7f37ec98fe"
     )
-    assert gate2_adversarial["branch"]["ahead_of_main"] == 2
+    assert gate2_adversarial["branch"]["ahead_of_main"] == 0
 
 
 def test_validator_rejects_missing_or_forbidden_branch_objects():

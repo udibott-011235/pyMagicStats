@@ -1,7 +1,7 @@
 {
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
-  "knowledge_base_version": "1.2.0",
+  "knowledge_base_version": "1.3.0",
   "last_updated": "2026-08-30",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
@@ -19,15 +19,9 @@
       "status": "accepted",
       "scope": "Inferencia de medias y diagnósticos de diseños de una vía en main",
       "path": "knowledge/theory/inference-principles.md",
-      "evidence_paths": [
-        "Docs/inference-engine.md",
-        "Docs/sampling-robustness-calibration.md"
-      ],
+      "evidence_paths": ["Docs/inference-engine.md", "Docs/sampling-robustness-calibration.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["estimand", "assumptions", "robustness", "method-selection"]
     },
@@ -51,10 +45,7 @@
       "status": "accepted",
       "scope": "Arquitectura del motor de inferencia",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": [
-        "pyMagicStat/assumptions/validator.py",
-        "pyMagicStat/inference/selector.py"
-      ],
+      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "pyMagicStat/inference/selector.py"],
       "owner_role": "decision-owner",
       "reviewer_roles": [
         "statistical-software-architecture",
@@ -71,10 +62,7 @@
       "status": "accepted",
       "scope": "Pruebas t de dos grupos independientes",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": [
-        "pyMagicStat/inference/parametric.py",
-        "tests/test_parametric.py"
-      ],
+      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_parametric.py"],
       "owner_role": "decision-owner",
       "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
@@ -87,10 +75,7 @@
       "status": "accepted",
       "scope": "Intervalos bootstrap disponibles en main",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": [
-        "pyMagicStat/inference/parametric.py",
-        "tests/test_bootstrap.py"
-      ],
+      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_bootstrap.py"],
       "owner_role": "decision-owner",
       "reviewer_roles": [
         "statistical-software-architecture",
@@ -107,15 +92,9 @@
       "status": "accepted",
       "scope": "ANOVA y Welch ANOVA",
       "path": "knowledge/theory/inference-principles.md",
-      "evidence_paths": [
-        "Docs/inference-engine.md",
-        "Docs/sampling-robustness-calibration.md"
-      ],
+      "evidence_paths": ["Docs/inference-engine.md", "Docs/sampling-robustness-calibration.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["anova", "welch-anova", "calibration", "residuals"]
     },
@@ -132,10 +111,7 @@
         "experiments/results/sampling_robustness_summary.csv"
       ],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["coverage", "type-i-error", "calibration"]
     },
@@ -146,15 +122,9 @@
       "status": "validated_with_limits",
       "scope": "Diagnóstico implementado; no valida el estadístico ANOVA",
       "path": "knowledge/evidence/current-evidence.md",
-      "evidence_paths": [
-        "pyMagicStat/assumptions/validator.py",
-        "tests/test_assumptions.py"
-      ],
+      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "tests/test_assumptions.py"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["anova", "residuals", "assumptions"]
     },
@@ -165,14 +135,9 @@
       "status": "validated_with_limits",
       "scope": "Matriz documentada en EV-001",
       "path": "experiments/robustness_calibration.py",
-      "evidence_paths": [
-        "experiments/results/sampling_robustness_metadata.json"
-      ],
+      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["simulation", "reproducibility"]
     },
@@ -199,9 +164,7 @@
       "status": "accepted",
       "scope": "152 celdas derivadas; no es input",
       "path": "experiments/results/sampling_robustness_summary.csv",
-      "evidence_paths": [
-        "experiments/results/sampling_robustness_metadata.json"
-      ],
+      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
       "owner_role": "implementation-engineering",
       "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
@@ -216,10 +179,7 @@
       "path": "examples/df_test_2way_t_test.xlsx",
       "evidence_paths": [],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["fixture", "provenance-gap"]
     },
@@ -232,10 +192,7 @@
       "path": "Docs/technical-debt.md",
       "evidence_paths": ["pyMagicStat/assumptions/assessments.py"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["numerical", "float64", "underflow"]
     },
@@ -246,10 +203,7 @@
       "status": "under_review",
       "scope": "Gobernanza de ChatGPT, Cortex y Antigravity en pyMagicStats",
       "path": "knowledge/SYSTEM_PROMPTS.md",
-      "evidence_paths": [
-        "knowledge/GOVERNANCE.md",
-        "knowledge/AGENT_PROTOCOL.md"
-      ],
+      "evidence_paths": ["knowledge/GOVERNANCE.md", "knowledge/AGENT_PROTOCOL.md"],
       "owner_role": "decision-owner",
       "reviewer_roles": [
         "statistical-software-architecture",
@@ -268,10 +222,7 @@
       "path": "knowledge/decisions/branch-lifecycle-governance.md",
       "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "implementation-engineering"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering"],
       "supersedes": [],
       "tags": ["branch", "governance", "lifecycle", "authority"]
     },
@@ -284,10 +235,7 @@
       "path": "knowledge/evidence/branch-inventory-2026-08-30.md",
       "evidence_paths": [],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["branch", "forensics", "git", "lifecycle"]
     },
@@ -300,12 +248,22 @@
       "path": "knowledge/evidence/gate2-adversarial-clear-9a87c5d.md",
       "evidence_paths": [],
       "owner_role": "adversarial-statistical-qa",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "decision-owner"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "decision-owner"],
       "supersedes": [],
       "tags": ["gate2", "adversarial", "gof", "validated-with-limits"]
+    },
+    {
+      "id": "EV-005",
+      "kind": "evidence",
+      "title": "Gate 2 integration — f1725eb",
+      "status": "validated_with_limits",
+      "scope": "Integración controlada de Gate 2 en main mediante PR #3",
+      "path": "knowledge/evidence/gate2-integration-f1725eb.md",
+      "evidence_paths": ["knowledge/evidence/gate2-adversarial-clear-9a87c5d.md"],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["gate2", "integration", "pr-3", "validated-with-limits"]
     },
     {
       "id": "BR-001",
@@ -314,17 +272,17 @@
       "status": "accepted",
       "scope": "Rama canónica del repositorio",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
-      "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "implementation-engineering"
+      "evidence_paths": [
+        "knowledge/evidence/branch-inventory-2026-08-30.md",
+        "knowledge/evidence/gate2-integration-f1725eb.md"
       ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering"],
       "supersedes": [],
       "tags": ["branch", "canonical", "main"],
       "branch": {
         "name": "main",
-        "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "head_sha_at_decision": "f1725ebdfebcb667c053420e4cb4c1e35048f9e0",
         "observed_at": "2026-08-30",
         "relation_to_main": "canonical",
         "integration_state": "not_applicable",
@@ -332,7 +290,7 @@
         "behind_main": 0,
         "unique_commits": [],
         "decision_reason": "Rama canónica contra la que se observan las demás ramas.",
-        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "merge_base": "f1725ebdfebcb667c053420e4cb4c1e35048f9e0",
         "next_action": "Ninguna acción de lifecycle sin decisión expresa de Product Owner y Arquitectura."
       }
     },
@@ -352,12 +310,12 @@
         "name": "audit/global-main-a0881c4",
         "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
         "observed_at": "2026-08-30",
-        "relation_to_main": "same_head",
+        "relation_to_main": "fully_contained",
         "integration_state": "not_applicable",
         "ahead_of_main": 0,
-        "behind_main": 0,
+        "behind_main": 8,
         "unique_commits": [],
-        "decision_reason": "Snapshot y alias histórico de auditoría; cero commits únicos y mismo HEAD que main.",
+        "decision_reason": "Snapshot y alias histórico de auditoría; cero commits únicos y contenido en main tras las integraciones de PR #1 y PR #3.",
         "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
         "next_action": "Conservar archivada hasta una futura decisión explícita de lifecycle."
       }
@@ -366,7 +324,7 @@
       "id": "BR-003",
       "kind": "branch",
       "title": "Branch lifecycle — docs/project-knowledge-base",
-      "status": "under_review",
+      "status": "archived",
       "scope": "Knowledge Base compartida y su PR existente",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
@@ -377,26 +335,23 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": ["branch", "knowledge-base", "merge-candidate", "pr-1"],
+      "tags": ["branch", "knowledge-base", "archived", "pr-1", "merged"],
       "branch": {
         "name": "docs/project-knowledge-base",
-        "head_sha_at_decision": "896fd33d237a798fc681a77c9224a3f86cc50263",
+        "head_sha_at_decision": "0a853ba4f25dd160bd8f182e221744280cd980a8",
         "observed_at": "2026-08-30",
-        "relation_to_main": "diverged",
-        "integration_state": "merge_candidate",
-        "ahead_of_main": 3,
-        "behind_main": 13,
-        "unique_commits": [
-          "861abed1d6084354c907d728c3ebb92e7e658df7",
-          "7df762efc8677ead9377ca7ad93a02b825f875a7",
-          "896fd33d237a798fc681a77c9224a3f86cc50263"
-        ],
-        "decision_reason": "Tres commits propios todavía no integrados; Product Owner y Arquitectura mantienen esta rama como candidata en el PR existente.",
-        "merge_base": "33f28bd0487d4a4aff05253d013ba5f010493430",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 17,
+        "unique_commits": [],
+        "decision_reason": "Knowledge Base compartida integrada formalmente en main mediante PR #1; archivada tras integración.",
+        "merge_base": "0a853ba4f25dd160bd8f182e221744280cd980a8",
         "pr_number": 1,
         "parent_branch": "main",
         "parent_sha": "33f28bd0487d4a4aff05253d013ba5f010493430",
-        "next_action": "Continuar revisión arquitectónica dentro del PR #1 existente."
+        "next_action": "Conservar la rama archivada; no borrar.",
+        "merged_via": "PR #1"
       }
     },
     {
@@ -418,7 +373,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 4,
+        "behind_main": 12,
         "unique_commits": [],
         "decision_reason": "Su historia está completamente contenida en main mediante la cadena integrada por PR #2.",
         "merge_base": "05bc7106cca40fafc64ea78433f637ddbdfe48c5",
@@ -437,10 +392,7 @@
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["branch", "anova", "pending", "under-review"],
       "branch": {
@@ -450,7 +402,7 @@
         "relation_to_main": "diverged",
         "integration_state": "pending",
         "ahead_of_main": 4,
-        "behind_main": 13,
+        "behind_main": 21,
         "unique_commits": [
           "c4174d544165db8e0c9b719dd9e813b9dc01564b",
           "4951aa5292d7a5922925440b0076ee784bdd799e",
@@ -483,7 +435,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 5,
+        "behind_main": 13,
         "unique_commits": [],
         "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
         "merge_base": "427d75b4ea2f72a0e6c6aabbc5b79084721c698e",
@@ -502,10 +454,7 @@
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["branch", "archived", "empirical-likelihood", "tree-equivalent"],
       "branch": {
@@ -515,9 +464,9 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 1,
+        "behind_main": 9,
         "unique_commits": [],
-        "decision_reason": "Head del PR #2 ya integrado; su árbol era equivalente al main actual en la observación forense.",
+        "decision_reason": "Head del PR #2 ya integrado en main.",
         "merge_base": "c3c3834f177b8161fb25a9028251a755360a7ee9",
         "merged_via": "PR #2",
         "pr_number": 2,
@@ -545,7 +494,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 3,
+        "behind_main": 11,
         "unique_commits": [],
         "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
         "merge_base": "51d74e74386eed1c0fe4cc4e90b394dc119acc85",
@@ -574,7 +523,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 2,
+        "behind_main": 10,
         "unique_commits": [],
         "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
         "merge_base": "c8dd9ab949f12801944cb465fc5bba8186a70134",
@@ -600,14 +549,14 @@
         "name": "fix/gate2-major-remediation",
         "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
         "observed_at": "2026-08-30",
-        "relation_to_main": "same_head",
+        "relation_to_main": "fully_contained",
         "integration_state": "not_planned",
         "ahead_of_main": 0,
-        "behind_main": 0,
+        "behind_main": 8,
         "unique_commits": [],
-        "decision_reason": "Rama placeholder sin commit material propio; comparte exactamente el HEAD de main.",
+        "decision_reason": "Rama placeholder histórica sin commits propios tras a0881c4; superseded por BR-011 y preservada como registro histórico.",
         "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
-        "next_action": "No borrar; conservar su genealogía como registro superseded."
+        "next_action": "No borrar; conservar su genealogía como registro superseded y placeholder histórico."
       }
     },
     {
@@ -617,40 +566,41 @@
       "status": "superseded",
       "scope": "Primer candidato materializado de remediación Gate 2 GOF",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
-      "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
+      "evidence_paths": [
+        "knowledge/evidence/branch-inventory-2026-08-30.md",
+        "knowledge/evidence/gate2-integration-f1725eb.md"
       ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": ["BR-010"],
-      "tags": ["branch", "gate2", "gof", "superseded"],
+      "tags": ["branch", "gate2", "gof", "superseded", "merged"],
       "branch": {
         "name": "fix/gate2-distribution-gof-remediation",
         "head_sha_at_decision": "0fc71c90c15f7c82b55ba650de742265d492df33",
         "observed_at": "2026-08-30",
-        "relation_to_main": "contains_main",
-        "integration_state": "not_planned",
-        "ahead_of_main": 1,
-        "behind_main": 0,
-        "unique_commits": ["0fc71c90c15f7c82b55ba650de742265d492df33"],
-        "decision_reason": "Materializó Gate 2 sobre main y reemplazó el placeholder; fue reemplazada a su vez por el candidato adversarial vigente.",
-        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 7,
+        "unique_commits": [],
+        "decision_reason": "Primer candidato Gate 2 materializado; superseded por BR-012 e incorporada indirectamente como ancestro de BR-012 mediante PR #3.",
+        "merge_base": "0fc71c90c15f7c82b55ba650de742265d492df33",
         "parent_branch": "main",
         "parent_sha": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
-        "next_action": "Conservar como ancestro auditado del candidato vigente; no integrar separadamente."
+        "next_action": "Conservar la rama archivada/superseded como ancestro auditado integrado vía PR #3; no borrar."
       }
     },
     {
       "id": "BR-012",
       "kind": "branch",
       "title": "Branch lifecycle — fix/gate2-adversarial-remediation",
-      "status": "validated_with_limits",
+      "status": "archived",
       "scope": "Único candidato Gate 2 vigente después de la remediación adversarial focalizada",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/evidence/branch-inventory-2026-08-30.md",
-        "knowledge/evidence/gate2-adversarial-clear-9a87c5d.md"
+        "knowledge/evidence/gate2-adversarial-clear-9a87c5d.md",
+        "knowledge/evidence/gate2-integration-f1725eb.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -659,24 +609,23 @@
         "implementation-engineering"
       ],
       "supersedes": ["BR-011"],
-      "tags": ["branch", "gate2", "merge-candidate", "validated-with-limits"],
+      "tags": ["branch", "gate2", "archived", "merged", "pr-3"],
       "branch": {
         "name": "fix/gate2-adversarial-remediation",
         "head_sha_at_decision": "9a87c5d48dba8b8a172b5386d7318e7f37ec98fe",
         "observed_at": "2026-08-30",
-        "relation_to_main": "contains_main",
-        "integration_state": "merge_candidate",
-        "ahead_of_main": 2,
-        "behind_main": 0,
-        "unique_commits": [
-          "0fc71c90c15f7c82b55ba650de742265d492df33",
-          "9a87c5d48dba8b8a172b5386d7318e7f37ec98fe"
-        ],
-        "decision_reason": "Es el único candidato Gate 2 vigente, validado con límites y todavía no integrado.",
-        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 6,
+        "unique_commits": [],
+        "decision_reason": "Candidato Gate 2 auditado en 9a87c5d48dba8b8a172b5386d7318e7f37ec98fe e integrado formalmente en main mediante PR #3.",
+        "merge_base": "9a87c5d48dba8b8a172b5386d7318e7f37ec98fe",
         "parent_branch": "fix/gate2-distribution-gof-remediation",
         "parent_sha": "0fc71c90c15f7c82b55ba650de742265d492df33",
-        "next_action": "Aún no merged; esperar autorización expresa de Product Owner y Arquitectura para cualquier integración."
+        "next_action": "Conservar la rama archivada tras integración controlada; no borrar.",
+        "merged_via": "PR #3",
+        "pr_number": 3
       }
     },
     {
@@ -698,7 +647,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 9,
+        "behind_main": 17,
         "unique_commits": [],
         "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
         "merge_base": "46b9f9fa7cee47466154541ea086ada5f5a4e1eb",
@@ -727,7 +676,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 6,
+        "behind_main": 14,
         "unique_commits": [],
         "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
         "merge_base": "763ceeaab86f1ede85eb204a02249df0194346ba",
@@ -756,7 +705,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 14,
+        "behind_main": 22,
         "unique_commits": [],
         "decision_reason": "Su head fue integrado como segundo parent del merge 33f28bd y está completamente contenido en main.",
         "merge_base": "2eb302f9a5ac07b57192af7d7b6451f672835ca4",
@@ -783,7 +732,7 @@
         "relation_to_main": "fully_contained",
         "integration_state": "merged",
         "ahead_of_main": 0,
-        "behind_main": 7,
+        "behind_main": 15,
         "unique_commits": [],
         "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
         "merge_base": "12d5167bdf6dedec748d890b77f3ad683ba22bae",

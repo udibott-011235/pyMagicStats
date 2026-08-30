@@ -118,8 +118,8 @@ def validate_registry(registry: dict[str, Any], root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     if registry.get("schema_version") != "1.1.0":
         errors.append("schema_version must be 1.1.0")
-    if registry.get("knowledge_base_version") != "1.2.0":
-        errors.append("knowledge_base_version must be 1.2.0")
+    if registry.get("knowledge_base_version") != "1.3.0":
+        errors.append("knowledge_base_version must be 1.3.0")
     if registry.get("canonical_branch") != "main":
         errors.append("canonical_branch must be main")
 
