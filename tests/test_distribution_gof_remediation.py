@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 import numpy as np
 import pytest
@@ -8,6 +9,11 @@ from pyMagicStat.distributions.distributions import (
     BinomialDistribution,
     LognormalDistribution,
     PoissonDistribution,
+)
+from pyMagicStat.distributions._discrete_gof import (
+    point_cell,
+    pool_adjacent_tails,
+    upper_tail_cell,
 )
 
 
@@ -36,6 +42,100 @@ def _assert_mass_and_contiguity(result, sample_size):
     for left, right in zip(result["pooled_cells"], result["pooled_cells"][1:]):
         assert left["upper"] is not None
         assert right["lower"] == left["upper"] + 1
+
+
+def _assert_direct_pooling_invariants(original, pooled, minimum_expected=5.0):
+    assert pooled
+    assert all(cell["expected"] >= minimum_expected for cell in pooled)
+    assert sum(cell["observed"] for cell in pooled) == sum(
+        cell["observed"] for cell in original
+    )
+    assert sum(cell["expected"] for cell in pooled) == pytest.approx(
+        sum(cell["expected"] for cell in original), abs=1e-12
+    )
+    assert pooled[0]["lower"] == original[0]["lower"]
+    assert pooled[-1]["upper"] == original[-1]["upper"]
+    for left, right in zip(pooled, pooled[1:]):
+        assert left["upper"] is not None
+        assert right["lower"] == left["upper"] + 1
+
+
+def test_pooling_absorbs_insufficient_cell_into_sufficient_cumulative_tail():
+    cells = [
+        point_cell(0, 100, 100.0),
+        point_cell(1, 2, 2.0),
+        upper_tail_cell(2, 6, 6.0),
+    ]
+
+    pooled = pool_adjacent_tails(cells)
+
+    assert [(cell["lower"], cell["upper"]) for cell in pooled] == [
+        (0, 0),
+        (1, None),
+    ]
+    assert [cell["observed"] for cell in pooled] == [100, 8]
+    assert [cell["expected"] for cell in pooled] == [100.0, 8.0]
+    _assert_direct_pooling_invariants(cells, pooled)
+
+
+@pytest.mark.parametrize(
+    "cells",
+    [
+        [
+            point_cell(0, 2, 2.0),
+            point_cell(1, 3, 3.0),
+            point_cell(2, 20, 20.0),
+            point_cell(3, 3, 3.0),
+            upper_tail_cell(4, 2, 2.0),
+        ],
+        [
+            point_cell(0, 2, 2.0),
+            point_cell(1, 2, 2.0),
+            point_cell(2, 2, 2.0),
+            upper_tail_cell(3, 2, 2.0),
+        ],
+        [
+            point_cell(0, 6, 6.0),
+            point_cell(1, 1, 1.0),
+            point_cell(2, 1, 1.0),
+            point_cell(3, 1, 1.0),
+            upper_tail_cell(4, 6, 6.0),
+        ],
+    ],
+)
+def test_pooling_preserves_partition_when_both_tails_meet_or_approach(cells):
+    pooled = pool_adjacent_tails(cells)
+
+    _assert_direct_pooling_invariants(cells, pooled)
+
+
+def test_poisson_high_lambda_pools_tail_and_matches_manual_pearson_result():
+    data = np.random.default_rng(123).poisson(80.0, size=5000)
+
+    result = PoissonDistribution(data).evaluate_goodness_of_fit()
+
+    observed = np.asarray(
+        [cell["observed"] for cell in result["pooled_cells"]], dtype=float
+    )
+    expected = np.asarray(
+        [cell["expected"] for cell in result["pooled_cells"]], dtype=float
+    )
+    manual_df = len(result["pooled_cells"]) - 2
+    manual_statistic = float(np.sum(np.square(observed - expected) / expected))
+    manual_p_value = float(stats.chi2.sf(manual_statistic, manual_df))
+
+    assert result["status"] == "ok"
+    assert result["minimum_expected"] >= 5.0
+    assert result["observed_total"] == len(data)
+    assert result["expected_total"] == pytest.approx(len(data), abs=1e-9)
+    assert result["df"] == manual_df
+    assert result["statistic"] == pytest.approx(manual_statistic)
+    assert result["chi2"] == pytest.approx(manual_statistic)
+    assert result["p_value"] == pytest.approx(manual_p_value)
+    assert result["decision"] == (
+        "reject" if manual_p_value <= result["alpha"] else "fail_to_reject"
+    )
+    _assert_mass_and_contiguity(result, len(data))
 
 
 def test_lognormal_rejects_when_log_data_reject_exact_normality():
@@ -221,6 +321,10 @@ def test_fit_test_uses_structured_decision_instead_of_legacy_type(monkeypatch):
     def structured_success(*args, **kwargs):
         validator.distribution.assessments["goodness_of_fit"] = fail_to_reject
         validator.distribution.type["Binomial"] = False
+        validator.distribution.type["goodness_of_fit"] = {
+            "status": "ok",
+            "decision": "reject",
+        }
         return fail_to_reject
 
     monkeypatch.setattr(validator, "evaluate_goodness_of_fit", structured_success)
@@ -234,6 +338,10 @@ def test_fit_test_uses_structured_decision_instead_of_legacy_type(monkeypatch):
     def structured_reject(*args, **kwargs):
         validator.distribution.assessments["goodness_of_fit"] = reject
         validator.distribution.type["Binomial"] = True
+        validator.distribution.type["goodness_of_fit"] = {
+            "status": "ok",
+            "decision": "fail_to_reject",
+        }
         return reject
 
     monkeypatch.setattr(validator, "evaluate_goodness_of_fit", structured_reject)
@@ -262,12 +370,42 @@ def test_legacy_type_is_only_a_mirror_of_the_structured_gof_decision():
 
     result = validator.evaluate_goodness_of_fit(n=n, p=p)
 
-    assert validator.distribution.assessments["goodness_of_fit"] is result
-    assert validator.distribution.type["goodness_of_fit"] is result
+    canonical = validator.distribution.assessments["goodness_of_fit"]
+    legacy = validator.distribution.type["goodness_of_fit"]
+    assert canonical is result
+    assert canonical is not legacy
+    assert canonical == legacy
     expected_legacy = result["decision"] == "fail_to_reject"
     assert validator.distribution.type["Binomial"] is expected_legacy
     assert {"status", "decision", "chi2", "p_value", "n", "p"} <= result.keys()
     json.dumps(result, allow_nan=False)
+
+    original = deepcopy(canonical)
+    legacy["decision"] = (
+        "reject" if canonical["decision"] != "reject" else "fail_to_reject"
+    )
+    legacy["parameters"]["n"]["value"] = 999
+    legacy["pooled_cells"][0]["expected"] = -1.0
+    assert canonical == original
+
+
+def test_lognormal_legacy_result_is_deeply_isolated_from_canonical_assessment():
+    probabilities = (np.arange(100, dtype=float) + 0.5) / 100.0
+    validator = LognormalDistribution(np.exp(stats.norm.ppf(probabilities)))
+
+    result = validator.evaluate_normality()
+
+    canonical = validator.distribution.assessments["lognormality"]
+    legacy = validator.distribution.type["normality_log_results"]
+    assert canonical is result
+    assert canonical is not legacy
+    assert canonical == legacy
+
+    original = deepcopy(canonical)
+    legacy["decision"] = "reject"
+    legacy["assessment"]["metrics"]["exact_normality_rejected"] = True
+    legacy["shape"]["skewness"] = 999.0
+    assert canonical == original
 
 
 @pytest.mark.parametrize(("n", "p"), [(2, 0.1), (5, 0.5), (20, 0.9)])

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
 import numpy as np
 import scipy.stats as stats
 import statsmodels.api as sm
@@ -370,7 +371,7 @@ class LognormalDistribution(ContinuousDistributionValidator):
         self.distribution.type.update(
             {
                 "Lognormal": legacy_value,
-                "normality_log_results": result,
+                "normality_log_results": deepcopy(result),
             }
         )
         return result
@@ -439,7 +440,7 @@ class DiscreteDistributionValidator(DistributionValidator, ABC):
         self.distribution.type.update(
             {
                 distribution_name: legacy_value,
-                "goodness_of_fit": result,
+                "goodness_of_fit": deepcopy(result),
             }
         )
         return result

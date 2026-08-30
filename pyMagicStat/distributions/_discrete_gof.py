@@ -179,48 +179,34 @@ def pool_adjacent_tails(
     *,
     minimum_expected: float = MINIMUM_EXPECTED,
 ) -> List[Dict[str, Any]]:
-    """Pool contiguous cells inward from both tails without dropping mass."""
+    """Build an exhaustive contiguous partition with adequate expectations.
+
+    Cells are accumulated in support order.  Every completed group meets the
+    expected-frequency threshold; any insufficient upper-tail remainder is
+    folded into the preceding group.  If the total expected mass itself is
+    insufficient, the single returned group remains below the threshold and
+    the caller reports ``not_assessed``.
+    """
 
     ordered = [_copy_cell(cell) for cell in cells]
     if not ordered:
         return []
 
-    left_index = 0
-    left_group: Optional[Dict[str, Any]] = None
-    if ordered[0]["expected"] < minimum_expected:
-        while left_index < len(ordered) and (
-            left_group is None or left_group["expected"] < minimum_expected
-        ):
-            left_group = (
-                ordered[left_index]
-                if left_group is None
-                else _merge_cells(left_group, ordered[left_index])
-            )
-            left_index += 1
-
-    right_index = len(ordered) - 1
-    right_group: Optional[Dict[str, Any]] = None
-    if right_index >= left_index and ordered[right_index]["expected"] < minimum_expected:
-        while right_index >= left_index and (
-            right_group is None or right_group["expected"] < minimum_expected
-        ):
-            right_group = (
-                ordered[right_index]
-                if right_group is None
-                else _merge_cells(ordered[right_index], right_group)
-            )
-            right_index -= 1
-
     pooled: List[Dict[str, Any]] = []
-    if left_group is not None:
-        pooled.append(left_group)
-    pooled.extend(ordered[left_index : right_index + 1])
-    if right_group is not None:
-        pooled.append(right_group)
-    if len(pooled) > 1 and pooled[0]["expected"] < minimum_expected:
-        pooled[0:2] = [_merge_cells(pooled[0], pooled[1])]
-    if len(pooled) > 1 and pooled[-1]["expected"] < minimum_expected:
-        pooled[-2:] = [_merge_cells(pooled[-2], pooled[-1])]
+    accumulator: Optional[Dict[str, Any]] = None
+    for cell in ordered:
+        accumulator = (
+            cell if accumulator is None else _merge_cells(accumulator, cell)
+        )
+        if accumulator["expected"] >= minimum_expected:
+            pooled.append(accumulator)
+            accumulator = None
+
+    if accumulator is not None:
+        if pooled:
+            pooled[-1] = _merge_cells(pooled[-1], accumulator)
+        else:
+            pooled.append(accumulator)
     return pooled
 
 
