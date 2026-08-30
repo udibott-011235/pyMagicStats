@@ -21,6 +21,7 @@ from pyMagicStat.inference.empirical_likelihood import (
     empirical_likelihood_mean_test,
 )
 from pyMagicStat.inference.non_parametric import BootstrapCI, BootstrapMeanDifferenceCI
+from pyMagicStat.inference.parametric import PopulationProportionCI
 from pyMagicStat.inference.selector import MethodSelector
 
 __all__ = [
@@ -39,6 +40,7 @@ __all__ = [
     "LAMBDA_RESIDUAL_TOLERANCE",
     "MethodAlternative",
     "MethodSelector",
+    "PopulationProportionCI",
     "capabilities_for",
     "capability_for",
     "empirical_likelihood_mean_ci",

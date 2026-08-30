@@ -3,6 +3,7 @@ from typing import Optional, Tuple, Union
 from pyMagicStat.assumptions.models import (
     AssessmentStatus,
     AssumptionReport,
+    Estimand,
     InferenceDesign,
 )
 from pyMagicStat.assumptions.robustness import (
@@ -57,6 +58,25 @@ class MethodSelector:
             ),
             "routing_version": INFERENCE_ROUTING_VERSION,
         }
+        if report.estimand is Estimand.PROPORTION:
+            reason = (
+                "Automatic proportion routing is not calibrated; mean-inference "
+                "capabilities and alternatives cannot be transferred to the "
+                "proportion estimand."
+            )
+            return InferenceDecision(
+                selected_method=None,
+                robustness=RobustnessResult(
+                    RobustnessLevel.INSUFFICIENT,
+                    (reason,),
+                ),
+                report=report,
+                reasons=(reason,),
+                alternatives=(),
+                status=InferenceDecisionStatus.NOT_CALIBRATED,
+                guarantee=InferenceGuarantee.NOT_CALIBRATED,
+                **decision_metadata,
+            )
         if report.design is InferenceDesign.ONE_WAY:
             reason = (
                 "One-way inference is not calibrated or implemented in this release."

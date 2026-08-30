@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as stats
 from math import ceil
+from numbers import Integral, Real
 import warnings
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from pyMagicStat.utils.utils import output_format, parse_hypothesis
@@ -192,47 +193,208 @@ class PopulationMeanCI(NormalDistConfidenceIntervals):
 
 class PopulationProportionCI:
     """
-    Calcula el intervalo de confianza para una proporción poblacional.
+    Two-sided confidence intervals for one Bernoulli/binomial proportion.
+
+    ``independence`` records a design declaration; it is never inferred from
+    the observed values.  Aggregated integer counts should use
+    :meth:`from_counts`.  Numeric ``incidences`` remains a deprecated
+    compatibility route for this stage.
     """
+
+    _METHOD_KINDS = {
+        "wilson": "frequentist_score",
+        "clopper_pearson": "frequentist_exact_conservative",
+        "wald": "frequentist_asymptotic_legacy",
+    }
+    _INDEPENDENCE_VALUES = {"unknown", "assumed", "verified"}
+
     def __init__(
         self,
         data: Any,
         alpha: float = 0.05,
         incidences: Optional[Union[int, float, Callable]] = None,
         method: str = "wilson",
+        *,
+        independence: str = "unknown",
     ) -> None:
-        if not 0.0 < alpha < 1.0:
-            raise ValueError("alpha must be between 0 and 1")
-        self.data = np.asarray(data, dtype=float)
+        alpha_value, method_name, independence_value = self._validate_options(
+            alpha,
+            method,
+            independence,
+        )
+        try:
+            self.data = np.asarray(data, dtype=float)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "Proportion data must be a finite one-dimensional sample"
+            ) from exc
         if self.data.ndim != 1 or self.data.size < 1 or not np.all(np.isfinite(self.data)):
             raise ValueError("Proportion data must be a finite one-dimensional sample")
-        self.alpha = float(alpha)
-        self.n = int(self.data.size)
-        self.method = method.lower()
-        if self.method not in {"wilson", "wald"}:
-            raise ValueError("method must be 'wilson' or 'wald'")
+
+        trials = int(self.data.size)
+        legacy_api_used = False
+        deprecation_reason = None
+        binomial_contract_supported = True
         if callable(incidences):
-            self.incidence_ratio: float = np.mean([1 if incidences(x) else 0 for x in self.data])
+            successes: Union[int, float] = int(
+                sum(1 if incidences(value) else 0 for value in self.data)
+            )
+            input_mode = "predicate"
         elif incidences is not None:
+            if not isinstance(incidences, Real):
+                raise ValueError("numeric incidences must be a real count")
             count = float(incidences)
-            if not 0.0 <= count <= self.n:
+            if not np.isfinite(count):
                 raise ValueError("incidences must be between 0 and the sample size")
-            self.incidence_ratio = count / self.n
+            if not 0.0 <= count <= trials:
+                raise ValueError("incidences must be between 0 and the sample size")
+            legacy_api_used = True
+            if count.is_integer():
+                successes = int(count)
+                input_mode = "legacy_incidences_count"
+                deprecation_reason = (
+                    "Numeric incidences is a legacy aggregated-count API; use "
+                    "PopulationProportionCI.from_counts(successes, trials)."
+                )
+            else:
+                successes = count
+                input_mode = "legacy_fractional_incidences"
+                binomial_contract_supported = False
+                deprecation_reason = (
+                    "Fractional numeric incidences is a legacy API outside the "
+                    "supported Bernoulli/binomial model; redefine the estimand or "
+                    "input and do not treat this result as an ordinary binomial interval."
+                )
+            warnings.warn(
+                deprecation_reason,
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            if not count.is_integer() and method_name == "clopper_pearson":
+                raise ValueError(
+                    "clopper_pearson requires integer binomial successes; "
+                    "fractional incidences is unsupported"
+                )
         else:
             if not np.all(np.isin(self.data, (0.0, 1.0))):
                 raise ValueError("data must be binary when incidences is not provided")
-            self.incidence_ratio = float(np.mean(self.data))
-        self.prop_std_dev: float = np.sqrt(self.incidence_ratio * (1 - self.incidence_ratio) / self.n)
-        self.successes = float(self.incidence_ratio * self.n)
-        self.failures = float(self.n - self.successes)
+            successes = int(np.sum(self.data))
+            input_mode = "binary_data"
+
+        self._initialize(
+            successes=successes,
+            trials=trials,
+            alpha=alpha_value,
+            method=method_name,
+            independence=independence_value,
+            input_mode=input_mode,
+            legacy_api_used=legacy_api_used,
+            deprecation_reason=deprecation_reason,
+            binomial_contract_supported=binomial_contract_supported,
+        )
+
+    @classmethod
+    def from_counts(
+        cls,
+        successes: int,
+        trials: int,
+        alpha: float = 0.05,
+        method: str = "wilson",
+        *,
+        independence: str = "unknown",
+    ) -> "PopulationProportionCI":
+        """Construct an interval directly from discrete binomial counts."""
+
+        if isinstance(successes, (bool, np.bool_)) or not isinstance(successes, Integral):
+            raise ValueError("successes must be an integer count, not bool or float")
+        if isinstance(trials, (bool, np.bool_)) or not isinstance(trials, Integral):
+            raise ValueError("trials must be an integer count, not bool or float")
+        successes_value = int(successes)
+        trials_value = int(trials)
+        if trials_value < 1:
+            raise ValueError("trials must be at least 1")
+        if successes_value < 0 or successes_value > trials_value:
+            raise ValueError("successes must satisfy 0 <= successes <= trials")
+
+        alpha_value, method_name, independence_value = cls._validate_options(
+            alpha,
+            method,
+            independence,
+        )
+        instance = cls.__new__(cls)
+        instance._initialize(
+            successes=successes_value,
+            trials=trials_value,
+            alpha=alpha_value,
+            method=method_name,
+            independence=independence_value,
+            input_mode="counts",
+            legacy_api_used=False,
+            deprecation_reason=None,
+            binomial_contract_supported=True,
+        )
+        return instance
+
+    @classmethod
+    def _validate_options(
+        cls,
+        alpha: float,
+        method: str,
+        independence: str,
+    ) -> Tuple[float, str, str]:
+        try:
+            alpha_value = float(alpha)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("alpha must be between 0 and 1") from exc
+        if not np.isfinite(alpha_value) or not 0.0 < alpha_value < 1.0:
+            raise ValueError("alpha must be between 0 and 1")
+        if not isinstance(method, str) or method.lower() not in cls._METHOD_KINDS:
+            raise ValueError(
+                "method must be 'wilson', 'clopper_pearson', or 'wald'"
+            )
+        if independence not in cls._INDEPENDENCE_VALUES:
+            raise ValueError(
+                "independence must be 'unknown', 'assumed', or 'verified'"
+            )
+        return alpha_value, method.lower(), independence
+
+    def _initialize(
+        self,
+        *,
+        successes: Union[int, float],
+        trials: int,
+        alpha: float,
+        method: str,
+        independence: str,
+        input_mode: str,
+        legacy_api_used: bool,
+        deprecation_reason: Optional[str],
+        binomial_contract_supported: bool,
+    ) -> None:
+        self.alpha = alpha
+        self.n = trials
+        self.method = method
+        self.independence = independence
+        self.input_mode = input_mode
+        self.successes = successes
+        self.failures = trials - successes
+        self.incidence_ratio = float(successes / trials)
+        self.prop_std_dev = float(
+            np.sqrt(self.incidence_ratio * (1.0 - self.incidence_ratio) / trials)
+        )
+        self._legacy_api_used = legacy_api_used
+        self._deprecation_reason = deprecation_reason
+        self._binomial_contract_supported = binomial_contract_supported
         self.normal_approximation_adequate = bool(
             self.successes >= 10.0 and self.failures >= 10.0
         )
         if self.method == "wald" and not self.normal_approximation_adequate:
             warnings.warn(
-                "The Wald interval is unreliable with fewer than 10 expected successes or failures; "
-                "prefer Wilson.",
+                "Wald-specific legacy 10/10 diagnostic: fewer than 10 observed "
+                "successes or failures. This is not a calibration guarantee or "
+                "an automatic method-selection rule.",
                 UserWarning,
+                stacklevel=3,
             )
 
     def calculate_interval(self) -> Dict[str, Any]:
@@ -249,7 +411,7 @@ class PopulationProportionCI:
             margin_of_error = z_value * self.prop_std_dev
             lb = self.incidence_ratio - margin_of_error
             ub = self.incidence_ratio + margin_of_error
-        else:
+        elif self.method == "wilson":
             z_squared = z_value ** 2
             denominator = 1.0 + z_squared / self.n
             center = (self.incidence_ratio + z_squared / (2.0 * self.n)) / denominator
@@ -263,6 +425,27 @@ class PopulationProportionCI:
             )
             lb = max(0.0, center - half_width)
             ub = min(1.0, center + half_width)
+        else:
+            successes = int(self.successes)
+            failures = int(self.failures)
+            lb = (
+                0.0
+                if successes == 0
+                else stats.beta.ppf(
+                    self.alpha / 2.0,
+                    successes,
+                    failures + 1,
+                )
+            )
+            ub = (
+                1.0
+                if failures == 0
+                else stats.beta.ppf(
+                    1.0 - self.alpha / 2.0,
+                    successes + 1,
+                    failures,
+                )
+            )
         result = output_format(lb=float(lb), ub=float(ub))
         result.update(
             {
@@ -274,6 +457,36 @@ class PopulationProportionCI:
                     "failures": self.failures,
                     "normal_approximation_adequate": self.normal_approximation_adequate,
                     "normal_approximation_required": self.method == "wald",
+                    "independence": self.independence,
+                    "common_success_probability": "required_not_verified",
+                    "bernoulli_binomial_model": "required",
+                },
+                "alpha": self.alpha,
+                "confidence_level": 1.0 - self.alpha,
+                "estimand": "proportion",
+                "design": "one_sample",
+                "sampling_model": "bernoulli_binomial",
+                "interval_kind": self._METHOD_KINDS[self.method],
+                "calibration_status": "not_calibrated",
+                "successes": self.successes,
+                "failures": self.failures,
+                "input_mode": self.input_mode,
+                "design_requirements": [
+                    "independent_units",
+                    "common_success_probability",
+                    "bernoulli_binomial_sampling",
+                ],
+                "compatibility": {
+                    "legacy_api_used": self._legacy_api_used,
+                    "deprecated": self._legacy_api_used,
+                    "deprecation_reason": self._deprecation_reason,
+                    "binomial_contract_supported": self._binomial_contract_supported,
+                    "recommended_input": (
+                        "from_counts" if self._legacy_api_used else "binary_data"
+                    )
+                    if self.input_mode != "counts"
+                    else "from_counts",
+                    "legacy_method": self.method == "wald",
                 },
             }
         )
