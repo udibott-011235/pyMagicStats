@@ -70,6 +70,17 @@ Todo cambio parte de una rama y SHA base exactos. Un nombre de rama es
 insuficiente para identificar un candidato. Cada nuevo commit requiere una
 nueva auditoría antes de conservar un veredicto favorable.
 
+### 4.1 Aislamiento de auditorías independientes
+
+Un clon destinado a auditoría independiente no puede sembrarse desde un
+checkout de implementación del usuario. Debe originarse directamente del
+remoto autorizado o de un artefacto/bundle cuyo SHA haya sido explícitamente
+validado.
+
+Cambiar posteriormente el remote de un clon local no convierte retroactivamente
+ese clon en una fuente independiente. La transferencia debe conservar la
+procedencia y el SHA antes de que empiece la auditoría.
+
 ## 5. Estados
 
 | Estado | Significado |

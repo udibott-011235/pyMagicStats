@@ -32,6 +32,7 @@ compartido cambia sólo mediante registros trazables y revisión cruzada.
 | [`experiments/`](experiments/README.md) | Hipótesis, comando, seeds, entorno y resultados | experiment record |
 | [`evidence/`](evidence/README.md) | Mapa de evidencia y limitaciones | evidence record |
 | [`decisions/`](decisions/README.md) | Decisiones, alternativas y criterios de revisión | decision record |
+| [`versioning/`](versioning/README.md) | Lifecycle de ramas, integración y supersesión | branch record |
 | [`agents/`](agents/README.md) | Observaciones por perspectiva de rol | role note enlazada |
 
 ## Flujo de actualización
@@ -53,3 +54,8 @@ Cada incorporación debe:
 - pasar `python knowledge/tools/validate_registry.py` y los tests pertinentes.
 
 Consulte [`CHANGELOG.md`](CHANGELOG.md) para cambios del sistema.
+
+La autoridad de lifecycle de ramas está fijada por
+[`DEC-006`](decisions/branch-lifecycle-governance.md). La vista humana de las
+ramas está en [`versioning/branches.md`](versioning/branches.md), pero
+`registry.json` sigue siendo la fuente canónica.

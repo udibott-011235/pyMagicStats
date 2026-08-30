@@ -1,5 +1,16 @@
 # Historial de la base de conocimiento
 
+## 2026-08-30 — KB v1.2
+
+- Se amplía el schema a `1.1.0` y se añade el tipo canónico `branch`.
+- Se registran las 16 ramas remotas observadas, sus SHAs, relaciones con
+  `main`, integración, supersesión y siguientes acciones decididas.
+- Se incorporan EV-003, EV-004 y DEC-006 para el inventario forense, el
+  candidato adversarial Gate 2 y la autoridad de lifecycle.
+- Se añade `versioning/` como proyección humana del registro canónico.
+- Se exige que toda auditoría independiente se origine en el remoto autorizado
+  o en un artefacto/bundle cuyo SHA haya sido validado explícitamente.
+
 ## 2026-08-29 — KB v1.1
 
 - Se corrige la autoridad de los roles: ChatGPT diseña, Cortex implementa,
