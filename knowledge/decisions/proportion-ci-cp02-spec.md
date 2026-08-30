@@ -1,11 +1,12 @@
-# CP-02 — Especificación estadística propuesta para intervalos de proporción
+# CP-02 — Especificación estadística aprobada para intervalos de proporción
 
 **Stage:** `STAGE-PROP-CI-001`  
-**Estado:** `under_review`  
+**Estado:** `accepted`  
 **Baseline:** `main` @ `402e4601df460811779b3238c2526ac12f463a67`  
 **Evidencia de entrada:** `knowledge/evidence/proportion-ci-cp01-census.md`  
 **Owner de decisión:** Product Owner  
-**Arquitectura:** statistical-software-architecture
+**Arquitectura:** statistical-software-architecture  
+**Aprobación explícita del Product Owner:** 2026-08-30
 
 ## 1. Estimando y diseño
 
@@ -83,7 +84,7 @@ El resultado futuro debe separar al menos:
 - supuestos de diseño requeridos;
 - información de compatibilidad/deprecación cuando aplique.
 
-Categorías conceptuales propuestas:
+Categorías conceptuales aprobadas:
 
 - Wilson: frequentist score / calibration pending until CP-06;
 - Clopper–Pearson: frequentist exact-conservative / calibration still required for project-level claims;
@@ -100,13 +101,13 @@ La regla no puede ser selector universal ni prueba de validez. CP-03 debe renomb
 
 Antes de permitir routing automático de proporciones, `MethodSelector` debe fallar cerrado para `Estimand.PROPORTION` cuando no exista una capacidad registrada y calibrada para ese estimando.
 
-El comportamiento observado en CP-01, donde `Estimand.PROPORTION` puede recibir `selected_method="one_sample_t"`, se considera un defecto de separación de estimando y debe corregirse en la futura implementación candidata. La corrección no autoriza todavía seleccionar Wilson automáticamente; el estado correcto mientras no exista capability calibrada debe ser equivalente a `NOT_CALIBRATED`/`REVIEW_REQUIRED`, nunca una prueba de media.
+El comportamiento observado en CP-01, donde `Estimand.PROPORTION` puede recibir `selected_method="one_sample_t"`, es un defecto de separación de estimando y debe corregirse en la futura implementación candidata. La corrección no autoriza todavía seleccionar Wilson automáticamente; el estado correcto mientras no exista capability calibrada debe ser equivalente a `NOT_CALIBRATED`/`REVIEW_REQUIRED`, nunca una prueba de media.
 
 ## 9. Bootstrap de proporción
 
 `BootstrapCI(stat="proportion")` no se fusionará silenciosamente con `PopulationProportionCI`. CP-03 debe definir si se mantiene como superficie separada y aclarar su estimando/entrada. No se podrá registrar como alternativa automática hasta contar con calibración específica y contrato binario explícito.
 
-## 10. Decisiones que quedan para CP-03
+## 10. Decisiones transferidas a CP-03
 
 - forma exacta del constructor/API agregada;
 - transición de `incidences` fraccionario;
@@ -116,6 +117,6 @@ El comportamiento observado en CP-01, donde `Estimand.PROPORTION` puede recibir 
 - integración fail-closed con capability routing sin activar selección automática;
 - relación pública con `BootstrapCI(stat="proportion")`.
 
-## 11. Condición de aprobación de CP-02
+## 11. Cierre
 
-CP-02 puede marcarse `complete` sólo después de aprobación explícita del Product Owner de estas decisiones. Hasta entonces permanece `under_review` y no autoriza implementación.
+CP-02 fue aprobado explícitamente por el Product Owner. Este documento fija el contrato estadístico del stage y habilita exclusivamente el diseño de API/compatibilidad de CP-03. No autoriza implementación de producción, calibración final, routing automático, PR ni merge.
