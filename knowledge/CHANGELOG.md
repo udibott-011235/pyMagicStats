@@ -1,5 +1,17 @@
 # Historial de la base de conocimiento
 
+## 2026-08-30 — Integración controlada PR #1 y PR #3 (Gate 2)
+
+- Se registra la integración controlada de PR #1 (`docs/project-knowledge-base`) y PR #3 (`fix/gate2-adversarial-remediation`) en `main` (`f1725ebdfebcb667c053420e4cb4c1e35048f9e0`).
+- Se añade `EV-005` registrando la evidencia inmutable de la integración de Gate 2 (árbol `238222f`, parents `e8422a7` y `9a87c5d`, suite 289 passed / 3 skipped, límites `TD-GOF-SUPPORT-001` y `FINDING-ADV-NUM-004` abiertos, no demostración de identidad distributiva por GOF, bypass automático observado al crear la rama pero no durante el merge, y preservación de ramas).
+- Se actualizan las 16 ramas en `knowledge/registry.json` y `knowledge/versioning/branches.md` según las decisiones autorizadas por Product Owner y Arquitectura:
+  - `BR-001` (`main`): canonical en `f1725eb`.
+  - `BR-003` (`docs/project-knowledge-base`): archivada, fully_contained, merged vía PR #1.
+  - `BR-010` (`fix/gate2-major-remediation`): superseded, fully_contained, preservada como placeholder histórico.
+  - `BR-011` (`fix/gate2-distribution-gof-remediation`): superseded, fully_contained, merged indirectamente como ancestro de BR-012 vía PR #3.
+  - `BR-012` (`fix/gate2-adversarial-remediation`): archivada, fully_contained, merged vía PR #3 (HEAD auditado `9a87c5d`).
+  - Actualización de métricas reproducibles (ahead/behind, merge-base, relación) para todas las demás ramas respecto del nuevo baseline de `main`.
+
 ## 2026-08-30 — KB v1.2
 
 - Se amplía el schema a `1.1.0` y se añade el tipo canónico `branch`.

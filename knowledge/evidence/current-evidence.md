@@ -20,7 +20,7 @@ Fuentes canónicas:
 - `experiments/results/sampling_robustness_metadata.json`
 - `experiments/results/sampling_robustness_summary.csv`
 
-## EV-002 — Diagnóstico de una vía en main
+## EV-002 — Diagnósticos de residuos para diseño de una vía
 
 - **Estado:** `validated_with_limits` como diagnóstico de software.
 - **Demuestra:** el contrato documentado evalúa residuos centrados por grupo,
@@ -39,3 +39,15 @@ Fuente canónica: `Docs/inference-engine.md` y tests de supuestos en `main`.
 
 Fuente canónica: `Docs/technical-debt.md`.
 
+## EV-005 — Integración controlada de Gate 2 en main
+
+- **Estado:** `validated_with_limits`
+- **Merge SHA:** `f1725ebdfebcb667c053420e4cb4c1e35048f9e0`
+- **Parents:** `e8422a74cef7d3eebc1f807666e9388acd407794`, `9a87c5d48dba8b8a172b5386d7318e7f37ec98fe`
+- **Tree:** `238222f324e33c1c3cc19d25c0483474671ecb87`
+- **Integración:** PR #3 (`fix/gate2-adversarial-remediation`)
+- **Verificación:** igualdad exacta con el rehearsal; 289 passed, 3 skipped (exclusivamente por CuPy/CUDA).
+- **Límites:** `TD-GOF-SUPPORT-001` y `FINDING-ADV-NUM-004` abiertos y fuera de alcance; GOF no demuestra identidad distributiva.
+- **Gobernanza:** bypass automático observado al crear la rama, pero no durante el merge; ramas Gate 2 preservadas.
+
+Fuente canónica: `knowledge/evidence/gate2-integration-f1725eb.md`.
