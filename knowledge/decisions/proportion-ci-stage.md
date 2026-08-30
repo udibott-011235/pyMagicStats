@@ -13,32 +13,40 @@
 
 Revisar y ampliar el contrato de intervalos para una proporción poblacional Bernoulli/binomial sin introducir selección automática no calibrada. El stage debe preservar compatibilidad razonable con `PopulationProportionCI` y separar explícitamente garantía estadística, implementación numérica, calibración y routing.
 
-## Estado inicial observado
+## Estado observado tras CP-01
 
-En `main`, `PopulationProportionCI` soporta actualmente `wilson` y `wald`; Wilson es el default. El contrato actual acepta datos binarios, predicado de incidencia o un conteo de incidencias. La lógica mantiene además un diagnóstico legacy de aproximación normal basado en éxitos y fracasos >= 10. No existe evidencia canónica suficiente para ampliar esto a un selector automático de métodos.
+CP-01 fue completado mediante auditoría read-only sobre el baseline exacto. El evidence record es `knowledge/evidence/proportion-ci-cp01-census.md`. El censo confirmó Wilson como default, Wald como ruta explícita, ausencia de calibración específica de cobertura y varios gaps de contrato. También detectó un defecto MAJOR independiente: el routing genérico puede seleccionar `one_sample_t` para `Estimand.PROPORTION`; este comportamiento debe quedar fail-closed antes de cualquier routing automático de proporciones.
+
+CP-02 dispone ya de una especificación arquitectónica propuesta en `knowledge/decisions/proportion-ci-cp02-spec.md` y permanece `under_review` hasta aprobación explícita del Product Owner.
 
 ## Checkpoints
 
 | Checkpoint | Objetivo | Estado | Pendientes individuales | Criterio de salida |
 |---|---|---|---|---|
-| CP-01 | Censo y reconstrucción del contrato actual | `in_progress` | Inventariar API pública/interna, tests, docs, dependencias, invariantes, usos, compatibilidad y deuda; confirmar tratamiento de `incidences` fraccionario; detectar reglas legacy y cualquier routing implícito | Informe reproducible, sólo lectura, fijado al baseline exacto, sin propuesta de implementación |
-| CP-02 | Especificación estadística | `pending` | Fijar estimando, diseño Bernoulli/binomial, supuestos; decidir métodos candidatos y semántica de garantías; resolver casos `x=0`, `x=n`, one/two-sided, aggregate vs raw data y parámetros inválidos | Spec arquitectónica aprobada por Product Owner |
-| CP-03 | Contrato de API y compatibilidad | `pending` | Diseñar API nueva/extendida sin romper innecesariamente `PopulationProportionCI`; definir resultados, estados, warnings, metadata y deprecaciones | Contrato público cerrado y tests de compatibilidad especificados |
+| CP-01 | Censo y reconstrucción del contrato actual | `complete` | Ninguno. Evidencia registrada en `knowledge/evidence/proportion-ci-cp01-census.md` | Informe reproducible read-only completado sobre baseline exacto |
+| CP-02 | Especificación estadística | `under_review` | Aprobación del Product Owner de estimando/diseño; Wilson candidato principal; Clopper–Pearson candidato exacto/conservador; Wald legacy explícito; Jeffreys sólo con semántica bayesiana separada; boundary policy; fail-closed para `Estimand.PROPORTION`; alcance bilateral mínimo | Spec arquitectónica aprobada por Product Owner |
+| CP-03 | Contrato de API y compatibilidad | `pending` | Diseñar API agregada `(successes,trials)`; transición de `incidences` fraccionario; export público; esquema de resultado; deprecaciones; relación con BootstrapCI; contrato fail-closed del router | Contrato público cerrado y tests de compatibilidad especificados |
 | CP-04 | Diseño de calibración | `pending` | Definir grid de `n`, `p`, alpha/confidence; cobertura exacta por enumeración binomial cuando sea posible; ancho, conservadurismo, monotonicidad, simetrías, boundary behavior y referencias externas | Protocolo pre-registrado antes de mirar resultados finales/holdout |
-| CP-05 | Implementación candidata | `pending` | Implementar sólo métodos aprobados y tests unitarios/metamórficos; no activar routing automático | SHA candidato reproducible en rama aislada |
+| CP-05 | Implementación candidata | `pending` | Implementar sólo métodos aprobados y tests unitarios/metamórficos; corregir routing incompatible de proporción; no activar routing automático | SHA candidato reproducible en rama aislada |
 | CP-06 | Calibración y evidencia | `pending` | Ejecutar harness aprobado; producir summary/metadata/evidence; cuantificar cobertura y límites por método | Evidencia suficiente para clasificar cada método como validado, limitado o no calibrado |
 | CP-07 | Auditoría adversarial | `pending` | Antigravity audita el SHA exacto; boundaries, precisión numérica, invariancias, regresión y claims estadísticos | Cero hallazgos bloqueantes o nueva iteración con SHA nuevo |
 | CP-08 | Decisión de integración | `pending` | ChatGPT interpreta evidencia; Product Owner decide alcance final, PR y merge | Sólo Product Owner autoriza PR/merge |
 
-## Hipótesis de arquitectura a revisar, no aprobadas todavía
+## Arquitectura propuesta en CP-02 — pendiente de aprobación
 
-- Mantener Wilson como candidato general-purpose y Wald sólo como método explícito/legacy, nunca como fallback automático por `n`.
-- Evaluar Clopper–Pearson como intervalo exacto/conservador.
-- Evaluar Jeffreys sólo si se conserva una separación semántica correcta entre intervalo bayesiano creíble y CI frecuentista; no mezclar etiquetas.
-- Agresti–Coull, continuidad corregida, mid-P u otros métodos no entran automáticamente: requieren justificación de valor incremental.
-- No usar `successes >= 10 and failures >= 10` como selector universal de método.
-- Conteos agregados deben ser enteros; aceptar éxitos fraccionarios requiere un estimando/modelo distinto y no debe heredarse silenciosamente.
-- Survey weights, effective sample size y finite-population correction quedan fuera de alcance hasta diseño explícito.
+- Estimando: una única proporción poblacional `p=P(Y=1)` bajo diseño Bernoulli/binomial ordinario.
+- Mantener Wilson como candidato principal y default candidato.
+- Incorporar Clopper–Pearson como candidato frecuentista exacto/conservador.
+- Mantener Wald únicamente como método legacy explícito; nunca default ni fallback automático.
+- Admitir Jeffreys sólo como candidato comparador y, si llega a exponerse, con semántica explícita de credible interval bayesiano; no etiquetarlo como CI frecuentista.
+- No autorizar por ahora Agresti–Coull, Wilson-CC, mid-P ni otras variantes para producción.
+- Preservar inicialmente el alcance bilateral; one-sided requerirá criterio de calibración propio.
+- Tratar `x=0` y `x=n` como realizaciones válidas, no errores.
+- No utilizar `successes >= 10 and failures >= 10` como selector universal ni garantía.
+- Diseñar una entrada agregada explícita `(successes, trials)` con enteros; no reinterpretar éxitos fraccionarios como binomiales.
+- Survey weights, effective sample size, clustering y finite-population correction quedan fuera de alcance.
+- `MethodSelector` debe fallar cerrado para `Estimand.PROPORTION` mientras no exista una capability registrada y calibrada; nunca transferir `one_sample_t` desde el estimando media.
+- `BootstrapCI(stat="proportion")` permanece como superficie separada hasta contrato y calibración específicos.
 
 ## Invariantes del stage
 
