@@ -66,9 +66,9 @@ def test_schema_and_registry_versions_define_conditional_branch_records():
     item_schema = schema["properties"]["records"]["items"]
 
     assert registry["schema_version"] == "1.1.0"
-    assert registry["knowledge_base_version"] == "1.2.0"
+    assert registry["knowledge_base_version"] == "1.3.0"
     assert schema["properties"]["schema_version"]["const"] == "1.1.0"
-    assert schema["properties"]["knowledge_base_version"]["const"] == "1.2.0"
+    assert schema["properties"]["knowledge_base_version"]["const"] == "1.3.0"
     assert "branch" in item_schema["properties"]["kind"]["enum"]
     assert item_schema["allOf"][0]["then"] == {"required": ["branch"]}
     assert item_schema["allOf"][0]["else"] == {"not": {"required": ["branch"]}}

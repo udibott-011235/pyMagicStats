@@ -1,7 +1,7 @@
 {
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
-  "knowledge_base_version": "1.2.0",
+  "knowledge_base_version": "1.3.0",
   "last_updated": "2026-08-30",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
@@ -19,22 +19,11 @@
       "status": "accepted",
       "scope": "Inferencia de medias y diagnósticos de diseños de una vía en main",
       "path": "knowledge/theory/inference-principles.md",
-      "evidence_paths": [
-        "Docs/inference-engine.md",
-        "Docs/sampling-robustness-calibration.md"
-      ],
+      "evidence_paths": ["Docs/inference-engine.md", "Docs/sampling-robustness-calibration.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "estimand",
-        "assumptions",
-        "robustness",
-        "method-selection"
-      ]
+      "tags": ["estimand", "assumptions", "robustness", "method-selection"]
     },
     {
       "id": "DEC-001",
@@ -43,19 +32,11 @@
       "status": "accepted",
       "scope": "Selección de inferencia de medias",
       "path": "knowledge/decisions/README.md",
-      "evidence_paths": [
-        "Docs/sampling-robustness-calibration.md"
-      ],
+      "evidence_paths": ["Docs/sampling-robustness-calibration.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "sample-size",
-        "normality",
-        "clt"
-      ]
+      "tags": ["sample-size", "normality", "clt"]
     },
     {
       "id": "DEC-002",
@@ -64,10 +45,7 @@
       "status": "accepted",
       "scope": "Arquitectura del motor de inferencia",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": [
-        "pyMagicStat/assumptions/validator.py",
-        "pyMagicStat/inference/selector.py"
-      ],
+      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "pyMagicStat/inference/selector.py"],
       "owner_role": "decision-owner",
       "reviewer_roles": [
         "statistical-software-architecture",
@@ -75,10 +53,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": [
-        "architecture",
-        "auditability"
-      ]
+      "tags": ["architecture", "auditability"]
     },
     {
       "id": "DEC-003",
@@ -87,21 +62,11 @@
       "status": "accepted",
       "scope": "Pruebas t de dos grupos independientes",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": [
-        "pyMagicStat/inference/parametric.py",
-        "tests/test_parametric.py"
-      ],
+      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_parametric.py"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "welch",
-        "student",
-        "heteroscedasticity",
-        "levene"
-      ]
+      "tags": ["welch", "student", "heteroscedasticity", "levene"]
     },
     {
       "id": "DEC-004",
@@ -110,10 +75,7 @@
       "status": "accepted",
       "scope": "Intervalos bootstrap disponibles en main",
       "path": "Docs/inference-engine.md",
-      "evidence_paths": [
-        "pyMagicStat/inference/parametric.py",
-        "tests/test_bootstrap.py"
-      ],
+      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_bootstrap.py"],
       "owner_role": "decision-owner",
       "reviewer_roles": [
         "statistical-software-architecture",
@@ -121,12 +83,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": [
-        "bootstrap",
-        "reproducibility",
-        "estimand",
-        "rng"
-      ]
+      "tags": ["bootstrap", "reproducibility", "estimand", "rng"]
     },
     {
       "id": "DEC-005",
@@ -135,22 +92,11 @@
       "status": "accepted",
       "scope": "ANOVA y Welch ANOVA",
       "path": "knowledge/theory/inference-principles.md",
-      "evidence_paths": [
-        "Docs/inference-engine.md",
-        "Docs/sampling-robustness-calibration.md"
-      ],
+      "evidence_paths": ["Docs/inference-engine.md", "Docs/sampling-robustness-calibration.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "anova",
-        "welch-anova",
-        "calibration",
-        "residuals"
-      ]
+      "tags": ["anova", "welch-anova", "calibration", "residuals"]
     },
     {
       "id": "EV-001",
@@ -165,16 +111,9 @@
         "experiments/results/sampling_robustness_summary.csv"
       ],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "coverage",
-        "type-i-error",
-        "calibration"
-      ]
+      "tags": ["coverage", "type-i-error", "calibration"]
     },
     {
       "id": "EV-002",
@@ -183,21 +122,11 @@
       "status": "validated_with_limits",
       "scope": "Diagnóstico implementado; no valida el estadístico ANOVA",
       "path": "knowledge/evidence/current-evidence.md",
-      "evidence_paths": [
-        "pyMagicStat/assumptions/validator.py",
-        "tests/test_assumptions.py"
-      ],
+      "evidence_paths": ["pyMagicStat/assumptions/validator.py", "tests/test_assumptions.py"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "anova",
-        "residuals",
-        "assumptions"
-      ]
+      "tags": ["anova", "residuals", "assumptions"]
     },
     {
       "id": "EXP-001",
@@ -206,19 +135,11 @@
       "status": "validated_with_limits",
       "scope": "Matriz documentada en EV-001",
       "path": "experiments/robustness_calibration.py",
-      "evidence_paths": [
-        "experiments/results/sampling_robustness_metadata.json"
-      ],
+      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "simulation",
-        "reproducibility"
-      ]
+      "tags": ["simulation", "reproducibility"]
     },
     {
       "id": "DS-001",
@@ -232,14 +153,9 @@
         "experiments/results/sampling_robustness_metadata.json"
       ],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "synthetic",
-        "calibration"
-      ]
+      "tags": ["synthetic", "calibration"]
     },
     {
       "id": "DS-002",
@@ -248,18 +164,11 @@
       "status": "accepted",
       "scope": "152 celdas derivadas; no es input",
       "path": "experiments/results/sampling_robustness_summary.csv",
-      "evidence_paths": [
-        "experiments/results/sampling_robustness_metadata.json"
-      ],
+      "evidence_paths": ["experiments/results/sampling_robustness_metadata.json"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "derived",
-        "summary"
-      ]
+      "tags": ["derived", "summary"]
     },
     {
       "id": "DS-003",
@@ -270,15 +179,9 @@
       "path": "examples/df_test_2way_t_test.xlsx",
       "evidence_paths": [],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "fixture",
-        "provenance-gap"
-      ]
+      "tags": ["fixture", "provenance-gap"]
     },
     {
       "id": "DEBT-001",
@@ -287,20 +190,11 @@
       "status": "open",
       "scope": "DataQualityAssessment; no bloqueante para retail/BI",
       "path": "Docs/technical-debt.md",
-      "evidence_paths": [
-        "pyMagicStat/assumptions/assessments.py"
-      ],
+      "evidence_paths": ["pyMagicStat/assumptions/assessments.py"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "numerical",
-        "float64",
-        "underflow"
-      ]
+      "tags": ["numerical", "float64", "underflow"]
     },
     {
       "id": "ROLE-001",
@@ -309,10 +203,7 @@
       "status": "under_review",
       "scope": "Gobernanza de ChatGPT, Cortex y Antigravity en pyMagicStats",
       "path": "knowledge/SYSTEM_PROMPTS.md",
-      "evidence_paths": [
-        "knowledge/GOVERNANCE.md",
-        "knowledge/AGENT_PROTOCOL.md"
-      ],
+      "evidence_paths": ["knowledge/GOVERNANCE.md", "knowledge/AGENT_PROTOCOL.md"],
       "owner_role": "decision-owner",
       "reviewer_roles": [
         "statistical-software-architecture",
@@ -320,12 +211,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": [
-        "governance",
-        "roles",
-        "system-prompts",
-        "git-safety"
-      ]
+      "tags": ["governance", "roles", "system-prompts", "git-safety"]
     },
     {
       "id": "DEC-006",
@@ -334,21 +220,11 @@
       "status": "accepted",
       "scope": "Estado operativo, integración, supersesión y archivo de ramas del repositorio",
       "path": "knowledge/decisions/branch-lifecycle-governance.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "implementation-engineering"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "governance",
-        "lifecycle",
-        "authority"
-      ]
+      "tags": ["branch", "governance", "lifecycle", "authority"]
     },
     {
       "id": "EV-003",
@@ -359,17 +235,9 @@
       "path": "knowledge/evidence/branch-inventory-2026-08-30.md",
       "evidence_paths": [],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "forensics",
-        "git",
-        "lifecycle"
-      ]
+      "tags": ["branch", "forensics", "git", "lifecycle"]
     },
     {
       "id": "EV-004",
@@ -380,17 +248,9 @@
       "path": "knowledge/evidence/gate2-adversarial-clear-9a87c5d.md",
       "evidence_paths": [],
       "owner_role": "adversarial-statistical-qa",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "decision-owner"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "decision-owner"],
       "supersedes": [],
-      "tags": [
-        "gate2",
-        "adversarial",
-        "gof",
-        "validated-with-limits"
-      ]
+      "tags": ["gate2", "adversarial", "gof", "validated-with-limits"]
     },
     {
       "id": "EV-005",
@@ -399,22 +259,11 @@
       "status": "validated_with_limits",
       "scope": "Integración controlada de Gate 2 en main mediante PR #3",
       "path": "knowledge/evidence/gate2-integration-f1725eb.md",
-      "evidence_paths": [
-        "knowledge/evidence/gate2-adversarial-clear-9a87c5d.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/gate2-adversarial-clear-9a87c5d.md"],
       "owner_role": "implementation-engineering",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa",
-        "decision-owner"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
       "supersedes": [],
-      "tags": [
-        "gate2",
-        "integration",
-        "pr-3",
-        "validated-with-limits"
-      ]
+      "tags": ["gate2", "integration", "pr-3", "validated-with-limits"]
     },
     {
       "id": "BR-001",
@@ -428,16 +277,9 @@
         "knowledge/evidence/gate2-integration-f1725eb.md"
       ],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "implementation-engineering"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "canonical",
-        "main"
-      ],
+      "tags": ["branch", "canonical", "main"],
       "branch": {
         "name": "main",
         "head_sha_at_decision": "f1725ebdfebcb667c053420e4cb4c1e35048f9e0",
@@ -459,20 +301,11 @@
       "status": "archived",
       "scope": "Alias histórico de auditoría del main observado",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "audit",
-        "same-head"
-      ],
+      "tags": ["branch", "archived", "audit", "same-head"],
       "branch": {
         "name": "audit/global-main-a0881c4",
         "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
@@ -494,9 +327,7 @@
       "status": "archived",
       "scope": "Knowledge Base compartida y su PR existente",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
       "reviewer_roles": [
         "statistical-software-architecture",
@@ -504,13 +335,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "knowledge-base",
-        "archived",
-        "pr-1",
-        "merged"
-      ],
+      "tags": ["branch", "knowledge-base", "archived", "pr-1", "merged"],
       "branch": {
         "name": "docs/project-knowledge-base",
         "head_sha_at_decision": "0a853ba4f25dd160bd8f182e221744280cd980a8",
@@ -536,20 +361,11 @@
       "status": "archived",
       "scope": "Harness reproducible de calibración t versus empirical likelihood",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "calibration",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "calibration", "merged"],
       "branch": {
         "name": "experiments/el-vs-t-calibration-harness",
         "head_sha_at_decision": "05bc7106cca40fafc64ea78433f637ddbdfe48c5",
@@ -574,21 +390,11 @@
       "status": "under_review",
       "scope": "Trabajo ANOVA divergente todavía no integrado",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "anova",
-        "pending",
-        "under-review"
-      ],
+      "tags": ["branch", "anova", "pending", "under-review"],
       "branch": {
         "name": "feature/anova-engine",
         "head_sha_at_decision": "9ebbe4fd1f6b9f847be75f7add09fee609ebe383",
@@ -617,20 +423,11 @@
       "status": "archived",
       "scope": "Implementación de empirical likelihood para una media",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "empirical-likelihood",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "empirical-likelihood", "merged"],
       "branch": {
         "name": "feature/empirical-likelihood-mean",
         "head_sha_at_decision": "427d75b4ea2f72a0e6c6aabbc5b79084721c698e",
@@ -655,21 +452,11 @@
       "status": "archived",
       "scope": "Corrección numérica final de empirical likelihood CI integrada por PR #2",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "empirical-likelihood",
-        "tree-equivalent"
-      ],
+      "tags": ["branch", "archived", "empirical-likelihood", "tree-equivalent"],
       "branch": {
         "name": "fix/el-ci-numerical-convergence",
         "head_sha_at_decision": "c3c3834f177b8161fb25a9028251a755360a7ee9",
@@ -695,20 +482,11 @@
       "status": "archived",
       "scope": "Corrección de accounting y semillas de calibración EL",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "calibration",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "calibration", "merged"],
       "branch": {
         "name": "fix/el-vs-t-calibration-accounting",
         "head_sha_at_decision": "51d74e74386eed1c0fe4cc4e90b394dc119acc85",
@@ -733,20 +511,11 @@
       "status": "archived",
       "scope": "Compatibilidad del generador CuPy en calibración",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "cupy",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "cupy", "merged"],
       "branch": {
         "name": "fix/el-vs-t-cupy-generator-compatibility",
         "head_sha_at_decision": "c8dd9ab949f12801944cb465fc5bba8186a70134",
@@ -771,20 +540,11 @@
       "status": "superseded",
       "scope": "Placeholder histórico de remediación Gate 2",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "gate2",
-        "placeholder",
-        "superseded"
-      ],
+      "tags": ["branch", "gate2", "placeholder", "superseded"],
       "branch": {
         "name": "fix/gate2-major-remediation",
         "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
@@ -811,20 +571,9 @@
         "knowledge/evidence/gate2-integration-f1725eb.md"
       ],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture",
-        "adversarial-statistical-qa"
-      ],
-      "supersedes": [
-        "BR-010"
-      ],
-      "tags": [
-        "branch",
-        "gate2",
-        "gof",
-        "superseded",
-        "merged"
-      ],
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
+      "supersedes": ["BR-010"],
+      "tags": ["branch", "gate2", "gof", "superseded", "merged"],
       "branch": {
         "name": "fix/gate2-distribution-gof-remediation",
         "head_sha_at_decision": "0fc71c90c15f7c82b55ba650de742265d492df33",
@@ -859,16 +608,8 @@
         "adversarial-statistical-qa",
         "implementation-engineering"
       ],
-      "supersedes": [
-        "BR-011"
-      ],
-      "tags": [
-        "branch",
-        "gate2",
-        "archived",
-        "merged",
-        "pr-3"
-      ],
+      "supersedes": ["BR-011"],
+      "tags": ["branch", "gate2", "archived", "merged", "pr-3"],
       "branch": {
         "name": "fix/gate2-adversarial-remediation",
         "head_sha_at_decision": "9a87c5d48dba8b8a172b5386d7318e7f37ec98fe",
@@ -894,20 +635,11 @@
       "status": "archived",
       "scope": "Contrato de forma de distribuciones contenido en main",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "distribution",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "distribution", "merged"],
       "branch": {
         "name": "refactor/distribution-shape-contract",
         "head_sha_at_decision": "46b9f9fa7cee47466154541ea086ada5f5a4e1eb",
@@ -932,20 +664,11 @@
       "status": "archived",
       "scope": "Routing de inferencia mediante garantías explícitas contenido en main",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "inference",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "inference", "merged"],
       "branch": {
         "name": "refactor/inference-capability-routing",
         "head_sha_at_decision": "763ceeaab86f1ede85eb204a02249df0194346ba",
@@ -970,20 +693,11 @@
       "status": "archived",
       "scope": "Refactor base del motor de inferencia contenido en main",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "inference-engine",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "inference-engine", "merged"],
       "branch": {
         "name": "refactor/inference-engine",
         "head_sha_at_decision": "2eb302f9a5ac07b57192af7d7b6451f672835ca4",
@@ -1006,20 +720,11 @@
       "status": "archived",
       "scope": "Selector y calibración de robustez v3 contenidos en main",
       "path": "knowledge/versioning/branches.md",
-      "evidence_paths": [
-        "knowledge/evidence/branch-inventory-2026-08-30.md"
-      ],
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
       "owner_role": "decision-owner",
-      "reviewer_roles": [
-        "statistical-software-architecture"
-      ],
+      "reviewer_roles": ["statistical-software-architecture"],
       "supersedes": [],
-      "tags": [
-        "branch",
-        "archived",
-        "robustness",
-        "merged"
-      ],
+      "tags": ["branch", "archived", "robustness", "merged"],
       "branch": {
         "name": "refactor/sampling-robustness-v3",
         "head_sha_at_decision": "12d5167bdf6dedec748d890b77f3ad683ba22bae",

@@ -1,4 +1,4 @@
-# Evidencia inicial indexada
+# Evidencia vigente indexada
 
 ## EV-001 — Calibración de robustez de la media
 
@@ -39,15 +39,25 @@ Fuente canónica: `Docs/inference-engine.md` y tests de supuestos en `main`.
 
 Fuente canónica: `Docs/technical-debt.md`.
 
+## EV-004 — Gate 2 adversarial clear — 9a87c5d
+
+- **Estado:** `validated_with_limits`
+- **Candidato:** `9a87c5d48dba8b8a172b5386d7318e7f37ec98fe`
+- **Parent directo:** `0fc71c90c15f7c82b55ba650de742265d492df33`
+- **Rama:** `fix/gate2-adversarial-remediation`
+- **Demuestra:** validación estadística focalizada del candidato Gate 2 (10,000 configuraciones metamórficas, 54/54 Poisson, 12/12 Binomial, 28 passed en pruebas focales, cero defectos críticos o mayores en el alcance).
+- **Límites:** `TD-GOF-SUPPORT-001` y `FINDING-ADV-NUM-004` permanecen fuera de alcance; GOF no demuestra identidad distributiva ni autoriza merge.
+
+Fuente canónica: `knowledge/evidence/gate2-adversarial-clear-9a87c5d.md`.
+
 ## EV-005 — Integración controlada de Gate 2 en main
 
 - **Estado:** `validated_with_limits`
 - **Merge SHA:** `f1725ebdfebcb667c053420e4cb4c1e35048f9e0`
 - **Parents:** `e8422a74cef7d3eebc1f807666e9388acd407794`, `9a87c5d48dba8b8a172b5386d7318e7f37ec98fe`
 - **Tree:** `238222f324e33c1c3cc19d25c0483474671ecb87`
-- **Integración:** PR #3 (`fix/gate2-adversarial-remediation`)
-- **Verificación:** igualdad exacta con el rehearsal; 289 passed, 3 skipped (exclusivamente por CuPy/CUDA).
+- **Integración:** PR #3 (`fix/gate2-adversarial-remediation` -> `main`)
+- **Demuestra:** integración controlada del árbol auditado en EV-004; igualdad exacta con el rehearsal; 289 passed, 3 skipped (exclusivamente por CuPy/CUDA); bypass automático en creación de rama pero no en merge; ramas Gate 2 preservadas.
 - **Límites:** `TD-GOF-SUPPORT-001` y `FINDING-ADV-NUM-004` abiertos y fuera de alcance; GOF no demuestra identidad distributiva.
-- **Gobernanza:** bypass automático observado al crear la rama, pero no durante el merge; ramas Gate 2 preservadas.
 
 Fuente canónica: `knowledge/evidence/gate2-integration-f1725eb.md`.

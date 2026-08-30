@@ -1,6 +1,6 @@
 # Historial de la base de conocimiento
 
-## 2026-08-30 — Integración controlada PR #1 y PR #3 (Gate 2)
+## 2026-08-30 — KB v1.3
 
 - Se registra la integración controlada de PR #1 (`docs/project-knowledge-base`) y PR #3 (`fix/gate2-adversarial-remediation`) en `main` (`f1725ebdfebcb667c053420e4cb4c1e35048f9e0`).
 - Se añade `EV-005` registrando la evidencia inmutable de la integración de Gate 2 (árbol `238222f`, parents `e8422a7` y `9a87c5d`, suite 289 passed / 3 skipped, límites `TD-GOF-SUPPORT-001` y `FINDING-ADV-NUM-004` abiertos, no demostración de identidad distributiva por GOF, bypass automático observado al crear la rama pero no durante el merge, y preservación de ramas).
