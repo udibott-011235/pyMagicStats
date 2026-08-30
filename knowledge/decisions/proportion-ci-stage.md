@@ -9,7 +9,7 @@
 **Implementación:** Cortex/Codex, sólo después de aprobación explícita  
 **QA adversarial:** Antigravity, sobre SHA candidato exacto
 
-## Estado tras preregistro de CP-04
+## Estado tras aprobación de CP-04
 
 CP-01 fue completado mediante auditoría read-only y está registrado en `knowledge/evidence/proportion-ci-cp01-census.md`.
 
@@ -17,9 +17,11 @@ CP-02 fue aprobado explícitamente por el Product Owner y está registrado en `k
 
 CP-03 fue aprobado explícitamente por el Product Owner. El contrato de API y compatibilidad está en `knowledge/decisions/proportion-ci-cp03-api-contract.md` y su aceptación en `knowledge/decisions/proportion-ci-cp03-acceptance.md`.
 
-CP-04 dispone ahora de un preregistro exhaustivo en `knowledge/experiments/proportion-ci-cp04-preregistration.md`. El protocolo fija métodos, alphas, `n=1..5000` exhaustivo, stress hasta `n=1e6`, cuatro familias de `p`, enumeración binomial determinista, búsqueda adversarial de mínimos entre endpoints, auditoría de alta precisión, Monte Carlo shadow de 256 millones de draws, holdout posterior al freeze y criterios de clasificación. Permanece `under_review` hasta aprobación explícita del Product Owner.
+CP-04 fue aprobado explícitamente por el Product Owner. El preregistro exhaustivo está en `knowledge/experiments/proportion-ci-cp04-preregistration.md` y su aceptación en `knowledge/decisions/proportion-ci-cp04-acceptance.md`.
 
-La indexación de CP-01/CP-02/CP-03 en `knowledge/registry.json` se delegó como mantenimiento documental independiente a QA/Antigravity en rama separada, para no bloquear CP-04 ni crear conflictos sobre esta rama.
+La indexación de CP-01/CP-02/CP-03 en `knowledge/registry.json` se delegó como mantenimiento documental independiente a QA/Antigravity en rama separada. Esa sincronización no altera los contratos aceptados ni bloquea la implementación.
+
+CP-05 queda listo para implementación por Cortex/Codex, pero requiere respetar estrictamente CP-02, CP-03 y CP-04. La calibración final, Monte Carlo shadow y holdout pertenecen a CP-06 y no deben ejecutarse como evidencia final durante CP-05.
 
 ## Checkpoints
 
@@ -28,10 +30,10 @@ La indexación de CP-01/CP-02/CP-03 en `knowledge/registry.json` se delegó como
 | CP-01 | Censo y reconstrucción del contrato actual | `complete` | Indexación en registry delegada como mantenimiento documental | Informe reproducible read-only completado sobre baseline exacto |
 | CP-02 | Especificación estadística | `complete` | Indexación en registry delegada como mantenimiento documental | Aprobación explícita del Product Owner registrada |
 | CP-03 | Contrato de API y compatibilidad | `complete` | Indexación en registry delegada; no cambia el contrato aceptado | Contrato público aprobado; sin cambios de producción |
-| CP-04 | Diseño/preregistro de calibración | `under_review` | Aprobación explícita del Product Owner del protocolo `knowledge/experiments/proportion-ci-cp04-preregistration.md` | Protocolo pre-registrado y aprobado antes de CP-05/CP-06 |
-| CP-05 | Implementación candidata | `pending` | Implementar sólo métodos/contratos aprobados y 71 tests; corregir routing incompatible; no activar routing automático | SHA candidato reproducible en rama aislada |
-| CP-06 | Calibración y evidencia | `pending` | Ejecutar el harness aprobado; producir summary/metadata/evidence; cuantificar cobertura y límites por método | Evidencia suficiente para clasificar cada método como validado, limitado o no calibrado |
-| CP-07 | Auditoría adversarial | `pending` | Antigravity audita el SHA exacto; boundaries, precisión numérica, invariancias, regresión y claims estadísticos | Cero hallazgos bloqueantes o nueva iteración con SHA nuevo |
+| CP-04 | Diseño/preregistro de calibración | `complete` | Ninguno dentro de arquitectura; preregistro congelado salvo enmienda explícita previa a resultados afectados | Protocolo preregistrado y aprobado antes de implementación/calibración |
+| CP-05 | Implementación candidata | `ready_for_implementation` | Cortex/Codex debe implementar únicamente el contrato aprobado, satisfacer los 71 tests, corregir routing de proporción fail-closed y producir SHA candidato; no activar routing automático ni ejecutar holdout final | SHA candidato reproducible en rama aislada con tests contractuales verdes y handoff completo |
+| CP-06 | Calibración y evidencia | `pending` | Ejecutar el harness preregistrado sobre SHA congelado; producir summary/metadata/evidence; cuantificar cobertura y límites por método | Evidencia suficiente para clasificar cada método como validated_with_limits, not_calibrated o rejected_for_claim |
+| CP-07 | Auditoría adversarial | `pending` | Antigravity audita el SHA exacto y la evidencia CP-06; boundaries, precisión numérica, invariancias, regresión y claims estadísticos | Cero hallazgos bloqueantes o nueva iteración con SHA nuevo |
 | CP-08 | Decisión de integración | `pending` | ChatGPT interpreta evidencia; Product Owner decide alcance final, PR y merge | Sólo Product Owner autoriza PR/merge |
 
 ## Arquitectura aceptada en CP-02
@@ -63,7 +65,7 @@ La indexación de CP-01/CP-02/CP-03 en `knowledge/registry.json` se delegó como
 - `MethodSelector` debe devolver `NOT_CALIBRATED`, `selected_method=None`, sin alternativas de media para `Estimand.PROPORTION` hasta que exista capability calibrada.
 - CP-05 deberá satisfacer la matriz de 71 tests contractuales especificada antes de cualquier afirmación de implementación correcta.
 
-## Preregistro CP-04 bajo revisión
+## Preregistro aceptado en CP-04
 
 - Métodos: Wilson, Clopper–Pearson y Wald; Jeffreys como comparador no productivo.
 - Alpha: `0.001, 0.005, 0.010, 0.025, 0.050, 0.100, 0.200`.
@@ -88,11 +90,12 @@ La indexación de CP-01/CP-02/CP-03 en `knowledge/registry.json` se delegó como
 4. No se transferirá evidencia de media, ANOVA, EL o GOF a intervalos de proporción.
 5. Cada SHA nuevo requiere su propia evidencia y auditoría; un PASS no se transfiere.
 6. `main` permanece protegido y no se modifica directamente durante el stage.
-7. El preregistro de CP-04 debe fijarse antes de observar resultados finales utilizados para decisiones de política.
+7. El preregistro de CP-04 queda congelado antes de observar resultados finales utilizados para decisiones de política.
 8. Un backend acelerado puede cambiar rendimiento, nunca el dominio estadístico ni las celdas evaluadas.
+9. CP-05 no puede cambiar `calibration_status` a un estado favorable ni registrar capacidades automáticas antes de CP-06/CP-07.
 
 ## Trabajo posterior ya acordado
 
-Tras aprobación de CP-04, CP-05 seguirá requiriendo autorización separada para implementación.
+CP-05 produce un candidato congelado. CP-06 ejecuta la calibración preregistrada sobre ese SHA. CP-07 realiza auditoría adversarial independiente. Sólo después se llega a CP-08.
 
-Después de cerrar este stage, el siguiente bloque del roadmap es el Gate de calibración de diagnósticos de distribución/GOF, seguido —sólo con evidencia suficiente— por el motor automático de decisión de método de bondad y ajuste.
+Después de cerrar este stage, el siguiente bloque del roadmap es el Gate de calibración de diagnósticos de distribución/GOF, seguido —sólo con evidencia suficiente— por el motor automático de decisión de método de bondad de ajuste.
