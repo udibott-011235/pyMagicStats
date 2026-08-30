@@ -1,5 +1,15 @@
 # Historial de la base de conocimiento
 
+## 2026-08-30 — Agent orchestration policy
+
+- Se adopta `knowledge/decisions/agent-orchestration-policy.md` como política operativa de distribución de carga entre agentes.
+- ChatGPT queda enfocado en arquitectura matemática/software, arbitraje técnico, metodología, Gates e interpretación de evidencia.
+- Codex reemplaza a Cortex como asignación vigente del rol `implementation-engineering` y queda enfocado en implementación, refactors, fixes y tests ligados al cambio.
+- Antigravity amplía su rol desde QA adversarial a `QA + Repo Ops + Validation Engineering`, absorbiendo preflight Git, SHA/branch/worktree checks, fresh-clone validation, suites rutinarias, regresión, reproducibilidad, scope audit y evidencia de Gates, además de adversarial estadístico/numérico/software.
+- Los hallazgos mecánicos o inequívocamente cubiertos por un contrato pueden circular `Antigravity -> Codex -> Antigravity` sin consumir arbitraje de ChatGPT.
+- Los hallazgos que cambien estimando, teoría, API, método, política, threshold, fallback, garantías o aceptación escalan a ChatGPT.
+- Se actualizan `GOVERNANCE.md`, `AGENT_PROTOCOL.md`, `SYSTEM_PROMPTS.md` y los tres espacios de rol.
+
 ## 2026-08-30 — KB v1.2
 
 - Se amplía el schema a `1.1.0` y se añade el tipo canónico `branch`.
