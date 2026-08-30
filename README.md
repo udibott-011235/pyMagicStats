@@ -26,6 +26,13 @@ one-way validation assesses group-centered residuals.
 See [the inference-engine guide](Docs/inference-engine.md) for the contract,
 migration notes and examples.
 
+## Knowledge base
+
+The [project knowledge base](knowledge/README.md) is the shared scientific memory
+for humans and agents. It links theory, papers, datasets, reproducible
+experiments, evidence and decisions through a machine-readable registry and
+cross-role review protocol.
+
 ## Installation
 
 Python 3.10 or newer is required.

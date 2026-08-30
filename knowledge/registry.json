@@ -1,0 +1,797 @@
+{
+  "$schema": "schema/registry.schema.json",
+  "schema_version": "1.1.0",
+  "knowledge_base_version": "1.2.0",
+  "last_updated": "2026-08-30",
+  "repository": "udibott-011235/pyMagicStats",
+  "canonical_branch": "main",
+  "roles": [
+    "decision-owner",
+    "statistical-software-architecture",
+    "implementation-engineering",
+    "adversarial-statistical-qa"
+  ],
+  "records": [
+    {
+      "id": "TH-001",
+      "kind": "theory",
+      "title": "Principios de inferencia vigentes",
+      "status": "accepted",
+      "scope": "Inferencia de medias y diagnósticos de diseños de una vía en main",
+      "path": "knowledge/theory/inference-principles.md",
+      "evidence_paths": [
+        "Docs/inference-engine.md",
+        "Docs/sampling-robustness-calibration.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["estimand", "assumptions", "robustness", "method-selection"]
+    },
+    {
+      "id": "DEC-001",
+      "kind": "decision",
+      "title": "No usar n>=30 como interruptor de normalidad",
+      "status": "accepted",
+      "scope": "Selección de inferencia de medias",
+      "path": "knowledge/decisions/README.md",
+      "evidence_paths": ["Docs/sampling-robustness-calibration.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["sample-size", "normality", "clt"]
+    },
+    {
+      "id": "DEC-002",
+      "kind": "decision",
+      "title": "Separar diagnóstico, política de robustez y selección",
+      "status": "accepted",
+      "scope": "Arquitectura del motor de inferencia",
+      "path": "Docs/inference-engine.md",
+      "evidence_paths": [
+        "pyMagicStat/assumptions/validator.py",
+        "pyMagicStat/inference/selector.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["architecture", "auditability"]
+    },
+    {
+      "id": "DEC-003",
+      "kind": "decision",
+      "title": "Welch por defecto y Levene como diagnóstico",
+      "status": "accepted",
+      "scope": "Pruebas t de dos grupos independientes",
+      "path": "Docs/inference-engine.md",
+      "evidence_paths": [
+        "pyMagicStat/inference/parametric.py",
+        "tests/test_parametric.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["welch", "student", "heteroscedasticity", "levene"]
+    },
+    {
+      "id": "DEC-004",
+      "kind": "decision",
+      "title": "Bootstrap explícito, reproducible y fiel al estimando",
+      "status": "accepted",
+      "scope": "Intervalos bootstrap disponibles en main",
+      "path": "Docs/inference-engine.md",
+      "evidence_paths": [
+        "pyMagicStat/inference/parametric.py",
+        "tests/test_bootstrap.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["bootstrap", "reproducibility", "estimand", "rng"]
+    },
+    {
+      "id": "DEC-005",
+      "kind": "decision",
+      "title": "No transferir la calibración de una media a ANOVA",
+      "status": "accepted",
+      "scope": "ANOVA y Welch ANOVA",
+      "path": "knowledge/theory/inference-principles.md",
+      "evidence_paths": [
+        "Docs/inference-engine.md",
+        "Docs/sampling-robustness-calibration.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["anova", "welch-anova", "calibration", "residuals"]
+    },
+    {
+      "id": "EV-001",
+      "kind": "evidence",
+      "title": "Calibración mean-v2.1-2026-08 de 152000 réplicas",
+      "status": "validated_with_limits",
+      "scope": "Inferencia t bilateral de una media independiente; 19 escenarios y n=10..200",
+      "path": "knowledge/evidence/current-evidence.md",
+      "evidence_paths": [
+        "experiments/robustness_calibration.py",
+        "experiments/results/sampling_robustness_metadata.json",
+        "experiments/results/sampling_robustness_summary.csv"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["coverage", "type-i-error", "calibration"]
+    },
+    {
+      "id": "EV-002",
+      "kind": "evidence",
+      "title": "Diagnósticos de residuos para diseño de una vía",
+      "status": "validated_with_limits",
+      "scope": "Diagnóstico implementado; no valida el estadístico ANOVA",
+      "path": "knowledge/evidence/current-evidence.md",
+      "evidence_paths": [
+        "pyMagicStat/assumptions/validator.py",
+        "tests/test_assumptions.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["anova", "residuals", "assumptions"]
+    },
+    {
+      "id": "EXP-001",
+      "kind": "experiment",
+      "title": "Runner de calibración de robustez de la media",
+      "status": "validated_with_limits",
+      "scope": "Matriz documentada en EV-001",
+      "path": "experiments/robustness_calibration.py",
+      "evidence_paths": [
+        "experiments/results/sampling_robustness_metadata.json"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["simulation", "reproducibility"]
+    },
+    {
+      "id": "DS-001",
+      "kind": "dataset",
+      "title": "Escenarios sintéticos de calibración",
+      "status": "accepted",
+      "scope": "Datos generados por réplica; raw reconstruible, no almacenado",
+      "path": "knowledge/datasets/README.md",
+      "evidence_paths": [
+        "experiments/robustness_calibration.py",
+        "experiments/results/sampling_robustness_metadata.json"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["synthetic", "calibration"]
+    },
+    {
+      "id": "DS-002",
+      "kind": "dataset",
+      "title": "Resumen agregado de robustez",
+      "status": "accepted",
+      "scope": "152 celdas derivadas; no es input",
+      "path": "experiments/results/sampling_robustness_summary.csv",
+      "evidence_paths": [
+        "experiments/results/sampling_robustness_metadata.json"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["derived", "summary"]
+    },
+    {
+      "id": "DS-003",
+      "kind": "dataset",
+      "title": "Fixture df_test_2way_t_test.xlsx",
+      "status": "open",
+      "scope": "Ejemplo existente; procedencia y licencia pendientes",
+      "path": "examples/df_test_2way_t_test.xlsx",
+      "evidence_paths": [],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["fixture", "provenance-gap"]
+    },
+    {
+      "id": "DEBT-001",
+      "kind": "debt",
+      "title": "TD-NUM-001: hardening de escalas subnormales float64",
+      "status": "open",
+      "scope": "DataQualityAssessment; no bloqueante para retail/BI",
+      "path": "Docs/technical-debt.md",
+      "evidence_paths": ["pyMagicStat/assumptions/assessments.py"],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["numerical", "float64", "underflow"]
+    },
+    {
+      "id": "ROLE-001",
+      "kind": "role-note",
+      "title": "System prompts y fronteras de autoridad del equipo",
+      "status": "under_review",
+      "scope": "Gobernanza de ChatGPT, Cortex y Antigravity en pyMagicStats",
+      "path": "knowledge/SYSTEM_PROMPTS.md",
+      "evidence_paths": [
+        "knowledge/GOVERNANCE.md",
+        "knowledge/AGENT_PROTOCOL.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["governance", "roles", "system-prompts", "git-safety"]
+    },
+    {
+      "id": "DEC-006",
+      "kind": "decision",
+      "title": "Branch lifecycle governed by Product Owner and Architecture",
+      "status": "accepted",
+      "scope": "Estado operativo, integración, supersesión y archivo de ramas del repositorio",
+      "path": "knowledge/decisions/branch-lifecycle-governance.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "governance", "lifecycle", "authority"]
+    },
+    {
+      "id": "EV-003",
+      "kind": "evidence",
+      "title": "Branch lifecycle forensic inventory — 2026-08-30",
+      "status": "validated_with_limits",
+      "scope": "Inventario reproducible de las 16 ramas remotas observadas y sus relaciones con main",
+      "path": "knowledge/evidence/branch-inventory-2026-08-30.md",
+      "evidence_paths": [],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "forensics", "git", "lifecycle"]
+    },
+    {
+      "id": "EV-004",
+      "kind": "evidence",
+      "title": "Gate 2 adversarial clear — 9a87c5d",
+      "status": "validated_with_limits",
+      "scope": "Reauditoría adversarial focalizada del candidato Gate 2 9a87c5d dentro del alcance GOF aprobado",
+      "path": "knowledge/evidence/gate2-adversarial-clear-9a87c5d.md",
+      "evidence_paths": [],
+      "owner_role": "adversarial-statistical-qa",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["gate2", "adversarial", "gof", "validated-with-limits"]
+    },
+    {
+      "id": "BR-001",
+      "kind": "branch",
+      "title": "Branch lifecycle — main",
+      "status": "accepted",
+      "scope": "Rama canónica del repositorio",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "canonical", "main"],
+      "branch": {
+        "name": "main",
+        "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "canonical",
+        "integration_state": "not_applicable",
+        "ahead_of_main": 0,
+        "behind_main": 0,
+        "unique_commits": [],
+        "decision_reason": "Rama canónica contra la que se observan las demás ramas.",
+        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "next_action": "Ninguna acción de lifecycle sin decisión expresa de Product Owner y Arquitectura."
+      }
+    },
+    {
+      "id": "BR-002",
+      "kind": "branch",
+      "title": "Branch lifecycle — audit/global-main-a0881c4",
+      "status": "archived",
+      "scope": "Alias histórico de auditoría del main observado",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "audit", "same-head"],
+      "branch": {
+        "name": "audit/global-main-a0881c4",
+        "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "same_head",
+        "integration_state": "not_applicable",
+        "ahead_of_main": 0,
+        "behind_main": 0,
+        "unique_commits": [],
+        "decision_reason": "Snapshot y alias histórico de auditoría; cero commits únicos y mismo HEAD que main.",
+        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "next_action": "Conservar archivada hasta una futura decisión explícita de lifecycle."
+      }
+    },
+    {
+      "id": "BR-003",
+      "kind": "branch",
+      "title": "Branch lifecycle — docs/project-knowledge-base",
+      "status": "under_review",
+      "scope": "Knowledge Base compartida y su PR existente",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "knowledge-base", "merge-candidate", "pr-1"],
+      "branch": {
+        "name": "docs/project-knowledge-base",
+        "head_sha_at_decision": "896fd33d237a798fc681a77c9224a3f86cc50263",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "diverged",
+        "integration_state": "merge_candidate",
+        "ahead_of_main": 3,
+        "behind_main": 13,
+        "unique_commits": [
+          "861abed1d6084354c907d728c3ebb92e7e658df7",
+          "7df762efc8677ead9377ca7ad93a02b825f875a7",
+          "896fd33d237a798fc681a77c9224a3f86cc50263"
+        ],
+        "decision_reason": "Tres commits propios todavía no integrados; Product Owner y Arquitectura mantienen esta rama como candidata en el PR existente.",
+        "merge_base": "33f28bd0487d4a4aff05253d013ba5f010493430",
+        "pr_number": 1,
+        "parent_branch": "main",
+        "parent_sha": "33f28bd0487d4a4aff05253d013ba5f010493430",
+        "next_action": "Continuar revisión arquitectónica dentro del PR #1 existente."
+      }
+    },
+    {
+      "id": "BR-004",
+      "kind": "branch",
+      "title": "Branch lifecycle — experiments/el-vs-t-calibration-harness",
+      "status": "archived",
+      "scope": "Harness reproducible de calibración t versus empirical likelihood",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "calibration", "merged"],
+      "branch": {
+        "name": "experiments/el-vs-t-calibration-harness",
+        "head_sha_at_decision": "05bc7106cca40fafc64ea78433f637ddbdfe48c5",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 4,
+        "unique_commits": [],
+        "decision_reason": "Su historia está completamente contenida en main mediante la cadena integrada por PR #2.",
+        "merge_base": "05bc7106cca40fafc64ea78433f637ddbdfe48c5",
+        "merged_via": "PR #2",
+        "parent_branch": "feature/empirical-likelihood-mean",
+        "parent_sha": "427d75b4ea2f72a0e6c6aabbc5b79084721c698e",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-005",
+      "kind": "branch",
+      "title": "Branch lifecycle — feature/anova-engine",
+      "status": "under_review",
+      "scope": "Trabajo ANOVA divergente todavía no integrado",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "anova", "pending", "under-review"],
+      "branch": {
+        "name": "feature/anova-engine",
+        "head_sha_at_decision": "9ebbe4fd1f6b9f847be75f7add09fee609ebe383",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "diverged",
+        "integration_state": "pending",
+        "ahead_of_main": 4,
+        "behind_main": 13,
+        "unique_commits": [
+          "c4174d544165db8e0c9b719dd9e813b9dc01564b",
+          "4951aa5292d7a5922925440b0076ee784bdd799e",
+          "62aa5d199b6030f66e72fe348b9d2493410383a0",
+          "9ebbe4fd1f6b9f847be75f7add09fee609ebe383"
+        ],
+        "decision_reason": "Cuatro commits únicos permanecen bajo revisión; no está declarada como merge_candidate.",
+        "merge_base": "33f28bd0487d4a4aff05253d013ba5f010493430",
+        "parent_branch": "main",
+        "parent_sha": "33f28bd0487d4a4aff05253d013ba5f010493430",
+        "next_action": "Esperar decisión de Product Owner y Arquitectura; no modificar ANOVA ni promover a merge_candidate."
+      }
+    },
+    {
+      "id": "BR-006",
+      "kind": "branch",
+      "title": "Branch lifecycle — feature/empirical-likelihood-mean",
+      "status": "archived",
+      "scope": "Implementación de empirical likelihood para una media",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "empirical-likelihood", "merged"],
+      "branch": {
+        "name": "feature/empirical-likelihood-mean",
+        "head_sha_at_decision": "427d75b4ea2f72a0e6c6aabbc5b79084721c698e",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 5,
+        "unique_commits": [],
+        "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
+        "merge_base": "427d75b4ea2f72a0e6c6aabbc5b79084721c698e",
+        "merged_via": "PR #2",
+        "parent_branch": "refactor/inference-capability-routing",
+        "parent_sha": "763ceeaab86f1ede85eb204a02249df0194346ba",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-007",
+      "kind": "branch",
+      "title": "Branch lifecycle — fix/el-ci-numerical-convergence",
+      "status": "archived",
+      "scope": "Corrección numérica final de empirical likelihood CI integrada por PR #2",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "archived", "empirical-likelihood", "tree-equivalent"],
+      "branch": {
+        "name": "fix/el-ci-numerical-convergence",
+        "head_sha_at_decision": "c3c3834f177b8161fb25a9028251a755360a7ee9",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 1,
+        "unique_commits": [],
+        "decision_reason": "Head del PR #2 ya integrado; su árbol era equivalente al main actual en la observación forense.",
+        "merge_base": "c3c3834f177b8161fb25a9028251a755360a7ee9",
+        "merged_via": "PR #2",
+        "pr_number": 2,
+        "parent_branch": "fix/el-vs-t-cupy-generator-compatibility",
+        "parent_sha": "c8dd9ab949f12801944cb465fc5bba8186a70134",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-008",
+      "kind": "branch",
+      "title": "Branch lifecycle — fix/el-vs-t-calibration-accounting",
+      "status": "archived",
+      "scope": "Corrección de accounting y semillas de calibración EL",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "calibration", "merged"],
+      "branch": {
+        "name": "fix/el-vs-t-calibration-accounting",
+        "head_sha_at_decision": "51d74e74386eed1c0fe4cc4e90b394dc119acc85",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 3,
+        "unique_commits": [],
+        "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
+        "merge_base": "51d74e74386eed1c0fe4cc4e90b394dc119acc85",
+        "merged_via": "PR #2",
+        "parent_branch": "experiments/el-vs-t-calibration-harness",
+        "parent_sha": "05bc7106cca40fafc64ea78433f637ddbdfe48c5",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-009",
+      "kind": "branch",
+      "title": "Branch lifecycle — fix/el-vs-t-cupy-generator-compatibility",
+      "status": "archived",
+      "scope": "Compatibilidad del generador CuPy en calibración",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "cupy", "merged"],
+      "branch": {
+        "name": "fix/el-vs-t-cupy-generator-compatibility",
+        "head_sha_at_decision": "c8dd9ab949f12801944cb465fc5bba8186a70134",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 2,
+        "unique_commits": [],
+        "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
+        "merge_base": "c8dd9ab949f12801944cb465fc5bba8186a70134",
+        "merged_via": "PR #2",
+        "parent_branch": "fix/el-vs-t-calibration-accounting",
+        "parent_sha": "51d74e74386eed1c0fe4cc4e90b394dc119acc85",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-010",
+      "kind": "branch",
+      "title": "Branch lifecycle — fix/gate2-major-remediation",
+      "status": "superseded",
+      "scope": "Placeholder histórico de remediación Gate 2",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "gate2", "placeholder", "superseded"],
+      "branch": {
+        "name": "fix/gate2-major-remediation",
+        "head_sha_at_decision": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "same_head",
+        "integration_state": "not_planned",
+        "ahead_of_main": 0,
+        "behind_main": 0,
+        "unique_commits": [],
+        "decision_reason": "Rama placeholder sin commit material propio; comparte exactamente el HEAD de main.",
+        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "next_action": "No borrar; conservar su genealogía como registro superseded."
+      }
+    },
+    {
+      "id": "BR-011",
+      "kind": "branch",
+      "title": "Branch lifecycle — fix/gate2-distribution-gof-remediation",
+      "status": "superseded",
+      "scope": "Primer candidato materializado de remediación Gate 2 GOF",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": ["BR-010"],
+      "tags": ["branch", "gate2", "gof", "superseded"],
+      "branch": {
+        "name": "fix/gate2-distribution-gof-remediation",
+        "head_sha_at_decision": "0fc71c90c15f7c82b55ba650de742265d492df33",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "contains_main",
+        "integration_state": "not_planned",
+        "ahead_of_main": 1,
+        "behind_main": 0,
+        "unique_commits": ["0fc71c90c15f7c82b55ba650de742265d492df33"],
+        "decision_reason": "Materializó Gate 2 sobre main y reemplazó el placeholder; fue reemplazada a su vez por el candidato adversarial vigente.",
+        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "parent_branch": "main",
+        "parent_sha": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "next_action": "Conservar como ancestro auditado del candidato vigente; no integrar separadamente."
+      }
+    },
+    {
+      "id": "BR-012",
+      "kind": "branch",
+      "title": "Branch lifecycle — fix/gate2-adversarial-remediation",
+      "status": "validated_with_limits",
+      "scope": "Único candidato Gate 2 vigente después de la remediación adversarial focalizada",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": [
+        "knowledge/evidence/branch-inventory-2026-08-30.md",
+        "knowledge/evidence/gate2-adversarial-clear-9a87c5d.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "implementation-engineering"
+      ],
+      "supersedes": ["BR-011"],
+      "tags": ["branch", "gate2", "merge-candidate", "validated-with-limits"],
+      "branch": {
+        "name": "fix/gate2-adversarial-remediation",
+        "head_sha_at_decision": "9a87c5d48dba8b8a172b5386d7318e7f37ec98fe",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "contains_main",
+        "integration_state": "merge_candidate",
+        "ahead_of_main": 2,
+        "behind_main": 0,
+        "unique_commits": [
+          "0fc71c90c15f7c82b55ba650de742265d492df33",
+          "9a87c5d48dba8b8a172b5386d7318e7f37ec98fe"
+        ],
+        "decision_reason": "Es el único candidato Gate 2 vigente, validado con límites y todavía no integrado.",
+        "merge_base": "a0881c479bcc0496f79d0f8477d53a41a91907d9",
+        "parent_branch": "fix/gate2-distribution-gof-remediation",
+        "parent_sha": "0fc71c90c15f7c82b55ba650de742265d492df33",
+        "next_action": "Aún no merged; esperar autorización expresa de Product Owner y Arquitectura para cualquier integración."
+      }
+    },
+    {
+      "id": "BR-013",
+      "kind": "branch",
+      "title": "Branch lifecycle — refactor/distribution-shape-contract",
+      "status": "archived",
+      "scope": "Contrato de forma de distribuciones contenido en main",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "distribution", "merged"],
+      "branch": {
+        "name": "refactor/distribution-shape-contract",
+        "head_sha_at_decision": "46b9f9fa7cee47466154541ea086ada5f5a4e1eb",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 9,
+        "unique_commits": [],
+        "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
+        "merge_base": "46b9f9fa7cee47466154541ea086ada5f5a4e1eb",
+        "merged_via": "PR #2",
+        "parent_branch": "main",
+        "parent_sha": "33f28bd0487d4a4aff05253d013ba5f010493430",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-014",
+      "kind": "branch",
+      "title": "Branch lifecycle — refactor/inference-capability-routing",
+      "status": "archived",
+      "scope": "Routing de inferencia mediante garantías explícitas contenido en main",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "inference", "merged"],
+      "branch": {
+        "name": "refactor/inference-capability-routing",
+        "head_sha_at_decision": "763ceeaab86f1ede85eb204a02249df0194346ba",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 6,
+        "unique_commits": [],
+        "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
+        "merge_base": "763ceeaab86f1ede85eb204a02249df0194346ba",
+        "merged_via": "PR #2",
+        "parent_branch": "refactor/sampling-robustness-v3",
+        "parent_sha": "12d5167bdf6dedec748d890b77f3ad683ba22bae",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-015",
+      "kind": "branch",
+      "title": "Branch lifecycle — refactor/inference-engine",
+      "status": "archived",
+      "scope": "Refactor base del motor de inferencia contenido en main",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "inference-engine", "merged"],
+      "branch": {
+        "name": "refactor/inference-engine",
+        "head_sha_at_decision": "2eb302f9a5ac07b57192af7d7b6451f672835ca4",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 14,
+        "unique_commits": [],
+        "decision_reason": "Su head fue integrado como segundo parent del merge 33f28bd y está completamente contenido en main.",
+        "merge_base": "2eb302f9a5ac07b57192af7d7b6451f672835ca4",
+        "merged_via": "merge commit 33f28bd0487d4a4aff05253d013ba5f010493430",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    },
+    {
+      "id": "BR-016",
+      "kind": "branch",
+      "title": "Branch lifecycle — refactor/sampling-robustness-v3",
+      "status": "archived",
+      "scope": "Selector y calibración de robustez v3 contenidos en main",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": ["knowledge/evidence/branch-inventory-2026-08-30.md"],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture"],
+      "supersedes": [],
+      "tags": ["branch", "archived", "robustness", "merged"],
+      "branch": {
+        "name": "refactor/sampling-robustness-v3",
+        "head_sha_at_decision": "12d5167bdf6dedec748d890b77f3ad683ba22bae",
+        "observed_at": "2026-08-30",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 7,
+        "unique_commits": [],
+        "decision_reason": "Su historia está completamente contenida en main mediante PR #2.",
+        "merge_base": "12d5167bdf6dedec748d890b77f3ad683ba22bae",
+        "merged_via": "PR #2",
+        "parent_branch": "refactor/distribution-shape-contract",
+        "parent_sha": "46b9f9fa7cee47466154541ea086ada5f5a4e1eb",
+        "next_action": "Conservar archivada hasta una decisión explícita de borrado."
+      }
+    }
+  ]
+}
