@@ -1,11 +1,19 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
 import numpy as np
 import scipy.stats as stats
 import statsmodels.api as sm
 import warnings
+from numbers import Integral, Real
 from typing import Any, Dict, Optional, Union
 from pyMagicStat.utils.utils import output_format
 from pyMagicStat.assumptions import ShapeAssessment
+from pyMagicStat.distributions._discrete_gof import (
+    pearson_gof_result,
+    point_cell,
+    unavailable_result,
+    upper_tail_cell,
+)
 from pyMagicStat._descriptive import sample_descriptives, univariate_sample
 
 
@@ -238,6 +246,11 @@ class NormalDistribution(ContinuousDistributionValidator):
         return resultados
 
     def evaluate_qq(self, data):
+        if len(data) <= 2:
+            return {
+                "status": "not_assessed",
+                "reason": "Q-Q regression requires at least three observations.",
+            }
         try:
             quantiles_theo, quantiles_emp = stats.probplot(data, dist="norm", fit=False)
             X = sm.add_constant(quantiles_theo)
@@ -292,18 +305,76 @@ class LognormalDistribution(ContinuousDistributionValidator):
             log_data = np.log(data)
         except Exception as e:
             warnings.warn("Error al aplicar log: " + str(e))
-            self.distribution.update_type('Lognormal', False, 'normality_log_results', {'error': str(e)})
-            return {'error': str(e)}
+            result = {
+                "status": "error",
+                "decision": "error",
+                "hypothesis": "Exact Gaussianity of log(data)",
+                "evaluated_variable": "log(data)",
+                "alpha": 0.05,
+                "reason": str(e),
+            }
+            return self._store_lognormality_result(result)
         try:
             # Se utiliza el evaluador normal sobre el logaritmo de los datos.
             evaluator = NormalDistribution(log_data)
             resultados = evaluator.evaluate_normality()
-            self.distribution.update_type('Lognormal', resultados is not None, 'normality_log_results', resultados)
-            return resultados
+            assessment = evaluator.distribution.assessments["normality"]
+            exact_rejected = assessment.metrics.get("exact_normality_rejected")
+            if exact_rejected is True:
+                decision = "reject"
+                reason = "At least one formal test rejects exact Gaussianity of log(data)."
+            elif exact_rejected is False:
+                decision = "fail_to_reject"
+                reason = (
+                    "Available formal tests do not reject exact Gaussianity of "
+                    "log(data); this does not demonstrate that the original data "
+                    "are lognormal."
+                )
+            else:
+                decision = "not_assessed"
+                reason = "Exact Gaussianity of log(data) could not be assessed."
+
+            result = dict(resultados)
+            result.update(
+                {
+                    "status": decision,
+                    "decision": decision,
+                    "hypothesis": "Exact Gaussianity of log(data)",
+                    "evaluated_variable": "log(data)",
+                    "alpha": float(assessment.metrics.get("alpha", 0.05)),
+                    "reason": reason,
+                }
+            )
+            return self._store_lognormality_result(result)
         except Exception as e:
             warnings.warn("Error en normalidad lognormal: " + str(e))
-            self.distribution.update_type('Lognormal', False, 'normality_log_results', {'error': str(e)})
-            return {'error': str(e)}
+            result = {
+                "status": "error",
+                "decision": "error",
+                "hypothesis": "Exact Gaussianity of log(data)",
+                "evaluated_variable": "log(data)",
+                "alpha": 0.05,
+                "reason": str(e),
+            }
+            return self._store_lognormality_result(result)
+
+    def _store_lognormality_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        self.distribution.assessments["lognormality"] = result
+        legacy_value = {
+            "reject": False,
+            "fail_to_reject": True,
+            "not_assessed": None,
+            "error": None,
+        }[result["decision"]]
+        if self.distribution.type is None:
+            self.distribution.type = {}
+        self.distribution.type.update(
+            {
+                "Lognormal": legacy_value,
+                "normality_log_results": deepcopy(result),
+            }
+        )
+        return result
 
     def assign_weights(self):
         try:
@@ -331,19 +402,48 @@ class DiscreteDistributionValidator(DistributionValidator, ABC):
 
     def fit_test(self, *args, **kwargs):
         """
-        En distribuciones discretas, fit_test() ejecuta:
-          - Primero, la prueba de bondad de ajuste.
-          - Luego, si ésta es exitosa (según .type específico), evalúa la aproximación a la normal.
+        En distribuciones discretas, fit_test() ejecuta primero el GOF y sólo
+        continúa cuando su decisión estructurada es ``fail_to_reject``.
         """
         gof_results = self.evaluate_goodness_of_fit(*args, **kwargs)
-        # Se asume que el test de bondad actualiza el .type correspondiente en Distribution.
-        # Si la bondad de ajuste no es exitosa, se interrumpe el proceso.
-        dist_name = self.__class__.__name__.replace('Distribution', '')
-        if not self.distribution.type.get(dist_name, False):
-            raise ValueError(f"Test de bondad de ajuste fallido en {self.__class__.__name__}, no se procede a normalidad.")
+        structured = self.distribution.assessments.get("goodness_of_fit", gof_results)
+        if structured.get("decision") != "fail_to_reject":
+            reason = structured.get("reason") or (
+                "the structured goodness-of-fit decision was "
+                f"{structured.get('decision')!r}"
+            )
+            raise ValueError(
+                f"Goodness-of-fit did not permit normal approximation for "
+                f"{self.__class__.__name__}: status={structured.get('status')!r}, "
+                f"decision={structured.get('decision')!r}; {reason}"
+            )
         # Se procede a evaluar la aproximación a la normal de forma condicional.
         normal_approx = self.evaluate_normal_approximation()
         return {'goodness_of_fit': gof_results, 'approx_normal': normal_approx}
+
+    def _store_gof_result(
+        self,
+        distribution_name: str,
+        result: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Store the canonical GOF result and update compatibility mirrors."""
+
+        self.distribution.assessments["goodness_of_fit"] = result
+        decision = result.get("decision")
+        legacy_value = (
+            True
+            if decision == "fail_to_reject"
+            else False if decision == "reject" else None
+        )
+        if self.distribution.type is None:
+            self.distribution.type = {}
+        self.distribution.type.update(
+            {
+                distribution_name: legacy_value,
+                "goodness_of_fit": deepcopy(result),
+            }
+        )
+        return result
 
     @abstractmethod
     def evaluate_normal_approximation(self):
@@ -369,44 +469,139 @@ class BinomialDistribution(DiscreteDistributionValidator):
 
     def evaluate_goodness_of_fit(self, n=None, p=None):
         data = self.distribution.data
+        alpha = 0.05
+        hypothesis = "Pearson chi-square goodness-of-fit for the binomial model"
+
+        if n is None:
+            parameters = {
+                "n": {"value": None, "source": "required_not_provided"},
+                "p": {
+                    "value": p,
+                    "source": "provided_but_not_used_without_n" if p is not None else "not_provided",
+                },
+            }
+            result = unavailable_result(
+                status="not_assessed",
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=0,
+                parameters=parameters,
+                observed_total=len(data),
+                reason=(
+                    "n is a required structural parameter for a valid binomial "
+                    "chi-square goodness-of-fit assessment."
+                ),
+                legacy_values={"n": None, "p": p},
+            )
+            return self._store_gof_result("Binomial", result)
+
+        if isinstance(n, (bool, np.bool_)) or not isinstance(n, Integral) or n <= 0:
+            parameters = {
+                "n": {"value": n, "source": "invalid_provided"},
+                "p": {"value": p, "source": "provided" if p is not None else "not_provided"},
+            }
+            result = unavailable_result(
+                status="not_assessed",
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=0,
+                parameters=parameters,
+                observed_total=len(data),
+                reason="n must be a positive integer for binomial goodness-of-fit.",
+                legacy_values={"n": n, "p": p},
+            )
+            return self._store_gof_result("Binomial", result)
+
+        n = int(n)
+        if np.any(data > n):
+            parameters = {
+                "n": {"value": n, "source": "provided"},
+                "p": {"value": p, "source": "provided" if p is not None else "not_provided"},
+            }
+            result = unavailable_result(
+                status="not_assessed",
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=0,
+                parameters=parameters,
+                observed_total=len(data),
+                reason="All observations must belong to the binomial support [0, n].",
+                legacy_values={"n": n, "p": p},
+            )
+            return self._store_gof_result("Binomial", result)
+
+        parameter_count_estimated = 0
+        p_source = "provided"
+        if p is None:
+            p = float(np.mean(data) / n)
+            parameter_count_estimated = 1
+            p_source = "estimated_from_sample_mean_given_n"
+
+        if (
+            isinstance(p, (bool, np.bool_))
+            or not isinstance(p, Real)
+            or not np.isfinite(float(p))
+            or not 0.0 < float(p) < 1.0
+        ):
+            parameters = {
+                "n": {"value": n, "source": "provided"},
+                "p": {"value": p, "source": f"invalid_{p_source}"},
+            }
+            result = unavailable_result(
+                status="not_assessed",
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=parameter_count_estimated,
+                parameters=parameters,
+                observed_total=len(data),
+                reason="p must be strictly between 0 and 1 for binomial goodness-of-fit.",
+                legacy_values={"n": n, "p": p},
+            )
+            return self._store_gof_result("Binomial", result)
+
+        p = float(p)
+        parameters = {
+            "n": {"value": n, "source": "provided"},
+            "p": {"value": p, "source": p_source},
+        }
         try:
-            # Si no se pasan n y p, estimar por momentos
-            if n is None or p is None:
-                params = self.estimate_parameters_moments()
-                if 'error' in params:
-                    raise ValueError(params['error'])
-                n = int(round(params['n']))
-                p = params['p']
-            # Validar que los datos estén en el rango [0, n]
-            if np.any((data < 0) | (data > n)):
-                warnings.warn("Algunos datos están fuera del rango [0, n] estimado para binomial.")
-            bins = np.arange(0, n + 2)
-            observed, _ = np.histogram(data, bins=bins)
-            expected = np.array([stats.binom.pmf(k, n, p) * len(data) for k in range(0, n + 1)])
-            # Filtrar bins con esperado < 5 (regla estándar chi2)
-            mask = expected >= 5
-            if not np.any(mask):
-                raise ValueError("Todos los bins esperados son menores a 5. No se puede aplicar chi2.")
-            observed = observed[mask]
-            expected = expected[mask]
-            expected = expected * (observed.sum() / expected.sum())  # Ajustar para que sumen lo mism
-            chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected)
-            resultados = {'chi2': chi2, 'p_value': p_value, 'n': n, 'p': p}
+            support = np.arange(n + 1, dtype=int)
+            observed = np.bincount(data.astype(int), minlength=n + 1)
+            expected = stats.binom.pmf(support, n, p) * len(data)
+            cells = [
+                point_cell(k, observed[k], expected[k])
+                for k in range(n + 1)
+            ]
+            result = pearson_gof_result(
+                cells=cells,
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=parameter_count_estimated,
+                parameters=parameters,
+                legacy_values={"n": n, "p": p},
+            )
         except Exception as e:
             warnings.warn("Error en bondad de ajuste binomial: " + str(e))
-            resultados = {'error': str(e)}
-        self.distribution.update_type('Binomial', resultados.get('p_value', 0) > 0.05, 'goodness_of_fit', resultados)
-        return resultados
+            result = unavailable_result(
+                status="error",
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=parameter_count_estimated,
+                parameters=parameters,
+                observed_total=len(data),
+                reason=str(e),
+                legacy_values={"n": n, "p": p},
+            )
+        return self._store_gof_result("Binomial", result)
 
     def evaluate_normal_approximation(self):
         try:
-            params = self.distribution.type.get('goodness_of_fit', {})
-            n = params.get('n')
-            p = params.get('p')
+            assessment = self.distribution.assessments.get("goodness_of_fit", {})
+            parameters = assessment.get("parameters", {})
+            n = parameters.get("n", {}).get("value")
+            p = parameters.get("p", {}).get("value")
             if n is None or p is None:
-                params = self.estimate_parameters_moments()
-                n = params.get('n')
-                p = params.get('p')
+                raise ValueError("A structured GOF result with n and p is required.")
             var_approx = n * p * (1 - p)
             return bool(var_approx >= 9)
         except Exception as e:
@@ -428,7 +623,10 @@ class BinomialDistribution(DiscreteDistributionValidator):
         except Exception as e:
             warnings.warn("Error en estimación por momentos: " + str(e))
             resultados = {'error': str(e)}
-        self.distribution.update_type('Binomial', 'error' not in resultados, 'moments_estimation', resultados)
+        self.distribution.assessments["moments_estimation"] = resultados
+        if self.distribution.type is None:
+            self.distribution.type = {}
+        self.distribution.type["moments_estimation"] = resultados
         return resultados
 
     
@@ -446,31 +644,62 @@ class PoissonDistribution(DiscreteDistributionValidator):
 
     def evaluate_goodness_of_fit(self):
         data = self.distribution.data
+        alpha = 0.05
+        hypothesis = "Pearson chi-square goodness-of-fit for the Poisson model"
+        lambda_val = float(np.mean(data))
+        parameters = {
+            "lambda": {
+                "value": lambda_val,
+                "source": "estimated_from_sample_mean",
+            }
+        }
         try:
-            lambda_val = np.mean(data)
-            n = len(data)
-            bins = np.arange(np.min(data), np.max(data) + 2)
-            observed, _ = np.histogram(data, bins=bins)
-            expected = np.array([stats.poisson.pmf(k, lambda_val) * n for k in bins[:-1]])
-            # Filtrar bins con esperado < 5
-            mask = expected >= 5
-            if not np.any(mask):
-                raise ValueError("Todos los bins esperados son menores a 5. No se puede aplicar chi2.")
-            observed = observed[mask]
-            expected = expected[mask]
-            expected = expected * (observed.sum() / expected.sum())  # Ajustar para que sumen lo mismo
-            chi2, p_value = stats.chisquare(f_obs=observed, f_exp=expected)
-            resultados = {'chi2': chi2, 'p_value': p_value, 'lambda': lambda_val}
+            sample_size = len(data)
+            maximum = int(np.max(data))
+            observed = np.bincount(data.astype(int), minlength=maximum + 1)
+            support = np.arange(maximum + 1, dtype=int)
+            expected = stats.poisson.pmf(support, lambda_val) * sample_size
+            cells = [
+                point_cell(k, observed[k], expected[k])
+                for k in range(maximum + 1)
+            ]
+            cells.append(
+                upper_tail_cell(
+                    maximum + 1,
+                    0,
+                    stats.poisson.sf(maximum, lambda_val) * sample_size,
+                )
+            )
+            result = pearson_gof_result(
+                cells=cells,
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=1,
+                parameters=parameters,
+                legacy_values={"lambda": lambda_val},
+            )
         except Exception as e:
             warnings.warn("Error en bondad de ajuste Poisson: " + str(e))
-            resultados = {'error': str(e)}
-        self.distribution.update_type('Poisson', resultados.get('p_value', 0) > 0.05, 'goodness_of_fit', resultados)
-        return resultados
+            result = unavailable_result(
+                status="error",
+                hypothesis=hypothesis,
+                alpha=alpha,
+                parameter_count_estimated=1,
+                parameters=parameters,
+                observed_total=len(data),
+                reason=str(e),
+                legacy_values={"lambda": lambda_val},
+            )
+        return self._store_gof_result("Poisson", result)
 
     def evaluate_normal_approximation(self):
         try:
-            params = self.distribution.type.get('goodness_of_fit', {})
-            lambda_val = params.get('lambda')
+            assessment = self.distribution.assessments.get("goodness_of_fit", {})
+            lambda_val = (
+                assessment.get("parameters", {})
+                .get("lambda", {})
+                .get("value")
+            )
             if lambda_val is None:
                 lambda_val = np.mean(self.distribution.data)
             return bool(lambda_val >= 9)
