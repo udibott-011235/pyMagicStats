@@ -248,9 +248,9 @@ def test_cp05_27_clopper_pearson_matches_scipy_exact_grid():
             assert result["ub"] == pytest.approx(oracle.high, abs=1e-14)
 
 
-def test_cp05_28_wilson_bounds_stay_in_unit_interval_on_cp01_subset():
-    for alpha in (0.01, 0.05, 0.1):
-        for n in range(1, 51):
+def test_cp05_28_wilson_bounds_stay_in_unit_interval_on_full_cp01_grid():
+    for alpha in (0.01, 0.05, 0.10):
+        for n in range(1, 201):
             for x in range(n + 1):
                 result = _from_counts(x, n, alpha=alpha)
                 assert 0.0 <= result["lb"] <= result["ub"] <= 1.0
