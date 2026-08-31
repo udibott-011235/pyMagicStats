@@ -1,0 +1,52 @@
+{
+  "alphas": [
+    0.001,
+    0.005,
+    0.01,
+    0.025,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "backend": "CPU/SciPy float64",
+  "batch_size": 64,
+  "candidate_sha": "2df5b90a5395163e723f9c52aafbb91fdce96d43",
+  "checkpoint": "SMOKE",
+  "cp04_document_sha": "63eaaed6842e2f82473bfa857524645123f95218",
+  "elapsed_seconds": 8.55112409999856,
+  "experiment_version": "proportion-ci-cp06-v1",
+  "hashes": {
+    "proportion_ci_cp06_smoke_coverage_summary.parquet": "250aad3e09fee0fe6996fefce7794aba70599eb2bf34eb9383eff818cea1cfc3",
+    "proportion_ci_cp06_smoke_event_regimes.parquet": "8281098df5fb6154438251077d871b9c233d70ad3432c0c8a6932ee644f0c56c",
+    "proportion_ci_cp06_smoke_high_precision_triggers.parquet": "b9c9881b2bf10b763dc0ac875a43751f1c4b04be591bfe557f747e01ce7cc47a",
+    "proportion_ci_cp06_smoke_interval_inventory.parquet": "9a72fab1820df3c4b87f852808075bedae28ce4ccfaaa1f93ee96ad710d080fb",
+    "proportion_ci_cp06_smoke_invariants.parquet": "5aa27fe63cfdd31ee3fcf8117c155e6c7817cba3693831e4d047fa70a240a797",
+    "proportion_ci_cp06_smoke_nesting.parquet": "24f36eaceb01ba10285b613d57a019a32626937dbee9603d183195c1a9dded20",
+    "proportion_ci_cp06_smoke_oracles.parquet": "cb8894ddfb0a31e4c6583f2af25c03d59893ad41663cf2b20c6a15c063da0989",
+    "proportion_ci_cp06_smoke_worst_cases.parquet": "ea8474aec9d06081b3ae1bbdbdb30d7a8038192711b12e62058507fa11390160"
+  },
+  "methods": [
+    "wilson",
+    "clopper_pearson",
+    "wald",
+    "jeffreys"
+  ],
+  "n_values": [
+    1,
+    2,
+    5,
+    10,
+    97,
+    101
+  ],
+  "versions": {
+    "mpmath": "1.4.1",
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "pyarrow": "25.0.1",
+    "python": "3.12.13",
+    "scipy": "1.18.1",
+    "statsmodels": "0.15.0"
+  },
+  "workers": 2
+}
