@@ -37,11 +37,12 @@ from experiments.proportion_ci_calibration.harness import (
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 RESULTS = REPOSITORY_ROOT / "experiments" / "results"
+SHARD_SCHEMA_VERSION = "cp06-shard-schema-v3"
 CACHE_ROOT = (
     Path(tempfile.gettempdir())
     / "pymagicstats_cp06_cache"
     / CANDIDATE_SHA
-    / HARNESS_SCHEMA_VERSION
+    / SHARD_SCHEMA_VERSION
 )
 
 
@@ -92,6 +93,7 @@ def checkpoint_spec_hash(name: str, spec: CheckpointSpec | None = None) -> str:
         "checkpoint": name,
         "candidate_sha": CANDIDATE_SHA,
         "harness_schema_version": HARNESS_SCHEMA_VERSION,
+        "shard_schema_version": SHARD_SCHEMA_VERSION,
         "n_values": selected.n_values,
         "linear_step": selected.linear_step,
         "expected_widths": selected.expected_widths,
@@ -109,6 +111,7 @@ def shard_semantic_hash(n: int, spec: CheckpointSpec) -> str:
     payload = {
         "candidate_sha": CANDIDATE_SHA,
         "harness_schema_version": HARNESS_SCHEMA_VERSION,
+        "shard_schema_version": SHARD_SCHEMA_VERSION,
         "n": n,
         "linear_step": spec.linear_step,
         "expected_widths": spec.expected_widths,
@@ -131,6 +134,7 @@ def build_cache_provenance(
     return {
         "candidate_sha": CANDIDATE_SHA,
         "harness_schema_version": HARNESS_SCHEMA_VERSION,
+        "shard_schema_version": SHARD_SCHEMA_VERSION,
         "checkpoint": checkpoint,
         "checkpoint_spec_sha256": checkpoint_spec_hash(checkpoint, selected),
         "shard_semantic_sha256": shard_semantic_hash(n, selected),
@@ -215,6 +219,7 @@ def _write_checkpoint(
         "include_base_grid": spec.include_base_grid,
         "linear_step": spec.linear_step,
         "harness_schema_version": HARNESS_SCHEMA_VERSION,
+        "shard_schema_version": SHARD_SCHEMA_VERSION,
         "checkpoint_spec_sha256": checkpoint_spec_hash(name, spec),
         "hashes": hashes,
     }
@@ -280,6 +285,7 @@ def load_shard_cache(
         required = (
             "candidate_sha",
             "harness_schema_version",
+            "shard_schema_version",
             "shard_semantic_sha256",
             "n",
         )

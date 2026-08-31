@@ -21,12 +21,14 @@ from experiments.proportion_ci_calibration.harness import (
     CANDIDATE_SHA,
     CP04_DOCUMENT_SHA,
     EXPERIMENT_VERSION,
+    HARNESS_SCHEMA_VERSION,
     EndpointGridCache,
     acceptance_runs,
     jeffreys_interval_grid,
     outcome_runs,
     production_interval_grid,
 )
+from experiments.proportion_ci_calibration.run import SHARD_SCHEMA_VERSION
 from pyMagicStat.inference import PopulationProportionCI
 
 
@@ -39,6 +41,7 @@ QUEUE_COLUMNS = (
     "n",
     "alpha",
     "method",
+    "interval_kind",
     "p",
     "x",
     "first_x",
@@ -49,6 +52,12 @@ QUEUE_COLUMNS = (
     "acceptance_runs",
     "endpoint_relation",
     "endpoint_proximity",
+    "complement_x",
+    "x_left",
+    "x_right",
+    "endpoint_kind",
+    "alpha_wider",
+    "alpha_narrower",
 )
 
 
@@ -400,10 +409,16 @@ def classify_coverage_verdict(
                 "deficit_float64": deficit_float64,
                 "deficit_hp": mp.nstr(deficit_hp, digits),
             }
+        comparator_note = (
+            "; Jeffreys remains a Bayesian comparator without an exact "
+            "frequentist guarantee"
+            if method == "jeffreys"
+            else ""
+        )
         return {
-            "classification": "confirmed_exact_coverage",
+            "classification": "confirmed_no_shortfall_at_audited_cell",
             "resolved": True,
-            "notes": "HP confirms coverage at or above nominal",
+            "notes": "HP confirms no shortfall at this audited cell" + comparator_note,
             "deficit_float64": deficit_float64,
             "deficit_hp": mp.nstr(deficit_hp, digits),
         }
@@ -459,8 +474,195 @@ def classify_endpoint_verdict(
     }
 
 
+def _json_number(value: object, digits: int) -> float | str:
+    """Return a reconstructible JSON scalar without non-standard NaN tokens."""
+
+    if isinstance(value, mp.mpf):
+        return mp.nstr(value, digits)
+    numeric = float(value)
+    return numeric if math.isfinite(numeric) else repr(numeric)
+
+
+def audit_structural_predicate(
+    row: dict[str, object],
+    *,
+    digits: int = 80,
+    endpoint_provider=high_precision_interval,
+    float_endpoint_provider=_float64_interval,
+) -> dict[str, object]:
+    """Re-evaluate the exact paired predicate that caused a structural trigger."""
+
+    if digits < 80:
+        raise ValueError("CP-04 requires at least 80 decimal digits")
+    reason = str(row["reason"])
+    method = str(row["method"])
+    n = int(row["n"])
+    alpha = float(row["alpha"])
+    records: list[dict[str, object]] = []
+
+    def endpoint(label: str, x: int, selected_alpha: float):
+        float_lower, float_upper = float_endpoint_provider(
+            method, n, x, selected_alpha
+        )
+        hp_lower, hp_upper = endpoint_provider(
+            method,
+            n,
+            x,
+            selected_alpha,
+            digits=digits,
+        )
+        records.append(
+            {
+                "label": label,
+                "x": x,
+                "alpha": selected_alpha,
+                "float64_lower": _json_number(float_lower, digits),
+                "float64_upper": _json_number(float_upper, digits),
+                "hp_lower": _json_number(hp_lower, digits),
+                "hp_upper": _json_number(hp_upper, digits),
+            }
+        )
+        return float_lower, float_upper, hp_lower, hp_upper
+
+    details: dict[str, object] = {}
+    try:
+        with mp.workdps(digits):
+            hp_epsilon = mp.power(10, -(digits - 20))
+            if reason == "complement_symmetry":
+                x = int(row["x"])
+                complement_x = int(row["complement_x"])
+                if complement_x != n - x:
+                    raise ValueError("complement_x must equal n - x")
+                fl, fu, hl, hu = endpoint("x", x, alpha)
+                cfl, cfu, chl, chu = endpoint(
+                    "complement_x", complement_x, alpha
+                )
+                float_lower_error = abs(fl - (1.0 - cfu))
+                float_upper_error = abs(fu - (1.0 - cfl))
+                hp_lower_error = abs(hl - (1 - chu))
+                hp_upper_error = abs(hu - (1 - chl))
+                float_passes = float_lower_error == 0.0 and float_upper_error == 0.0
+                hp_passes = (
+                    mp.isfinite(hp_lower_error)
+                    and mp.isfinite(hp_upper_error)
+                    and max(hp_lower_error, hp_upper_error) <= hp_epsilon
+                )
+                details = {
+                    "float64_lower_error": float_lower_error,
+                    "float64_upper_error": float_upper_error,
+                    "hp_lower_error": mp.nstr(hp_lower_error, digits),
+                    "hp_upper_error": mp.nstr(hp_upper_error, digits),
+                }
+            elif reason == "endpoint_monotonicity":
+                x_left = int(row["x_left"])
+                x_right = int(row["x_right"])
+                endpoint_kind = str(row["endpoint_kind"])
+                if x_right != x_left + 1:
+                    raise ValueError("monotonicity requires adjacent outcomes")
+                if endpoint_kind not in {"lower", "upper"}:
+                    raise ValueError("endpoint_kind must be lower or upper")
+                left = endpoint("x_left", x_left, alpha)
+                right = endpoint("x_right", x_right, alpha)
+                offset = 0 if endpoint_kind == "lower" else 1
+                float_left = left[offset]
+                float_right = right[offset]
+                hp_left = left[offset + 2]
+                hp_right = right[offset + 2]
+                float_passes = float_left <= float_right
+                hp_passes = (
+                    mp.isfinite(hp_left)
+                    and mp.isfinite(hp_right)
+                    and hp_left <= hp_right
+                )
+                details = {
+                    "endpoint_kind": endpoint_kind,
+                    "float64_left": _json_number(float_left, digits),
+                    "float64_right": _json_number(float_right, digits),
+                    "hp_left": _json_number(hp_left, digits),
+                    "hp_right": _json_number(hp_right, digits),
+                }
+            elif reason == "nesting":
+                x = int(row["x"])
+                alpha_wider = float(row["alpha_wider"])
+                alpha_narrower = float(row["alpha_narrower"])
+                if not alpha_wider < alpha_narrower:
+                    raise ValueError("nesting requires alpha_wider < alpha_narrower")
+                wide = endpoint("alpha_wider", x, alpha_wider)
+                narrow = endpoint("alpha_narrower", x, alpha_narrower)
+                float_passes = wide[0] <= narrow[0] and wide[1] >= narrow[1]
+                hp_passes = (
+                    all(mp.isfinite(value) for value in (*wide[2:], *narrow[2:]))
+                    and wide[2] <= narrow[2]
+                    and wide[3] >= narrow[3]
+                )
+                details = {
+                    "float64_lower_margin": _json_number(narrow[0] - wide[0], digits),
+                    "float64_upper_margin": _json_number(wide[1] - narrow[1], digits),
+                    "hp_lower_margin": _json_number(narrow[2] - wide[2], digits),
+                    "hp_upper_margin": _json_number(wide[3] - narrow[3], digits),
+                }
+            elif reason in {"bounds", "nan_or_inf"}:
+                x = int(row["x"])
+                fl, fu, hl, hu = endpoint("x", x, alpha)
+                float_finite_ordered = math.isfinite(fl) and math.isfinite(fu) and fl <= fu
+                hp_finite_ordered = mp.isfinite(hl) and mp.isfinite(hu) and hl <= hu
+                if reason == "bounds":
+                    float_passes = float_finite_ordered and 0.0 <= fl and fu <= 1.0
+                    hp_passes = hp_finite_ordered and 0 <= hl and hu <= 1
+                else:
+                    float_passes = float_finite_ordered
+                    hp_passes = hp_finite_ordered
+                details = {
+                    "float64_valid": bool(float_passes),
+                    "hp_valid": bool(hp_passes),
+                }
+            else:
+                raise ValueError(f"unknown structural predicate: {reason}")
+    except Exception as error:
+        return {
+            "predicate_evaluated": False,
+            "predicate_float64": False,
+            "predicate_hp": False,
+            "paired_values": json.dumps(records, sort_keys=True, separators=(",", ":")),
+            "predicate_details": json.dumps(details, sort_keys=True, separators=(",", ":")),
+            "classification": "unresolved",
+            "resolved": False,
+            "notes": f"{type(error).__name__}: {error}",
+            "status": "unresolved",
+        }
+
+    if hp_passes:
+        classification = (
+            "confirmed_structural_invariant"
+            if float_passes
+            else "float64_structural_artifact"
+        )
+        resolved = True
+        notes = "HP evaluation satisfies the paired structural predicate"
+    else:
+        classification = "confirmed_structural_violation"
+        resolved = False
+        notes = "HP evaluation confirms that the paired structural predicate fails"
+    return {
+        "predicate_evaluated": True,
+        "predicate_float64": bool(float_passes),
+        "predicate_hp": bool(hp_passes),
+        "paired_values": json.dumps(records, sort_keys=True, separators=(",", ":")),
+        "predicate_details": json.dumps(details, sort_keys=True, separators=(",", ":")),
+        "classification": classification,
+        "resolved": resolved,
+        "notes": notes,
+        "status": "resolved" if resolved else "unresolved",
+    }
+
+
 def _audit_one(arguments: tuple[dict[str, object], int]) -> dict[str, object]:
     row, digits = arguments
+    interval_kind = row.get("interval_kind")
+    if not isinstance(interval_kind, str) or not interval_kind:
+        interval_kind = (
+            "bayesian_comparator" if row["method"] == "jeffreys" else "frequentist"
+        )
     common = {
         "audit_kind": row["audit_kind"],
         "reason": row["reason"],
@@ -468,6 +670,7 @@ def _audit_one(arguments: tuple[dict[str, object], int]) -> dict[str, object]:
         "n": int(row["n"]),
         "alpha": float(row["alpha"]),
         "method": row["method"],
+        "interval_kind": interval_kind,
         "digits": digits,
     }
     if row["audit_kind"] == "coverage":
@@ -555,6 +758,21 @@ def _audit_one(arguments: tuple[dict[str, object], int]) -> dict[str, object]:
             "notes": verdict["notes"],
             "status": "resolved" if verdict["resolved"] else "unresolved",
         }
+    if row["audit_kind"] == "structural":
+        verdict = audit_structural_predicate(row, digits=digits)
+        context = {
+            key: row.get(key)
+            for key in (
+                "x",
+                "complement_x",
+                "x_left",
+                "x_right",
+                "endpoint_kind",
+                "alpha_wider",
+                "alpha_narrower",
+            )
+        }
+        return {**common, **context, **verdict}
     if row["audit_kind"] == "endpoint":
         x = int(row["x"])
         try:
@@ -656,6 +874,9 @@ def _endpoint_queue_row(
         "n": n,
         "alpha": alpha,
         "method": method,
+        "interval_kind": (
+            "bayesian_comparator" if method == "jeffreys" else "frequentist"
+        ),
         "p": np.nan,
         "x": x,
         "first_x": np.nan,
@@ -665,12 +886,54 @@ def _endpoint_queue_row(
     }
 
 
+def _structural_queue_row(
+    *,
+    checkpoint: str,
+    reason: str,
+    n: int,
+    alpha: float,
+    method: str,
+    x: int | None = None,
+    complement_x: int | None = None,
+    x_left: int | None = None,
+    x_right: int | None = None,
+    endpoint_kind: str | None = None,
+    alpha_wider: float | None = None,
+    alpha_narrower: float | None = None,
+) -> dict[str, object]:
+    """Carry all paired predicate context into the HP queue."""
+
+    return {
+        "audit_kind": "structural",
+        "reason": reason,
+        "checkpoint": checkpoint,
+        "n": n,
+        "alpha": alpha,
+        "method": method,
+        "interval_kind": (
+            "bayesian_comparator" if method == "jeffreys" else "frequentist"
+        ),
+        "p": np.nan,
+        "x": np.nan if x is None else x,
+        "first_x": np.nan,
+        "last_x": np.nan,
+        "coverage": np.nan,
+        "oracle": "high_precision_structural_predicate",
+        "complement_x": np.nan if complement_x is None else complement_x,
+        "x_left": np.nan if x_left is None else x_left,
+        "x_right": np.nan if x_right is None else x_right,
+        "endpoint_kind": "" if endpoint_kind is None else endpoint_kind,
+        "alpha_wider": np.nan if alpha_wider is None else alpha_wider,
+        "alpha_narrower": np.nan if alpha_narrower is None else alpha_narrower,
+    }
+
+
 def _structural_queue_rows(
     checkpoint: str,
     prefix: str,
     results_dir: Path,
 ) -> list[dict[str, object]]:
-    """Localize every preregistered structural trigger to exact x values."""
+    """Localize triggers while preserving each paired predicate's full context."""
 
     rows: list[dict[str, object]] = []
     cache: dict[tuple[int, float, str], object] = {}
@@ -695,38 +958,83 @@ def _structural_queue_rows(
         if not requires_localization:
             continue
         grid = _grid_for(cache, n, alpha, method)
-        checks = {
-            "nan_or_inf": np.flatnonzero(
-                ~np.isfinite(grid.lower) | ~np.isfinite(grid.upper)
-            ),
-            "complement_symmetry": np.flatnonzero(
-                (np.abs(grid.lower - (1.0 - grid.upper[::-1])) > tolerance)
-                | (np.abs(grid.upper - (1.0 - grid.lower[::-1])) > tolerance)
-            ),
-        }
-        if method in {"wilson", "clopper_pearson"}:
-            checks["bounds"] = np.flatnonzero(
-                (grid.lower < -tolerance) | (grid.upper > 1.0 + tolerance)
-            )
-            lower_pairs = np.flatnonzero(np.diff(grid.lower) < -tolerance)
-            upper_pairs = np.flatnonzero(np.diff(grid.upper) < -tolerance)
-            checks["endpoint_monotonicity"] = np.unique(
-                np.concatenate(
-                    (lower_pairs, lower_pairs + 1, upper_pairs, upper_pairs + 1)
+
+        for x in np.flatnonzero(~np.isfinite(grid.lower) | ~np.isfinite(grid.upper)):
+            invalid_kinds = [
+                kind
+                for kind, value in (("lower", grid.lower[x]), ("upper", grid.upper[x]))
+                if not np.isfinite(value)
+            ]
+            rows.append(
+                _structural_queue_row(
+                    checkpoint=checkpoint,
+                    reason="nan_or_inf",
+                    n=n,
+                    alpha=alpha,
+                    method=method,
+                    x=int(x),
+                    endpoint_kind="+".join(invalid_kinds),
                 )
             )
-        for reason, indices in checks.items():
-            for x in indices:
+
+        symmetry_indices = np.flatnonzero(
+            (np.abs(grid.lower - (1.0 - grid.upper[::-1])) > tolerance)
+            | (np.abs(grid.upper - (1.0 - grid.lower[::-1])) > tolerance)
+        )
+        symmetry_pairs = sorted(
+            {(min(int(x), n - int(x)), max(int(x), n - int(x))) for x in symmetry_indices}
+        )
+        for x, complement_x in symmetry_pairs:
+            rows.append(
+                _structural_queue_row(
+                    checkpoint=checkpoint,
+                    reason="complement_symmetry",
+                    n=n,
+                    alpha=alpha,
+                    method=method,
+                    x=x,
+                    complement_x=complement_x,
+                )
+            )
+
+        if method in {"wilson", "clopper_pearson"}:
+            for x in np.flatnonzero(
+                (grid.lower < -5e-15) | (grid.upper > 1.0 + 5e-15)
+            ):
+                kinds = []
+                if grid.lower[x] < -5e-15:
+                    kinds.append("lower")
+                if grid.upper[x] > 1.0 + 5e-15:
+                    kinds.append("upper")
                 rows.append(
-                    _endpoint_queue_row(
+                    _structural_queue_row(
                         checkpoint=checkpoint,
-                        reason=reason,
+                        reason="bounds",
                         n=n,
                         alpha=alpha,
                         method=method,
                         x=int(x),
+                        endpoint_kind="+".join(kinds),
                     )
                 )
+            for endpoint_kind, pairs in (
+                ("lower", np.flatnonzero(np.diff(grid.lower) < -5e-15)),
+                ("upper", np.flatnonzero(np.diff(grid.upper) < -5e-15)),
+            ):
+                for x_left in pairs:
+                    rows.append(
+                        _structural_queue_row(
+                            checkpoint=checkpoint,
+                            reason="endpoint_monotonicity",
+                            n=n,
+                            alpha=alpha,
+                            method=method,
+                            x=int(x_left),
+                            x_left=int(x_left),
+                            x_right=int(x_left + 1),
+                            endpoint_kind=endpoint_kind,
+                        )
+                    )
 
     nesting = _frame(results_dir / f"{prefix}_nesting.parquet")
     for finding in nesting.to_dict("records"):
@@ -739,32 +1047,27 @@ def _structural_queue_rows(
         method = str(finding["method"])
         alpha_wider = float(finding["alpha_wider"])
         alpha_narrower = float(finding["alpha_narrower"])
-        tolerance = 1e-12 if n <= 5_000 else 1e-10
         wide = _grid_for(cache, n, alpha_wider, method)
         narrow = _grid_for(cache, n, alpha_narrower, method)
-        indices = np.flatnonzero(
-            (wide.lower > narrow.lower + tolerance)
-            | (wide.upper < narrow.upper - tolerance)
-        )
-        for x in indices:
-            rows.extend(
-                (
-                    _endpoint_queue_row(
-                        checkpoint=checkpoint,
-                        reason="nesting_wider",
-                        n=n,
-                        alpha=alpha_wider,
-                        method=method,
-                        x=int(x),
-                    ),
-                    _endpoint_queue_row(
-                        checkpoint=checkpoint,
-                        reason="nesting_narrower",
-                        n=n,
-                        alpha=alpha_narrower,
-                        method=method,
-                        x=int(x),
-                    ),
+        lower_failure = wide.lower > narrow.lower + 5e-15
+        upper_failure = wide.upper < narrow.upper - 5e-15
+        for x in np.flatnonzero(lower_failure | upper_failure):
+            kinds = []
+            if lower_failure[x]:
+                kinds.append("lower")
+            if upper_failure[x]:
+                kinds.append("upper")
+            rows.append(
+                _structural_queue_row(
+                    checkpoint=checkpoint,
+                    reason="nesting",
+                    n=n,
+                    alpha=alpha_wider,
+                    method=method,
+                    x=int(x),
+                    endpoint_kind="+".join(kinds),
+                    alpha_wider=alpha_wider,
+                    alpha_narrower=alpha_narrower,
                 )
             )
     return rows
@@ -845,6 +1148,12 @@ def build_high_precision_queue(
         "x",
         "first_x",
         "last_x",
+        "complement_x",
+        "x_left",
+        "x_right",
+        "endpoint_kind",
+        "alpha_wider",
+        "alpha_narrower",
     ]
     return queue.drop_duplicates(subset=identity).sort_values(
         identity,
@@ -905,6 +1214,8 @@ def main(argv: list[str] | None = None) -> int:
         "candidate_sha": CANDIDATE_SHA,
         "cp04_document_sha": CP04_DOCUMENT_SHA,
         "experiment_version": EXPERIMENT_VERSION,
+        "harness_schema_version": HARNESS_SCHEMA_VERSION,
+        "source_shard_schema_version": SHARD_SCHEMA_VERSION,
         "source_checkpoints": args.checkpoints,
         "digits": args.digits,
         "workers": args.workers,

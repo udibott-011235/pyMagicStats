@@ -28,7 +28,11 @@ from pyMagicStat.inference import PopulationProportionCI
 CANDIDATE_SHA = "2df5b90a5395163e723f9c52aafbb91fdce96d43"
 CP04_DOCUMENT_SHA = "63eaaed6842e2f82473bfa857524645123f95218"
 EXPERIMENT_VERSION = "proportion-ci-cp06-v2"
-HARNESS_SCHEMA_VERSION = "cp06-harness-schema-v2"
+HARNESS_SCHEMA_VERSION = "cp06-harness-schema-v3"
+# Endpoint formulas and their float64 payload did not change in corrections 2/3.
+# Keep this legacy value so already-validated endpoint grids remain reusable,
+# while shard/result semantics are versioned independently in run.py.
+ENDPOINT_CACHE_SCHEMA_VERSION = "cp06-harness-schema-v2"
 ALPHAS = (0.001, 0.005, 0.010, 0.025, 0.050, 0.100, 0.200)
 PRODUCTION_METHODS = ("wilson", "clopper_pearson", "wald")
 METHODS = PRODUCTION_METHODS + ("jeffreys",)
@@ -124,7 +128,7 @@ DEFAULT_ENDPOINT_CACHE_ROOT = (
     Path(tempfile.gettempdir())
     / "pymagicstats_cp06_endpoint_cache"
     / CANDIDATE_SHA
-    / HARNESS_SCHEMA_VERSION
+    / ENDPOINT_CACHE_SCHEMA_VERSION
 )
 
 
@@ -181,7 +185,7 @@ class EndpointGridCache:
     def _identity(n: int, alpha: float, method: str) -> dict[str, object]:
         return {
             "candidate_sha": CANDIDATE_SHA,
-            "harness_schema_version": HARNESS_SCHEMA_VERSION,
+            "harness_schema_version": ENDPOINT_CACHE_SCHEMA_VERSION,
             "n": int(n),
             "alpha_hex": float(alpha).hex(),
             "method": method,

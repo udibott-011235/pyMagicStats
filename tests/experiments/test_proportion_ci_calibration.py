@@ -11,7 +11,9 @@ from scipy import stats
 from experiments.proportion_ci_calibration.harness import (
     ALPHAS,
     CANDIDATE_SHA,
+    ENDPOINT_CACHE_SCHEMA_VERSION,
     HARNESS_SCHEMA_VERSION,
+    IntervalGrid,
     EndpointGridCache,
     acceptance_runs,
     base_probability_grid,
@@ -28,6 +30,7 @@ from experiments.proportion_ci_calibration.harness import (
     production_interval_grid,
 )
 from experiments.proportion_ci_calibration.high_precision import (
+    audit_structural_predicate,
     build_high_precision_queue,
     classify_coverage_verdict,
     classify_endpoint_verdict,
@@ -37,8 +40,10 @@ from experiments.proportion_ci_calibration.high_precision import (
     reconcile_boundary_acceptance,
     run_audit,
 )
+from experiments.proportion_ci_calibration import high_precision as hp_module
 from experiments.proportion_ci_calibration import run as run_module
 from experiments.proportion_ci_calibration.run import (
+    SHARD_SCHEMA_VERSION,
     build_cache_provenance,
     checkpoint_spec,
     load_shard_cache,
@@ -452,6 +457,24 @@ def _synthetic_endpoint_provider(endpoints):
     return provider
 
 
+def _mapped_float_provider(endpoints):
+    def provider(method, n, x, alpha):
+        del method, n
+        lower, upper = endpoints[(float(alpha), x)]
+        return float(lower), float(upper)
+
+    return provider
+
+
+def _mapped_hp_provider(endpoints):
+    def provider(method, n, x, alpha, *, digits):
+        del method, n, digits
+        lower, upper = endpoints[(float(alpha), x)]
+        return mp.mpf(lower), mp.mpf(upper)
+
+    return provider
+
+
 def test_hp_boundary_reconciliation_preserves_equal_acceptance_set():
     lower = np.asarray((0.0, 0.3, 0.7))
     upper = np.asarray((0.2, 0.8, 1.0))
@@ -530,6 +553,170 @@ def test_hp_verdict_confirms_wilson_shortfall_and_cp_exact_coverage():
     assert exact["resolved"]
 
 
+def test_nonexact_methods_use_cell_specific_no_shortfall_classification():
+    for method in ("wilson", "jeffreys"):
+        verdict = classify_coverage_verdict(
+            method,
+            100,
+            0.05,
+            0.96,
+            mp.mpf("0.96"),
+            acceptance_changed=False,
+            consistent_float_representation=True,
+        )
+        assert verdict["classification"] == "confirmed_no_shortfall_at_audited_cell"
+        assert verdict["resolved"]
+        if method == "jeffreys":
+            assert "Bayesian comparator" in verdict["notes"]
+
+
+STRUCTURAL_ROWS = {
+    "complement_symmetry": {
+        "reason": "complement_symmetry",
+        "method": "wilson",
+        "n": 1,
+        "alpha": 0.05,
+        "x": 0,
+        "complement_x": 1,
+    },
+    "endpoint_monotonicity": {
+        "reason": "endpoint_monotonicity",
+        "method": "wilson",
+        "n": 1,
+        "alpha": 0.05,
+        "x": 0,
+        "x_left": 0,
+        "x_right": 1,
+        "endpoint_kind": "lower",
+    },
+    "nesting": {
+        "reason": "nesting",
+        "method": "wilson",
+        "n": 1,
+        "alpha": 0.025,
+        "x": 0,
+        "alpha_wider": 0.025,
+        "alpha_narrower": 0.05,
+    },
+}
+
+STRUCTURAL_FLOAT_ENDPOINTS = {
+    "complement_symmetry": {
+        (0.05, 0): ("0", "0.4"),
+        (0.05, 1): ("0.7", "1"),
+    },
+    "endpoint_monotonicity": {
+        (0.05, 0): ("0.3", "0.6"),
+        (0.05, 1): ("0.2", "0.9"),
+    },
+    "nesting": {
+        (0.025, 0): ("0.3", "0.7"),
+        (0.05, 0): ("0.2", "0.8"),
+    },
+}
+
+STRUCTURAL_HP_RESTORED = {
+    "complement_symmetry": {
+        (0.05, 0): ("0", "0.4"),
+        (0.05, 1): ("0.6", "1"),
+    },
+    "endpoint_monotonicity": {
+        (0.05, 0): ("0.1", "0.6"),
+        (0.05, 1): ("0.2", "0.9"),
+    },
+    "nesting": {
+        (0.025, 0): ("0.1", "0.9"),
+        (0.05, 0): ("0.2", "0.8"),
+    },
+}
+
+
+@pytest.mark.parametrize("reason", tuple(STRUCTURAL_ROWS))
+def test_float64_structural_violation_disappears_in_hp(reason):
+    result = audit_structural_predicate(
+        STRUCTURAL_ROWS[reason],
+        digits=80,
+        float_endpoint_provider=_mapped_float_provider(
+            STRUCTURAL_FLOAT_ENDPOINTS[reason]
+        ),
+        endpoint_provider=_mapped_hp_provider(STRUCTURAL_HP_RESTORED[reason]),
+    )
+    assert result["predicate_evaluated"]
+    assert not result["predicate_float64"]
+    assert result["predicate_hp"]
+    assert result["classification"] == "float64_structural_artifact"
+    assert result["resolved"]
+    assert len(json.loads(result["paired_values"])) == 2
+
+
+@pytest.mark.parametrize("reason", tuple(STRUCTURAL_ROWS))
+def test_genuine_structural_violation_persists_in_hp_and_is_unresolved(reason):
+    result = audit_structural_predicate(
+        STRUCTURAL_ROWS[reason],
+        digits=80,
+        float_endpoint_provider=_mapped_float_provider(
+            STRUCTURAL_FLOAT_ENDPOINTS[reason]
+        ),
+        endpoint_provider=_mapped_hp_provider(STRUCTURAL_FLOAT_ENDPOINTS[reason]),
+    )
+    assert result["predicate_evaluated"]
+    assert not result["predicate_float64"]
+    assert not result["predicate_hp"]
+    assert result["classification"] == "confirmed_structural_violation"
+    assert not result["resolved"]
+    assert result["status"] == "unresolved"
+
+
+@pytest.mark.parametrize(
+    ("reason", "float_values", "restored_values", "persistent_values"),
+    (
+        ("bounds", ("-0.01", "0.8"), ("0", "0.8"), ("-0.01", "0.8")),
+        ("nan_or_inf", ("nan", "0.8"), ("0", "0.8"), ("nan", "0.8")),
+    ),
+)
+def test_bounds_and_nonfinite_predicates_require_an_hp_conclusion(
+    reason, float_values, restored_values, persistent_values
+):
+    row = {
+        "reason": reason,
+        "method": "wilson",
+        "n": 1,
+        "alpha": 0.05,
+        "x": 0,
+    }
+    float_mapping = {(0.05, 0): float_values}
+    restored = audit_structural_predicate(
+        row,
+        float_endpoint_provider=_mapped_float_provider(float_mapping),
+        endpoint_provider=_mapped_hp_provider({(0.05, 0): restored_values}),
+    )
+    persistent = audit_structural_predicate(
+        row,
+        float_endpoint_provider=_mapped_float_provider(float_mapping),
+        endpoint_provider=_mapped_hp_provider({(0.05, 0): persistent_values}),
+    )
+    assert restored["classification"] == "float64_structural_artifact"
+    assert restored["resolved"]
+    assert persistent["classification"] == "confirmed_structural_violation"
+    assert not persistent["resolved"]
+
+
+def test_structural_predicate_with_inconsistent_pair_context_is_unresolved():
+    row = {**STRUCTURAL_ROWS["complement_symmetry"], "complement_x": 0}
+    result = audit_structural_predicate(
+        row,
+        float_endpoint_provider=_mapped_float_provider(
+            STRUCTURAL_FLOAT_ENDPOINTS["complement_symmetry"]
+        ),
+        endpoint_provider=_mapped_hp_provider(
+            STRUCTURAL_HP_RESTORED["complement_symmetry"]
+        ),
+    )
+    assert not result["predicate_evaluated"]
+    assert result["classification"] == "unresolved"
+    assert not result["resolved"]
+
+
 def test_hp_endpoint_verdict_resolves_numerical_oracle_without_claim_change():
     verdict = classify_endpoint_verdict(
         "oracle_discrepancy",
@@ -575,6 +762,77 @@ def test_high_precision_refuses_less_than_preregistered_precision():
         high_precision_binomial_range(5, 0.5, 0, 5, digits=79)
     with pytest.raises(ValueError, match="at least 80"):
         high_precision_interval("wilson", 5, 2, 0.05, digits=79)
+    with pytest.raises(ValueError, match="at least 80"):
+        audit_structural_predicate(STRUCTURAL_ROWS["complement_symmetry"], digits=79)
+
+
+def test_structural_queue_preserves_all_paired_predicate_context(tmp_path, monkeypatch):
+    prefix = tmp_path / "proportion_ci_cp06_x"
+    pd.DataFrame({"n": pd.Series(dtype="int64")}).to_parquet(
+        f"{prefix}_high_precision_triggers.parquet", index=False
+    )
+    pd.DataFrame({"n": pd.Series(dtype="int64")}).to_parquet(
+        f"{prefix}_oracles.parquet", index=False
+    )
+    pd.DataFrame(
+        [
+            {
+                "n": 2,
+                "alpha": 0.05,
+                "method": "wilson",
+                "nan_count": 0,
+                "max_complement_error": 0.2,
+                "bounds_failures": 0,
+                "lower_monotonic_failures": 1,
+                "upper_monotonic_failures": 0,
+            }
+        ]
+    ).to_parquet(f"{prefix}_invariants.parquet", index=False)
+    pd.DataFrame(
+        [
+            {
+                "n": 2,
+                "method": "wilson",
+                "alpha_wider": 0.025,
+                "alpha_narrower": 0.05,
+                "lower_nesting_failures": 1,
+                "upper_nesting_failures": 1,
+            }
+        ]
+    ).to_parquet(f"{prefix}_nesting.parquet", index=False)
+    grids = {
+        0.05: IntervalGrid(
+            np.asarray((0.0, 0.3, 0.2)),
+            np.asarray((0.4, 0.8, 1.0)),
+            "wilson",
+            "frequentist",
+            "synthetic",
+        ),
+        0.025: IntervalGrid(
+            np.asarray((0.0, 0.4, 0.2)),
+            np.asarray((0.4, 0.6, 1.0)),
+            "wilson",
+            "frequentist",
+            "synthetic",
+        ),
+    }
+
+    def fake_grid(cache, n, alpha, method):
+        del cache, n, method
+        return grids[float(alpha)]
+
+    monkeypatch.setattr(hp_module, "_grid_for", fake_grid)
+    queue = build_high_precision_queue(("X",), results_dir=tmp_path)
+    symmetry = queue[queue["reason"] == "complement_symmetry"].iloc[0]
+    monotonicity = queue[queue["reason"] == "endpoint_monotonicity"].iloc[0]
+    nesting = queue[queue["reason"] == "nesting"].iloc[0]
+    assert symmetry["audit_kind"] == "structural"
+    assert (int(symmetry["x"]), int(symmetry["complement_x"])) == (0, 2)
+    assert (int(monotonicity["x_left"]), int(monotonicity["x_right"])) == (1, 2)
+    assert monotonicity["endpoint_kind"] == "lower"
+    assert nesting["alpha_wider"] == 0.025
+    assert nesting["alpha_narrower"] == 0.05
+    assert int(nesting["x"]) == 1
 
 
 def test_high_precision_queue_collects_coverage_and_oracle_triggers(tmp_path):
@@ -712,6 +970,14 @@ def test_shard_cache_rejects_legacy_and_incompatible_schema(tmp_path):
     assert load_shard_cache(path, expected) is None
 
     save_shard_cache(path, _minimal_cache_part(5), expected)
+    with path.open("rb") as stream:
+        payload = pickle.load(stream)
+    payload["provenance"]["shard_schema_version"] = "cp06-shard-schema-v2"
+    with path.open("wb") as stream:
+        pickle.dump(payload, stream)
+    assert load_shard_cache(path, expected) is None
+
+    save_shard_cache(path, _minimal_cache_part(5), expected)
     incompatible = {**expected, "harness_schema_version": "obsolete-schema"}
     assert load_shard_cache(path, incompatible) is None
 
@@ -730,6 +996,8 @@ def test_shard_cache_resumes_compatible_payload_and_proves_cross_checkpoint_sema
     part = _minimal_cache_part(5)
     provenance_b = build_cache_provenance("B", 5)
     provenance_c = build_cache_provenance("C", 5)
+    assert provenance_b["shard_schema_version"] == SHARD_SCHEMA_VERSION
+    assert SHARD_SCHEMA_VERSION == "cp06-shard-schema-v3"
     assert shard_semantic_hash(5, checkpoint_spec("B")) == shard_semantic_hash(
         5, checkpoint_spec("C")
     )
@@ -767,7 +1035,9 @@ def test_endpoint_cache_validates_hash_provenance_and_reuses_api_grid(tmp_path):
         metadata_text = str(payload["metadata"].item())
     metadata = json.loads(metadata_text)
     assert metadata["candidate_sha"] == CANDIDATE_SHA
-    assert metadata["harness_schema_version"] == HARNESS_SCHEMA_VERSION
+    assert metadata["harness_schema_version"] == ENDPOINT_CACHE_SCHEMA_VERSION
+    assert ENDPOINT_CACHE_SCHEMA_VERSION == "cp06-harness-schema-v2"
+    assert HARNESS_SCHEMA_VERSION == "cp06-harness-schema-v3"
     assert len(metadata["endpoint_sha256"]) == 64
 
     lower[0] = np.nextafter(lower[0], 1.0)
