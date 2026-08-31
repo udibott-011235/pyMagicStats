@@ -645,6 +645,88 @@ def _stationary_probability(n: int, first: int, last: int) -> float | None:
     return float(expit((log_left - log_right) / exponent))
 
 
+def induced_endpoint_values(lower: np.ndarray, upper: np.ndarray) -> np.ndarray:
+    """Canonical endpoint partition shared by search and HP trigger routing."""
+
+    return np.unique(
+        np.clip(
+            np.concatenate((lower[np.isfinite(lower)], upper[np.isfinite(upper)])),
+            0.0,
+            1.0,
+        )
+    )
+
+
+def endpoint_proximity(
+    p: float,
+    lower: np.ndarray,
+    upper: np.ndarray,
+    *,
+    tolerance: float = 1e-10,
+) -> dict[str, object]:
+    """Classify both sides of every induced endpoint within the HP trigger radius."""
+
+    endpoints = induced_endpoint_values(lower, upper)
+    left = int(np.searchsorted(endpoints, p - tolerance, side="right"))
+    right = int(np.searchsorted(endpoints, p + tolerance, side="left"))
+    matches: list[dict[str, object]] = []
+    clipped_lower = np.clip(lower, 0.0, 1.0)
+    clipped_upper = np.clip(upper, 0.0, 1.0)
+    for endpoint in endpoints[left:right]:
+        distance = float(abs(p - endpoint))
+        if distance >= tolerance:
+            continue
+        if p == endpoint:
+            relation = "at_endpoint"
+            side = "at"
+        elif 0.0 < endpoint < 1.0 and p == np.nextafter(endpoint, 0.0):
+            relation = "nextafter_below"
+            side = "below"
+        elif 0.0 < endpoint < 1.0 and p == np.nextafter(endpoint, 1.0):
+            relation = "nextafter_above"
+            side = "above"
+        elif p < endpoint:
+            relation = "below_endpoint"
+            side = "below"
+        else:
+            relation = "above_endpoint"
+            side = "above"
+        lower_indices = np.flatnonzero(clipped_lower == endpoint)
+        upper_indices = np.flatnonzero(clipped_upper == endpoint)
+        kinds = []
+        if lower_indices.size:
+            kinds.append("lower")
+        if upper_indices.size:
+            kinds.append("upper")
+        matches.append(
+            {
+                "endpoint": float(endpoint),
+                "distance": distance,
+                "relation": relation,
+                "side": side,
+                "kinds": kinds,
+                "lower_indices": [int(value) for value in lower_indices],
+                "upper_indices": [int(value) for value in upper_indices],
+            }
+        )
+    matches.sort(
+        key=lambda item: (
+            item["distance"],
+            item["endpoint"],
+            item["relation"],
+        )
+    )
+    nearest = matches[0] if matches else None
+    return {
+        "is_near": bool(matches),
+        "nearest_endpoint": None if nearest is None else nearest["endpoint"],
+        "nearest_distance": None if nearest is None else nearest["distance"],
+        "nearest_relation": None if nearest is None else nearest["relation"],
+        "nearest_kinds": [] if nearest is None else nearest["kinds"],
+        "matches": matches,
+    }
+
+
 def _coverage_for_runs_array(
     n: int,
     probabilities: np.ndarray,
@@ -686,13 +768,7 @@ def induced_probability_grid(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Endpoint, nextafter, midpoint, and analytic stationary candidates."""
 
-    endpoints = np.unique(
-        np.clip(
-            np.concatenate((lower[np.isfinite(lower)], upper[np.isfinite(upper)])),
-            0.0,
-            1.0,
-        )
-    )
+    endpoints = induced_endpoint_values(lower, upper)
     interior = endpoints[(endpoints > 0.0) & (endpoints < 1.0)]
     next_points = np.unique(
         np.concatenate(
@@ -1278,18 +1354,46 @@ def calibrate_n(
                             ),
                         }
                     )
-            if method == "clopper_pearson" and coverage[worst_index] < nominal - 1e-12:
-                high_precision_triggers.append({**worst_rows[-1], "trigger": "cp_undercoverage"})
-            first_worst = int(first[worst_index])
-            near_endpoint = (
-                0 <= first_worst <= n
-                and abs(worst_p - interval.lower[first_worst]) < 1e-10
+            proximity = endpoint_proximity(
+                worst_p,
+                interval.lower,
+                interval.upper,
+                tolerance=1e-10,
             )
-            if method in {"wilson", "jeffreys"} and (
-                worst_deficit > 0.030 or near_endpoint
+            worst_rows[-1].update(
+                {
+                    "endpoint_relation": proximity["nearest_relation"],
+                    "nearest_endpoint": proximity["nearest_endpoint"],
+                    "endpoint_distance": proximity["nearest_distance"],
+                    "endpoint_kinds": json.dumps(
+                        proximity["nearest_kinds"], separators=(",", ":")
+                    ),
+                    "endpoint_proximity": json.dumps(
+                        proximity["matches"], separators=(",", ":")
+                    ),
+                }
+            )
+            if (
+                method == "clopper_pearson"
+                and coverage[worst_index] < nominal - 1e-12
             ):
                 high_precision_triggers.append(
-                    {**worst_rows[-1], "trigger": "material_minimum_or_endpoint"}
+                    {**worst_rows[-1], "trigger": "cp_undercoverage"}
+                )
+            severe_or_critical_wilson = (
+                method == "wilson" and worst_deficit > 0.030
+            )
+            if method in {"wilson", "jeffreys"} and (
+                severe_or_critical_wilson or proximity["is_near"]
+            ):
+                if severe_or_critical_wilson and proximity["is_near"]:
+                    trigger = "severe_or_critical_wilson_and_endpoint_proximity"
+                elif severe_or_critical_wilson:
+                    trigger = "severe_or_critical_wilson"
+                else:
+                    trigger = "endpoint_proximity"
+                high_precision_triggers.append(
+                    {**worst_rows[-1], "trigger": trigger}
                 )
 
             regimes = event_regime(n, p)

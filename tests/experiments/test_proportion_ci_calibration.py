@@ -19,6 +19,7 @@ from experiments.proportion_ci_calibration.harness import (
     coverage_from_intervals,
     expected_width_matrix,
     endpoints_are_monotone,
+    endpoint_proximity,
     evaluate_coverage,
     induced_probability_grid,
     jeffreys_interval_grid,
@@ -28,9 +29,12 @@ from experiments.proportion_ci_calibration.harness import (
 )
 from experiments.proportion_ci_calibration.high_precision import (
     build_high_precision_queue,
+    classify_coverage_verdict,
+    classify_endpoint_verdict,
     high_precision_binomial_range,
     high_precision_interval,
     high_precision_binomial_runs,
+    reconcile_boundary_acceptance,
     run_audit,
 )
 from experiments.proportion_ci_calibration import run as run_module
@@ -156,6 +160,33 @@ def test_noncontiguous_partition_adds_deterministic_bounded_optimizer_candidates
     probabilities, origins = induced_probability_grid(3, lower, upper)
     assert 5 in origins
     assert np.all((probabilities >= 0.0) & (probabilities <= 1.0))
+
+
+def test_endpoint_proximity_detects_near_upper_missed_by_lower_first_check():
+    lower = np.asarray((0.0, 0.1, 0.2))
+    upper = np.asarray((0.4, 0.6, 0.8))
+    probability = np.nextafter(0.6, 1.0)
+    proximity = endpoint_proximity(probability, lower, upper)
+    nearest = proximity["matches"][0]
+    assert proximity["is_near"]
+    assert nearest["relation"] == "nextafter_above"
+    assert nearest["kinds"] == ["upper"]
+    assert abs(probability - lower[2]) > 1e-10
+
+
+def test_endpoint_proximity_classifies_lower_upper_complements_deterministically():
+    lower = np.asarray((0.1, 0.4))
+    upper = np.asarray((0.6, 0.9))
+    below_lower = endpoint_proximity(np.nextafter(0.4, 0.0), lower, upper)
+    above_upper = endpoint_proximity(
+        1.0 - np.nextafter(0.4, 0.0),
+        lower,
+        upper,
+    )
+    assert below_lower["nearest_relation"] == "nextafter_below"
+    assert below_lower["nearest_kinds"] == ["lower"]
+    assert above_upper["nearest_relation"] == "nextafter_above"
+    assert above_upper["nearest_kinds"] == ["upper"]
 
 
 def test_explicit_coverage_is_worker_batch_invariant():
@@ -413,6 +444,119 @@ def test_high_precision_explicit_runs_do_not_fill_noncontiguous_gaps():
     assert abs(float(observed) - expected) <= 2e-15
 
 
+def _synthetic_endpoint_provider(endpoints):
+    def provider(method, n, x, alpha, *, digits):
+        del method, n, alpha, digits
+        return mp.mpf(endpoints[x][0]), mp.mpf(endpoints[x][1])
+
+    return provider
+
+
+def test_hp_boundary_reconciliation_preserves_equal_acceptance_set():
+    lower = np.asarray((0.0, 0.3, 0.7))
+    upper = np.asarray((0.2, 0.8, 1.0))
+    runs = acceptance_runs(lower, upper, 0.5)
+    result = reconcile_boundary_acceptance(
+        "wilson",
+        2,
+        0.05,
+        0.5,
+        lower,
+        upper,
+        runs,
+        endpoint_provider=_synthetic_endpoint_provider(
+            (("0", "0.2"), ("0.3", "0.8"), ("0.7", "1"))
+        ),
+    )
+    assert result["consistent_float_representation"]
+    assert not result["acceptance_changed"]
+    assert result["float_runs"] == result["hp_runs"] == [(1, 1)]
+
+
+def test_hp_boundary_reconciliation_changes_synthetic_float64_inclusion():
+    lower = np.asarray((np.nextafter(0.0, 1.0), 0.6))
+    upper = np.asarray((0.4, 1.0))
+    result = reconcile_boundary_acceptance(
+        "wilson",
+        1,
+        0.05,
+        0.0,
+        lower,
+        upper,
+        [],
+        endpoint_provider=_synthetic_endpoint_provider(
+            (("0", "0.4"), ("0.6", "1"))
+        ),
+    )
+    assert result["consistent_float_representation"]
+    assert result["acceptance_changed"]
+    assert result["float_runs"] == []
+    assert result["hp_runs"] == [(0, 0)]
+    verdict = classify_coverage_verdict(
+        "wilson",
+        100,
+        0.05,
+        0.0,
+        mp.mpf(1),
+        acceptance_changed=True,
+        consistent_float_representation=True,
+    )
+    assert verdict["classification"] == "float64_boundary_artifact"
+    assert verdict["resolved"]
+
+
+def test_hp_verdict_confirms_wilson_shortfall_and_cp_exact_coverage():
+    wilson = classify_coverage_verdict(
+        "wilson",
+        100,
+        0.05,
+        0.90,
+        mp.mpf("0.90"),
+        acceptance_changed=False,
+        consistent_float_representation=True,
+    )
+    exact = classify_coverage_verdict(
+        "clopper_pearson",
+        100,
+        0.05,
+        0.96,
+        mp.mpf("0.96"),
+        acceptance_changed=False,
+        consistent_float_representation=True,
+    )
+    assert wilson["classification"] == "confirmed_statistical_shortfall"
+    assert wilson["resolved"]
+    assert exact["classification"] == "confirmed_exact_coverage"
+    assert exact["resolved"]
+
+
+def test_hp_endpoint_verdict_resolves_numerical_oracle_without_claim_change():
+    verdict = classify_endpoint_verdict(
+        "oracle_discrepancy",
+        100,
+        0.2,
+        0.8,
+        mp.mpf("0.20000000000001"),
+        mp.mpf("0.79999999999999"),
+    )
+    assert verdict["classification"] == "numerical_difference_without_claim_change"
+    assert verdict["resolved"]
+
+
+def test_hp_verdict_is_unresolved_for_inconsistent_float_acceptance():
+    verdict = classify_coverage_verdict(
+        "wilson",
+        100,
+        0.05,
+        0.90,
+        mp.mpf("0.90"),
+        acceptance_changed=False,
+        consistent_float_representation=False,
+    )
+    assert verdict["classification"] == "unresolved"
+    assert not verdict["resolved"]
+
+
 @pytest.mark.parametrize("method", ("wilson", "clopper_pearson", "wald", "jeffreys"))
 @pytest.mark.parametrize(("n", "x"), ((5, 0), (5, 2), (101, 99), (101, 101)))
 def test_high_precision_endpoint_oracles_match_float64_references(method, n, x):
@@ -435,19 +579,30 @@ def test_high_precision_refuses_less_than_preregistered_precision():
 
 def test_high_precision_queue_collects_coverage_and_oracle_triggers(tmp_path):
     prefix = tmp_path / "proportion_ci_cp06_x"
+    trigger_grid = production_interval_grid(5, 0.05, "wilson")
+    trigger_p = 0.2
+    trigger_runs = acceptance_runs(
+        trigger_grid.lower,
+        trigger_grid.upper,
+        trigger_p,
+    )
+    trigger_coverage = np.sum(
+        stats.binom.pmf(np.arange(6), 5, trigger_p)
+        * ((trigger_grid.lower <= trigger_p) & (trigger_p <= trigger_grid.upper))
+    )
     pd.DataFrame(
         [
             {
                 "n": 5,
                 "alpha": 0.05,
                 "method": "wilson",
-                "p": 0.2,
-                "first_x": 0,
-                "last_x": 3,
-                "coverage": 0.94,
+                "p": trigger_p,
+                "first_x": trigger_runs[0][0],
+                "last_x": trigger_runs[-1][1],
+                "coverage": trigger_coverage,
                 "trigger": "material_minimum_or_endpoint",
                 "acceptance_kind": "monotone_contiguous",
-                "acceptance_runs": "[[0,3]]",
+                "acceptance_runs": json.dumps(trigger_runs),
             }
         ]
     ).to_parquet(f"{prefix}_high_precision_triggers.parquet", index=False)
@@ -521,6 +676,20 @@ def test_high_precision_queue_collects_coverage_and_oracle_triggers(tmp_path):
     assert len(persisted_queue) == len(queue) == len(audit)
     assert set(audit["status"]) == {"resolved"}
     assert set(audit["digits"]) == {80}
+    coverage_audit = audit[audit["audit_kind"] == "coverage"].iloc[0]
+    assert {
+        "p_float64",
+        "p_hp",
+        "coverage_float64",
+        "coverage_hp",
+        "deficit_float64",
+        "deficit_hp",
+        "endpoint_relation",
+        "classification",
+        "resolved",
+        "notes",
+    } <= set(audit.columns)
+    assert coverage_audit["resolved"]
 
 
 def _minimal_cache_part(n):

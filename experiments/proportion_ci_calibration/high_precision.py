@@ -22,7 +22,9 @@ from experiments.proportion_ci_calibration.harness import (
     CP04_DOCUMENT_SHA,
     EXPERIMENT_VERSION,
     EndpointGridCache,
+    acceptance_runs,
     jeffreys_interval_grid,
+    outcome_runs,
     production_interval_grid,
 )
 from pyMagicStat.inference import PopulationProportionCI
@@ -45,6 +47,8 @@ QUEUE_COLUMNS = (
     "oracle",
     "acceptance_kind",
     "acceptance_runs",
+    "endpoint_relation",
+    "endpoint_proximity",
 )
 
 
@@ -225,6 +229,236 @@ def _float64_interval(method: str, n: int, x: int, alpha: float) -> tuple[float,
     return float(result["lb"]), float(result["ub"])
 
 
+def reconcile_boundary_acceptance(
+    method: str,
+    n: int,
+    alpha: float,
+    p: float,
+    float_lower: np.ndarray,
+    float_upper: np.ndarray,
+    float_runs: list[tuple[int, int]],
+    *,
+    digits: int = 80,
+    endpoint_provider=high_precision_interval,
+    proximity_tolerance: float = 1e-10,
+) -> dict[str, object]:
+    """Rebuild A(p) with HP endpoints for every float64-near boundary."""
+
+    if digits < 80:
+        raise ValueError("CP-04 requires at least 80 decimal digits")
+    float_mask = (float_lower <= p) & (p <= float_upper)
+    reconstructed_float_runs = outcome_runs(float_mask)
+    hp_mask = float_mask.copy()
+    candidate_indices = np.flatnonzero(
+        (np.abs(float_lower - p) < proximity_tolerance)
+        | (np.abs(float_upper - p) < proximity_tolerance)
+    )
+    relation: list[dict[str, object]] = []
+    with mp.workdps(digits):
+        p_hp = _mp(p)
+        for x in candidate_indices:
+            try:
+                lower_hp, upper_hp = endpoint_provider(
+                    method,
+                    n,
+                    int(x),
+                    alpha,
+                    digits=digits,
+                )
+            except Exception as error:
+                return {
+                    "consistent_float_representation": reconstructed_float_runs
+                    == float_runs,
+                    "acceptance_changed": False,
+                    "float_runs": reconstructed_float_runs,
+                    "hp_runs": [],
+                    "p_hp": mp.nstr(p_hp, digits),
+                    "p_hp_representation": "decimal_round_trip_of_float64",
+                    "endpoint_relation": relation,
+                    "error": f"{type(error).__name__}: {error}",
+                }
+            float_included = bool(float_mask[x])
+            hp_included = bool(lower_hp <= p_hp <= upper_hp)
+            hp_mask[x] = hp_included
+            relations = []
+            for kind, float_endpoint, hp_endpoint in (
+                ("lower", float_lower[x], lower_hp),
+                ("upper", float_upper[x], upper_hp),
+            ):
+                distance = abs(float(float_endpoint) - p)
+                if distance >= proximity_tolerance:
+                    continue
+                if p == float_endpoint:
+                    side = "at"
+                elif p < float_endpoint:
+                    side = "below"
+                else:
+                    side = "above"
+                relations.append(
+                    {
+                        "kind": kind,
+                        "side_float64": side,
+                        "float64_endpoint": float(float_endpoint),
+                        "high_precision_endpoint": mp.nstr(hp_endpoint, digits),
+                        "distance_float64": distance,
+                    }
+                )
+            relation.append(
+                {
+                    "x": int(x),
+                    "float64_included": float_included,
+                    "high_precision_included": hp_included,
+                    "relations": relations,
+                }
+            )
+        hp_runs = outcome_runs(hp_mask)
+        return {
+            "consistent_float_representation": reconstructed_float_runs == float_runs,
+            "acceptance_changed": hp_runs != reconstructed_float_runs,
+            "float_runs": reconstructed_float_runs,
+            "hp_runs": hp_runs,
+            "p_hp": mp.nstr(p_hp, digits),
+            "p_hp_representation": "decimal_round_trip_of_float64",
+            "endpoint_relation": relation,
+            "error": None,
+        }
+
+
+def classify_coverage_verdict(
+    method: str,
+    n: int,
+    alpha: float,
+    coverage_float64: float,
+    coverage_hp: mp.mpf,
+    *,
+    acceptance_changed: bool,
+    consistent_float_representation: bool,
+    digits: int = 80,
+    audit_error: str | None = None,
+) -> dict[str, object]:
+    """Apply explicit CP-04 interpretation rules, with HP governing."""
+
+    if digits < 80:
+        raise ValueError("CP-04 requires at least 80 decimal digits")
+    with mp.workdps(digits):
+        nominal_hp = 1 - _mp(alpha)
+        hp_epsilon = mp.power(10, -(digits - 20))
+        coverage_is_valid = mp.isfinite(coverage_hp) and -hp_epsilon <= coverage_hp <= 1 + hp_epsilon
+        deficit_hp = max(mp.mpf(0), nominal_hp - coverage_hp)
+        nominal_float64 = 1.0 - float(alpha)
+        deficit_float64 = max(0.0, nominal_float64 - float(coverage_float64))
+        tolerance = 1e-12 if n <= 5_000 else 1e-10
+        if audit_error or not consistent_float_representation or not coverage_is_valid:
+            return {
+                "classification": "unresolved",
+                "resolved": False,
+                "notes": audit_error
+                or "float64 acceptance representation is inconsistent with the endpoint grid",
+                "deficit_float64": deficit_float64,
+                "deficit_hp": mp.nstr(deficit_hp, digits),
+            }
+        if acceptance_changed:
+            return {
+                "classification": "float64_boundary_artifact",
+                "resolved": True,
+                "notes": "HP endpoints changed A(p); HP acceptance and coverage govern",
+                "deficit_float64": deficit_float64,
+                "deficit_hp": mp.nstr(deficit_hp, digits),
+            }
+        hp_shortfall = deficit_hp > hp_epsilon
+        float_shortfall = deficit_float64 > tolerance
+        if method == "clopper_pearson":
+            if hp_shortfall:
+                return {
+                    "classification": "unresolved",
+                    "resolved": False,
+                    "notes": "Clopper-Pearson shortfall persists at HP and requires STOP review",
+                    "deficit_float64": deficit_float64,
+                    "deficit_hp": mp.nstr(deficit_hp, digits),
+                }
+            return {
+                "classification": "confirmed_exact_coverage",
+                "resolved": True,
+                "notes": "HP confirms Clopper-Pearson coverage at or above nominal",
+                "deficit_float64": deficit_float64,
+                "deficit_hp": mp.nstr(deficit_hp, digits),
+            }
+        numerical_difference = abs(coverage_hp - _mp(coverage_float64))
+        if numerical_difference > tolerance and float_shortfall == hp_shortfall:
+            return {
+                "classification": "numerical_difference_without_claim_change",
+                "resolved": True,
+                "notes": "HP changes the numeric value but not the coverage claim",
+                "deficit_float64": deficit_float64,
+                "deficit_hp": mp.nstr(deficit_hp, digits),
+            }
+        if hp_shortfall:
+            return {
+                "classification": "confirmed_statistical_shortfall",
+                "resolved": True,
+                "notes": "HP confirms the shortfall with unchanged acceptance semantics",
+                "deficit_float64": deficit_float64,
+                "deficit_hp": mp.nstr(deficit_hp, digits),
+            }
+        return {
+            "classification": "confirmed_exact_coverage",
+            "resolved": True,
+            "notes": "HP confirms coverage at or above nominal",
+            "deficit_float64": deficit_float64,
+            "deficit_hp": mp.nstr(deficit_hp, digits),
+        }
+
+
+def classify_endpoint_verdict(
+    reason: str,
+    n: int,
+    float_lower: float,
+    float_upper: float,
+    hp_lower: mp.mpf,
+    hp_upper: mp.mpf,
+    *,
+    context_consistent: bool = True,
+) -> dict[str, object]:
+    """Classify endpoint/oracle rows without equating computation with resolution."""
+
+    tolerance = 1e-12 if n <= 5_000 else 1e-10
+    valid_hp = mp.isfinite(hp_lower) and mp.isfinite(hp_upper) and hp_lower <= hp_upper
+    if not context_consistent or not valid_hp:
+        return {
+            "classification": "unresolved",
+            "resolved": False,
+            "notes": "endpoint context is inconsistent or HP endpoints are invalid",
+        }
+    lower_error = float(abs(hp_lower - _mp(float_lower)))
+    upper_error = float(abs(hp_upper - _mp(float_upper)))
+    if reason == "bounds":
+        hp_in_bounds = hp_lower >= 0 and hp_upper <= 1
+        float_outside = float_lower < 0 or float_upper > 1
+        if hp_in_bounds and float_outside:
+            return {
+                "classification": "float64_boundary_artifact",
+                "resolved": True,
+                "notes": "HP endpoints restore the required bounds",
+            }
+        if not hp_in_bounds:
+            return {
+                "classification": "unresolved",
+                "resolved": False,
+                "notes": "endpoint remains outside bounds at HP",
+            }
+    if max(lower_error, upper_error) <= tolerance:
+        return {
+            "classification": "numerical_difference_without_claim_change",
+            "resolved": True,
+            "notes": "independent HP endpoint agrees within the preregistered tolerance",
+        }
+    return {
+        "classification": "unresolved",
+        "resolved": False,
+        "notes": "endpoint discrepancy persists beyond the preregistered tolerance",
+    }
+
+
 def _audit_one(arguments: tuple[dict[str, object], int]) -> dict[str, object]:
     row, digits = arguments
     common = {
@@ -239,60 +473,126 @@ def _audit_one(arguments: tuple[dict[str, object], int]) -> dict[str, object]:
     if row["audit_kind"] == "coverage":
         runs_value = row.get("acceptance_runs")
         if isinstance(runs_value, str) and runs_value:
-            runs = [tuple(item) for item in json.loads(runs_value)]
+            float_runs = [tuple(item) for item in json.loads(runs_value)]
+        else:
+            first = int(row["first_x"])
+            last = int(row["last_x"])
+            float_runs = [] if first > last else [(first, last)]
+        grid = _grid_for(
+            {},
+            int(row["n"]),
+            float(row["alpha"]),
+            str(row["method"]),
+        )
+        reconciliation = reconcile_boundary_acceptance(
+            str(row["method"]),
+            int(row["n"]),
+            float(row["alpha"]),
+            float(row["p"]),
+            grid.lower,
+            grid.upper,
+            float_runs,
+            digits=digits,
+        )
+        if reconciliation["error"] is None:
             value = high_precision_binomial_runs(
                 int(row["n"]),
                 float(row["p"]),
-                runs,
+                reconciliation["hp_runs"],
                 digits=digits,
             )
         else:
-            value = high_precision_binomial_range(
-                int(row["n"]),
-                float(row["p"]),
-                int(row["first_x"]),
-                int(row["last_x"]),
-                digits=digits,
-            )
+            value = mp.mpf("nan")
         float64_value = float(row["coverage"])
+        verdict = classify_coverage_verdict(
+            str(row["method"]),
+            int(row["n"]),
+            float(row["alpha"]),
+            float64_value,
+            value,
+            acceptance_changed=bool(reconciliation["acceptance_changed"]),
+            consistent_float_representation=bool(
+                reconciliation["consistent_float_representation"]
+            ),
+            digits=digits,
+            audit_error=reconciliation["error"],
+        )
         with mp.workdps(digits):
             decimal_value = mp.nstr(value, digits)
             absolute_error = float(abs(value - _mp(float64_value)))
-            undercoverage = float(
-                max(mp.mpf(0), 1 - _mp(row["alpha"]) - value)
-            )
+        relation_json = json.dumps(
+            reconciliation["endpoint_relation"],
+            sort_keys=True,
+            separators=(",", ":"),
+        )
         return {
             **common,
             "p": float(row["p"]),
+            "p_float64": float(row["p"]),
+            "p_hp": reconciliation["p_hp"],
+            "p_hp_representation": reconciliation["p_hp_representation"],
             "first_x": int(row["first_x"]),
             "last_x": int(row["last_x"]),
+            "acceptance_runs_float64": json.dumps(
+                reconciliation["float_runs"], separators=(",", ":")
+            ),
+            "acceptance_runs_hp": json.dumps(
+                reconciliation["hp_runs"], separators=(",", ":")
+            ),
+            "acceptance_changed": reconciliation["acceptance_changed"],
+            "endpoint_relation": relation_json,
             "float64_coverage": float64_value,
+            "coverage_float64": float64_value,
             "high_precision_coverage": decimal_value,
+            "coverage_hp": decimal_value,
             "high_precision_coverage_float": float(value),
+            "coverage_hp_float": float(value),
             "absolute_error": absolute_error,
-            "high_precision_undercoverage": undercoverage,
-            "status": "resolved",
+            "deficit_float64": verdict["deficit_float64"],
+            "deficit_hp": verdict["deficit_hp"],
+            "classification": verdict["classification"],
+            "resolved": verdict["resolved"],
+            "notes": verdict["notes"],
+            "status": "resolved" if verdict["resolved"] else "unresolved",
         }
     if row["audit_kind"] == "endpoint":
         x = int(row["x"])
-        lower, upper = high_precision_interval(
-            str(row["method"]),
-            int(row["n"]),
-            x,
-            float(row["alpha"]),
-            digits=digits,
-        )
-        float_lower, float_upper = _float64_interval(
-            str(row["method"]),
-            int(row["n"]),
-            x,
-            float(row["alpha"]),
-        )
+        try:
+            lower, upper = high_precision_interval(
+                str(row["method"]),
+                int(row["n"]),
+                x,
+                float(row["alpha"]),
+                digits=digits,
+            )
+            float_lower, float_upper = _float64_interval(
+                str(row["method"]),
+                int(row["n"]),
+                x,
+                float(row["alpha"]),
+            )
+        except Exception as error:
+            return {
+                **common,
+                "x": x,
+                "classification": "unresolved",
+                "resolved": False,
+                "notes": f"{type(error).__name__}: {error}",
+                "status": "unresolved",
+            }
         with mp.workdps(digits):
             decimal_lower = mp.nstr(lower, digits)
             decimal_upper = mp.nstr(upper, digits)
             lower_error = float(abs(lower - _mp(float_lower)))
             upper_error = float(abs(upper - _mp(float_upper)))
+        verdict = classify_endpoint_verdict(
+            str(row["reason"]),
+            int(row["n"]),
+            float_lower,
+            float_upper,
+            lower,
+            upper,
+        )
         return {
             **common,
             "x": x,
@@ -302,7 +602,11 @@ def _audit_one(arguments: tuple[dict[str, object], int]) -> dict[str, object]:
             "high_precision_upper": decimal_upper,
             "lower_error": lower_error,
             "upper_error": upper_error,
-            "status": "resolved",
+            "endpoint_relation": str(row["reason"]),
+            "classification": verdict["classification"],
+            "resolved": verdict["resolved"],
+            "notes": verdict["notes"],
+            "status": "resolved" if verdict["resolved"] else "unresolved",
         }
     raise ValueError(f"unknown audit kind: {row['audit_kind']}")
 
