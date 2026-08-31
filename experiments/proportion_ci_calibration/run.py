@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from concurrent.futures import ProcessPoolExecutor
+from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
@@ -26,8 +27,8 @@ from experiments.proportion_ci_calibration.harness import (
     CP04_DOCUMENT_SHA,
     EXPERIMENT_VERSION,
     METHODS,
+    STRESS_N,
     calibrate_n,
-    write_calibration_result,
 )
 
 
@@ -38,6 +39,47 @@ CACHE_ROOT = (
     / "pymagicstats_cp06_cache"
     / CANDIDATE_SHA
 )
+
+
+@dataclass(frozen=True)
+class CheckpointSpec:
+    n_values: tuple[int, ...]
+    linear_step: float | None
+    expected_widths: bool
+    oracle: bool
+    include_base_grid: bool
+    resume_sources: tuple[str, ...] = ()
+
+
+def checkpoint_spec(name: str) -> CheckpointSpec:
+    """Return the frozen CP-04 domain assigned to one deterministic checkpoint."""
+
+    if name == "A":
+        return CheckpointSpec((1, 2, 5, 10, 20, 50), 0.01, True, True, True)
+    if name == "B":
+        return CheckpointSpec(tuple(range(1, 201)), 0.0001, True, True, True)
+    if name == "C":
+        return CheckpointSpec(
+            tuple(range(1, 5_001)),
+            0.0001,
+            True,
+            True,
+            True,
+            ("B",),
+        )
+    if name == "D":
+        return CheckpointSpec(STRESS_N, 0.0001, True, True, True)
+    if name == "E":
+        return CheckpointSpec(
+            tuple(range(1, 5_001)) + STRESS_N,
+            None,
+            False,
+            False,
+            False,
+        )
+    if name == "SMOKE":
+        return CheckpointSpec((1, 2, 5, 10, 97, 101), 0.01, True, True, True)
+    raise ValueError(f"unknown checkpoint: {name}")
 
 
 def _merge_frames(parts: list[dict[str, object]], key: str) -> pandas.DataFrame:
@@ -51,6 +93,7 @@ def _write_checkpoint(
     *,
     workers: int,
     batch_size: int,
+    spec: CheckpointSpec,
 ) -> None:
     prefix = f"proportion_ci_cp06_{name.lower()}"
     RESULTS.mkdir(parents=True, exist_ok=True)
@@ -102,20 +145,27 @@ def _write_checkpoint(
         "backend": "CPU/SciPy float64",
         "workers": workers,
         "batch_size": batch_size,
+        "expected_widths": spec.expected_widths,
+        "oracle": spec.oracle,
+        "include_base_grid": spec.include_base_grid,
+        "linear_step": spec.linear_step,
         "hashes": hashes,
     }
     metadata_path = RESULTS / f"{prefix}_metadata.json"
     metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def _calibrate_one(arguments: tuple[int, float | None, int]) -> dict[str, object]:
-    n, linear_step, batch_size = arguments
+def _calibrate_one(
+    arguments: tuple[int, float | None, int, bool, bool, bool],
+) -> dict[str, object]:
+    n, linear_step, batch_size, expected_widths, oracle, include_base_grid = arguments
     return calibrate_n(
         n,
         linear_step=linear_step,
-        expected_widths=True,
-        oracle=True,
+        expected_widths=expected_widths,
+        oracle=oracle,
         batch_size=batch_size,
+        include_base_grid=include_base_grid,
     )
 
 
@@ -127,17 +177,8 @@ def _save_cache(path: Path, part: dict[str, object]) -> None:
 
 
 def run_checkpoint(name: str, *, workers: int, batch_size: int) -> None:
-    if name == "A":
-        n_values = (1, 2, 5, 10, 20, 50)
-        linear_step = 0.01
-    elif name == "B":
-        n_values = tuple(range(1, 201))
-        linear_step = 0.0001
-    elif name == "SMOKE":
-        n_values = (1, 2, 5, 10, 97, 101)
-        linear_step = 0.01
-    else:
-        raise ValueError("unknown checkpoint")
+    spec = checkpoint_spec(name)
+    n_values = spec.n_values
 
     started = time.perf_counter()
     checkpoint_cache = CACHE_ROOT / name.lower()
@@ -146,14 +187,36 @@ def run_checkpoint(name: str, *, workers: int, batch_size: int) -> None:
     missing: list[int] = []
     for n in n_values:
         cache_path = checkpoint_cache / f"n_{n:07d}.pickle"
-        if cache_path.exists():
-            with cache_path.open("rb") as stream:
+        source_path = cache_path
+        if not source_path.exists():
+            for source in spec.resume_sources:
+                candidate = CACHE_ROOT / source.lower() / cache_path.name
+                if candidate.exists():
+                    source_path = candidate
+                    break
+        if source_path.exists():
+            with source_path.open("rb") as stream:
                 parts_by_n[n] = pickle.load(stream)
-            print(f"CP06-{name} n={n} resumed", flush=True)
+            if source_path != cache_path:
+                _save_cache(cache_path, parts_by_n[n])
+            print(
+                f"CP06-{name} n={n} resumed from {source_path.parent.name}",
+                flush=True,
+            )
         else:
             missing.append(n)
 
-    arguments = [(n, linear_step, batch_size) for n in missing]
+    arguments = [
+        (
+            n,
+            spec.linear_step,
+            batch_size,
+            spec.expected_widths,
+            spec.oracle,
+            spec.include_base_grid,
+        )
+        for n in missing
+    ]
     if workers == 1:
         computed = map(_calibrate_one, arguments)
     else:
@@ -176,6 +239,7 @@ def run_checkpoint(name: str, *, workers: int, batch_size: int) -> None:
         elapsed,
         workers=workers,
         batch_size=batch_size,
+        spec=spec,
     )
     print(f"CP06-{name} complete in {elapsed:.3f}s", flush=True)
 
@@ -189,7 +253,7 @@ def _positive_integer(value: str) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("checkpoint", choices=("A", "B", "SMOKE"))
+    parser.add_argument("checkpoint", choices=("A", "B", "C", "D", "E", "SMOKE"))
     parser.add_argument("--workers", type=_positive_integer, default=1)
     parser.add_argument("--batch-size", type=_positive_integer, default=256)
     args = parser.parse_args(argv)

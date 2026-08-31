@@ -34,6 +34,29 @@ evidence. The support is selected with a deterministic Hoeffding bound of
 `1e-14`; it does not call `scipy.stats.binom.isf` or another root-finding
 quantile routine.
 
+The heavy checkpoints are separate, deterministic, and resumable. Do not run
+them as part of harness validation:
+
+```text
+# CP06-C: n=1..5000, full preregistered p domain
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.run C --workers 8 --batch-size 256
+
+# CP06-D: the 11 stress n values through 1,000,000
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.run D --workers 1 --batch-size 64
+
+# CP06-E: endpoint partitions, nextafter, midpoints, and analytic stationary points
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.run E --workers 8 --batch-size 256
+
+# CP06-F: audit the C/D/E trigger queue at 80 decimal digits
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.high_precision --checkpoints C D E --workers 4 --digits 80
+```
+
+Checkpoint C reuses completed B shards when the cache is available. D uses one
+worker because a single `n=1_000_000` interval inventory is intentionally
+memory-heavy. E excludes the base grid and expected-width calculation: it
+evaluates only the adversarial endpoint partition required by CP-04. F refuses
+fewer than 80 decimal digits.
+
 The interval inventory records canonical SHA-256 hashes and row counts instead
 of committing the enormous raw endpoint grid. Coverage, event-regime, oracle,
 invariant, and worst-case summaries are persisted incrementally as Parquet.

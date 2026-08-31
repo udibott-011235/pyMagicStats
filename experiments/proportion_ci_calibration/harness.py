@@ -316,11 +316,14 @@ def probability_grid_with_origins(
     interval: IntervalGrid,
     *,
     linear_step: float | None,
+    include_base_grid: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
-    base = base_probability_grid(n, linear_step=linear_step)
     induced, induced_origin = induced_probability_grid(
         n, interval.lower, interval.upper
     )
+    if not include_base_grid:
+        return induced, induced_origin
+    base = base_probability_grid(n, linear_step=linear_step)
     points = np.concatenate((induced, base))
     origins = np.concatenate(
         (induced_origin, np.zeros(base.size, dtype=np.int8))
@@ -562,6 +565,7 @@ def calibrate_n(
     expected_widths: bool = True,
     oracle: bool = True,
     batch_size: int = 256,
+    include_base_grid: bool = True,
 ) -> dict[str, object]:
     """Calibrate one n shard and return compact reproducible summaries."""
 
@@ -592,6 +596,7 @@ def calibrate_n(
                 n,
                 interval,
                 linear_step=linear_step,
+                include_base_grid=include_base_grid,
             )
             coverage, first, last = coverage_from_intervals(
                 n, p, interval.lower, interval.upper
