@@ -1,4 +1,6 @@
 import warnings
+import json
+import pickle
 
 import mpmath as mp
 import numpy as np
@@ -9,12 +11,18 @@ from scipy import stats
 from experiments.proportion_ci_calibration.harness import (
     ALPHAS,
     CANDIDATE_SHA,
+    HARNESS_SCHEMA_VERSION,
+    EndpointGridCache,
+    acceptance_runs,
     base_probability_grid,
     calibrate_n,
     coverage_from_intervals,
     expected_width_matrix,
+    endpoints_are_monotone,
+    evaluate_coverage,
     induced_probability_grid,
     jeffreys_interval_grid,
+    outcome_set_probability,
     probability_grid_with_origins,
     production_interval_grid,
 )
@@ -22,9 +30,17 @@ from experiments.proportion_ci_calibration.high_precision import (
     build_high_precision_queue,
     high_precision_binomial_range,
     high_precision_interval,
+    high_precision_binomial_runs,
     run_audit,
 )
-from experiments.proportion_ci_calibration.run import checkpoint_spec
+from experiments.proportion_ci_calibration import run as run_module
+from experiments.proportion_ci_calibration.run import (
+    build_cache_provenance,
+    checkpoint_spec,
+    load_shard_cache,
+    save_shard_cache,
+    shard_semantic_hash,
+)
 from pyMagicStat.inference import PopulationProportionCI
 
 
@@ -61,6 +77,111 @@ def test_coverage_matches_brute_force_enumeration():
         mask = (grid.lower <= probability) & (probability <= grid.upper)
         expected.append(np.sum(stats.binom.pmf(np.arange(n + 1), n, probability)[mask]))
     np.testing.assert_allclose(observed, expected, atol=2e-15, rtol=0.0)
+
+
+def test_monotone_coverage_routes_to_contiguous_fast_path_and_matches_brute_force():
+    n = 12
+    probabilities = np.asarray((0.0, 0.01, 0.2, 0.5, 0.99, 1.0))
+    grid = production_interval_grid(n, 0.05, "wilson")
+    result = evaluate_coverage(n, probabilities, grid.lower, grid.upper)
+    brute = np.asarray(
+        [
+            np.sum(
+                stats.binom.pmf(np.arange(n + 1), n, probability)
+                * ((grid.lower <= probability) & (probability <= grid.upper))
+            )
+            for probability in probabilities
+        ]
+    )
+    assert endpoints_are_monotone(grid.lower, grid.upper)
+    assert result.endpoint_monotone
+    assert result.acceptance_kind == "monotone_contiguous"
+    np.testing.assert_allclose(result.coverage, brute, atol=2e-15, rtol=0.0)
+
+
+def test_wald_nonmonotone_coverage_uses_explicit_set_and_matches_brute_force():
+    n = 5
+    probabilities = np.asarray((0.0, 0.01, 0.2, 0.5, 0.8, 0.99, 1.0))
+    grid = production_interval_grid(n, 0.05, "wald")
+    result = evaluate_coverage(
+        n,
+        probabilities,
+        grid.lower,
+        grid.upper,
+        probability_batch_size=2,
+        outcome_batch_size=2,
+    )
+    brute = np.asarray(
+        [
+            np.sum(
+                stats.binom.pmf(np.arange(n + 1), n, probability)
+                * ((grid.lower <= probability) & (probability <= grid.upper))
+            )
+            for probability in probabilities
+        ]
+    )
+    assert not endpoints_are_monotone(grid.lower, grid.upper)
+    assert not result.endpoint_monotone
+    assert result.acceptance_kind == "explicit_nonmonotone_endpoints"
+    np.testing.assert_allclose(result.coverage, brute, atol=2e-15, rtol=0.0)
+
+
+def test_noncontiguous_acceptance_differs_from_forced_first_last_range():
+    n = 3
+    probability = np.asarray((0.3,))
+    lower = np.asarray((0.0, 0.8, 0.2, 0.9))
+    upper = np.asarray((0.4, 1.0, 0.6, 1.0))
+    explicit = evaluate_coverage(
+        n,
+        probability,
+        lower,
+        upper,
+        probability_batch_size=1,
+        outcome_batch_size=2,
+    )
+    runs = acceptance_runs(lower, upper, probability[0])
+    brute = stats.binom.pmf(0, n, probability[0]) + stats.binom.pmf(
+        2, n, probability[0]
+    )
+    forced_contiguous = stats.binom.cdf(2, n, probability[0])
+    assert runs == [(0, 0), (2, 2)]
+    assert explicit.run_count[0] == 2
+    assert explicit.coverage[0] == pytest.approx(brute, abs=2e-15)
+    assert abs(explicit.coverage[0] - forced_contiguous) > 0.1
+
+
+def test_noncontiguous_partition_adds_deterministic_bounded_optimizer_candidates():
+    lower = np.asarray((0.0, 0.8, 0.2, 0.9))
+    upper = np.asarray((0.4, 1.0, 0.6, 1.0))
+    probabilities, origins = induced_probability_grid(3, lower, upper)
+    assert 5 in origins
+    assert np.all((probabilities >= 0.0) & (probabilities <= 1.0))
+
+
+def test_explicit_coverage_is_worker_batch_invariant():
+    n = 20
+    grid = production_interval_grid(n, 0.01, "wald")
+    probabilities = np.linspace(0.0, 1.0, 101)
+    narrow = evaluate_coverage(
+        n,
+        probabilities,
+        grid.lower,
+        grid.upper,
+        probability_batch_size=1,
+        outcome_batch_size=3,
+    )
+    broad = evaluate_coverage(
+        n,
+        probabilities,
+        grid.lower,
+        grid.upper,
+        probability_batch_size=64,
+        outcome_batch_size=64,
+    )
+    np.testing.assert_allclose(narrow.coverage, broad.coverage, atol=2e-15, rtol=0.0)
+    np.testing.assert_array_equal(narrow.first, broad.first)
+    np.testing.assert_array_equal(narrow.last, broad.last)
+    np.testing.assert_array_equal(narrow.run_count, broad.run_count)
 
 
 def test_expected_width_matches_full_pmf_sum():
@@ -281,6 +402,17 @@ def test_high_precision_binomial_range_matches_full_pmf(n, probability, first, l
     assert abs(float(observed) - expected) <= 5e-15
 
 
+def test_high_precision_explicit_runs_do_not_fill_noncontiguous_gaps():
+    observed = high_precision_binomial_runs(
+        3,
+        0.3,
+        [(0, 0), (2, 2)],
+        digits=80,
+    )
+    expected = stats.binom.pmf(0, 3, 0.3) + stats.binom.pmf(2, 3, 0.3)
+    assert abs(float(observed) - expected) <= 2e-15
+
+
 @pytest.mark.parametrize("method", ("wilson", "clopper_pearson", "wald", "jeffreys"))
 @pytest.mark.parametrize(("n", "x"), ((5, 0), (5, 2), (101, 99), (101, 101)))
 def test_high_precision_endpoint_oracles_match_float64_references(method, n, x):
@@ -314,6 +446,8 @@ def test_high_precision_queue_collects_coverage_and_oracle_triggers(tmp_path):
                 "last_x": 3,
                 "coverage": 0.94,
                 "trigger": "material_minimum_or_endpoint",
+                "acceptance_kind": "monotone_contiguous",
+                "acceptance_runs": "[[0,3]]",
             }
         ]
     ).to_parquet(f"{prefix}_high_precision_triggers.parquet", index=False)
@@ -387,3 +521,173 @@ def test_high_precision_queue_collects_coverage_and_oracle_triggers(tmp_path):
     assert len(persisted_queue) == len(queue) == len(audit)
     assert set(audit["status"]) == {"resolved"}
     assert set(audit["digits"]) == {80}
+
+
+def _minimal_cache_part(n):
+    return {
+        "n": n,
+        "interval_hash": "a" * 64,
+        "summaries": [],
+        "worst_cases": [],
+        "adversarial_minima": [],
+        "wald_pathology_summaries": [],
+        "wald_pathology_worst_cases": [],
+    }
+
+
+def test_shard_cache_rejects_legacy_and_incompatible_schema(tmp_path):
+    path = tmp_path / "shard.pickle"
+    with path.open("wb") as stream:
+        pickle.dump(_minimal_cache_part(5), stream)
+    expected = build_cache_provenance("B", 5)
+    assert load_shard_cache(path, expected) is None
+
+    save_shard_cache(path, _minimal_cache_part(5), expected)
+    incompatible = {**expected, "harness_schema_version": "obsolete-schema"}
+    assert load_shard_cache(path, incompatible) is None
+
+    with path.open("rb") as stream:
+        payload = pickle.load(stream)
+    payload["result_bytes"] += b"corrupt"
+    with path.open("wb") as stream:
+        pickle.dump(payload, stream)
+    assert load_shard_cache(path, expected) is None
+
+
+def test_shard_cache_resumes_compatible_payload_and_proves_cross_checkpoint_semantics(
+    tmp_path,
+):
+    path = tmp_path / "shard.pickle"
+    part = _minimal_cache_part(5)
+    provenance_b = build_cache_provenance("B", 5)
+    provenance_c = build_cache_provenance("C", 5)
+    assert shard_semantic_hash(5, checkpoint_spec("B")) == shard_semantic_hash(
+        5, checkpoint_spec("C")
+    )
+    save_shard_cache(path, part, provenance_b)
+    assert load_shard_cache(path, provenance_b) == part
+    assert load_shard_cache(path, provenance_c) is None
+    assert (
+        load_shard_cache(path, provenance_c, allow_cross_checkpoint=True) == part
+    )
+
+
+def test_endpoint_cache_validates_hash_provenance_and_reuses_api_grid(tmp_path):
+    cache = EndpointGridCache(tmp_path)
+    calls = []
+
+    def factory():
+        calls.append("called")
+        return production_interval_grid(5, 0.05, "wilson")
+
+    first = cache.get_or_create(5, 0.05, "wilson", factory)
+    second = cache.get_or_create(
+        5,
+        0.05,
+        "wilson",
+        lambda: pytest.fail("compatible endpoint grid should resume"),
+    )
+    assert calls == ["called"]
+    np.testing.assert_array_equal(first.lower, second.lower)
+    np.testing.assert_array_equal(first.upper, second.upper)
+
+    path = cache.path_for(5, 0.05, "wilson")
+    with np.load(path, allow_pickle=False) as payload:
+        lower = payload["lower"].copy()
+        upper = payload["upper"].copy()
+        metadata_text = str(payload["metadata"].item())
+    metadata = json.loads(metadata_text)
+    assert metadata["candidate_sha"] == CANDIDATE_SHA
+    assert metadata["harness_schema_version"] == HARNESS_SCHEMA_VERSION
+    assert len(metadata["endpoint_sha256"]) == 64
+
+    lower[0] = np.nextafter(lower[0], 1.0)
+    with path.open("wb") as stream:
+        np.savez_compressed(
+            stream,
+            lower=lower,
+            upper=upper,
+            metadata=np.asarray(metadata_text),
+        )
+    assert cache.load(5, 0.05, "wilson") is None
+
+
+def test_wald_pathology_probabilities_are_probability_weighted():
+    n = 5
+    probabilities = np.asarray((0.0, 0.01, 0.2, 0.5, 0.99, 1.0))
+    grid = production_interval_grid(n, 0.05, "wald")
+    outside = (grid.lower < 0.0) | (grid.upper > 1.0)
+    degenerate = grid.upper == grid.lower
+    observed_outside = outcome_set_probability(n, probabilities, outside)
+    observed_degenerate = outcome_set_probability(n, probabilities, degenerate)
+    outcomes = np.arange(n + 1)
+    expected_outside = np.asarray(
+        [stats.binom.pmf(outcomes, n, p)[outside].sum() for p in probabilities]
+    )
+    expected_degenerate = np.asarray(
+        [stats.binom.pmf(outcomes, n, p)[degenerate].sum() for p in probabilities]
+    )
+    np.testing.assert_allclose(observed_outside, expected_outside, atol=2e-15, rtol=0.0)
+    np.testing.assert_allclose(
+        observed_degenerate,
+        expected_degenerate,
+        atol=2e-15,
+        rtol=0.0,
+    )
+    assert not np.array_equal(outside.astype(float), observed_outside)
+    assert observed_degenerate[0] == 1.0 and observed_degenerate[-1] == 1.0
+
+
+def test_checkpoint_e_writes_dedicated_adversarial_schema(tmp_path, monkeypatch):
+    part = calibrate_n(
+        2,
+        linear_step=None,
+        expected_widths=False,
+        oracle=False,
+        include_base_grid=False,
+        batch_size=3,
+    )
+    monkeypatch.setattr(run_module, "RESULTS", tmp_path)
+    run_module._write_checkpoint(
+        "E",
+        [part],
+        0.0,
+        workers=1,
+        batch_size=3,
+        spec=checkpoint_spec("E"),
+    )
+    path = tmp_path / "proportion_ci_cp06_e_adversarial_minima.parquet"
+    assert path.exists()
+    frame = pd.read_parquet(path)
+    required = {
+        "n",
+        "alpha",
+        "method",
+        "p",
+        "coverage",
+        "nominal",
+        "deficit",
+        "acceptance_kind",
+        "first_x",
+        "last_x",
+        "acceptance_runs",
+        "acceptance_representation",
+        "origin",
+        "search_method",
+        "optimizer_status",
+    }
+    assert required <= set(frame.columns)
+    assert len(frame) == len(ALPHAS) * 4
+    assert not frame.duplicated(["method", "alpha", "n"]).any()
+    wald = frame[frame["method"] == "wald"]
+    for row in wald.to_dict("records"):
+        grid = production_interval_grid(2, row["alpha"], "wald")
+        expected_kind = (
+            "monotone_contiguous"
+            if endpoints_are_monotone(grid.lower, grid.upper)
+            else "explicit_nonmonotone_endpoints"
+        )
+        assert row["acceptance_kind"] == expected_kind
+        if not endpoints_are_monotone(grid.lower, grid.upper):
+            assert row["search_method"].startswith("explicit_acceptance_set_")
+    assert "explicit_nonmonotone_endpoints" in set(wald["acceptance_kind"])

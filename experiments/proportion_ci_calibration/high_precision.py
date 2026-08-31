@@ -21,6 +21,7 @@ from experiments.proportion_ci_calibration.harness import (
     CANDIDATE_SHA,
     CP04_DOCUMENT_SHA,
     EXPERIMENT_VERSION,
+    EndpointGridCache,
     jeffreys_interval_grid,
     production_interval_grid,
 )
@@ -42,6 +43,8 @@ QUEUE_COLUMNS = (
     "last_x",
     "coverage",
     "oracle",
+    "acceptance_kind",
+    "acceptance_runs",
 )
 
 
@@ -106,6 +109,30 @@ def high_precision_binomial_range(
             regularized=True,
         )
         return cdf_high - cdf_low
+
+
+def high_precision_binomial_runs(
+    n: int,
+    p: float,
+    runs: list[tuple[int, int]],
+    *,
+    digits: int = 80,
+) -> mp.mpf:
+    """Audit an explicit, potentially noncontiguous acceptance representation."""
+
+    if digits < 80:
+        raise ValueError("CP-04 requires at least 80 decimal digits")
+    with mp.workdps(digits):
+        return mp.fsum(
+            high_precision_binomial_range(
+                n,
+                p,
+                first,
+                last,
+                digits=digits,
+            )
+            for first, last in runs
+        )
 
 
 def _beta_quantile(probability: mp.mpf, a: mp.mpf, b: mp.mpf) -> mp.mpf:
@@ -210,13 +237,23 @@ def _audit_one(arguments: tuple[dict[str, object], int]) -> dict[str, object]:
         "digits": digits,
     }
     if row["audit_kind"] == "coverage":
-        value = high_precision_binomial_range(
-            int(row["n"]),
-            float(row["p"]),
-            int(row["first_x"]),
-            int(row["last_x"]),
-            digits=digits,
-        )
+        runs_value = row.get("acceptance_runs")
+        if isinstance(runs_value, str) and runs_value:
+            runs = [tuple(item) for item in json.loads(runs_value)]
+            value = high_precision_binomial_runs(
+                int(row["n"]),
+                float(row["p"]),
+                runs,
+                digits=digits,
+            )
+        else:
+            value = high_precision_binomial_range(
+                int(row["n"]),
+                float(row["p"]),
+                int(row["first_x"]),
+                int(row["last_x"]),
+                digits=digits,
+            )
         float64_value = float(row["coverage"])
         with mp.workdps(digits):
             decimal_value = mp.nstr(value, digits)
@@ -284,10 +321,17 @@ def _grid_for(
 ):
     identity = (n, alpha, method)
     if identity not in cache:
-        cache[identity] = (
-            jeffreys_interval_grid(n, alpha)
+        endpoint_cache = EndpointGridCache()
+        factory = (
+            (lambda: jeffreys_interval_grid(n, alpha))
             if method == "jeffreys"
-            else production_interval_grid(n, alpha, method)
+            else (lambda: production_interval_grid(n, alpha, method))
+        )
+        cache[identity] = endpoint_cache.get_or_create(
+            n,
+            alpha,
+            method,
+            factory,
         )
     return cache[identity]
 

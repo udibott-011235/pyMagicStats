@@ -34,6 +34,13 @@ evidence. The support is selected with a deterministic Hoeffding bound of
 `1e-14`; it does not call `scipy.stats.binom.isf` or another root-finding
 quantile routine.
 
+The v2 harness routes coverage by endpoint structure. Monotone methods use the
+contiguous CDF/SF path. A nonmonotone endpoint grid, including affected Wald
+configurations, is evaluated as the explicit set
+`{x: lower[x] <= p <= upper[x]}` with chunked log-PMF accumulation. It is never
+sorted or collapsed to a forced range. Wald outputs also include probability-
+weighted `P_outside` and `P_degenerate` summaries and worst cases.
+
 The heavy checkpoints are separate, deterministic, and resumable. Do not run
 them as part of harness validation:
 
@@ -44,18 +51,28 @@ env -u PYTHONPATH python -m experiments.proportion_ci_calibration.run C --worker
 # CP06-D: the 11 stress n values through 1,000,000
 env -u PYTHONPATH python -m experiments.proportion_ci_calibration.run D --workers 1 --batch-size 64
 
-# CP06-E: endpoint partitions, nextafter, midpoints, and analytic stationary points
+# CP06-E: endpoint partitions plus analytic or bounded adversarial candidates
 env -u PYTHONPATH python -m experiments.proportion_ci_calibration.run E --workers 8 --batch-size 256
 
 # CP06-F: audit the C/D/E trigger queue at 80 decimal digits
 env -u PYTHONPATH python -m experiments.proportion_ci_calibration.high_precision --checkpoints C D E --workers 4 --digits 80
 ```
 
-Checkpoint C reuses completed B shards when the cache is available. D uses one
-worker because a single `n=1_000_000` interval inventory is intentionally
-memory-heavy. E excludes the base grid and expected-width calculation: it
-evaluates only the adversarial endpoint partition required by CP-04. F refuses
-fewer than 80 decimal digits.
+The pre-v2 CP06-B shards and Wald evidence are incompatible and must not be
+reused. After B is rerun with this harness, C may reuse only shards whose
+candidate SHA, harness/schema version, checkpoint hash, per-shard semantic
+hash, payload hash, and interval hash all validate. D uses one worker because a
+single `n=1_000_000` interval inventory is intentionally memory-heavy.
+
+Endpoint grids have a separate atomic cache keyed and validated by candidate,
+harness/schema version, `n`, alpha, method, and SHA-256. This lets E reuse the
+API-produced grids from C/D. E excludes the base grid and expected-width
+calculation; it persists `proportion_ci_cp06_e_adversarial_minima.parquet` with
+the global minimum and reconstructible acceptance runs for every
+`(method, alpha, n)`. Single-run regions use the analytic stationary candidate;
+multi-run regions use a deterministic bounded optimizer with `xatol=5e-13`.
+F refuses fewer than 80 decimal digits and consumes explicit runs without
+filling their gaps.
 
 The interval inventory records canonical SHA-256 hashes and row counts instead
 of committing the enormous raw endpoint grid. Coverage, event-regime, oracle,
