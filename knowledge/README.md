@@ -18,9 +18,13 @@ compartido cambia sólo mediante registros trazables y revisión cruzada.
    agente.
 3. [`AGENT_PROTOCOL.md`](AGENT_PROTOCOL.md): ciclo, handoffs y detenciones.
 4. [`registry.json`](registry.json): catálogo y estado del conocimiento.
-5. [`theory/inference-principles.md`](theory/inference-principles.md): teoría
+5. [`decisions/manual-uat-checkpoint-1.md`](decisions/manual-uat-checkpoint-1.md):
+   checkpoint transversal vigente para cerrar el current statistical core,
+   ejecutar Manual UAT 1 y habilitar uso manual limitado antes de cualquier
+   orquestador.
+6. [`theory/inference-principles.md`](theory/inference-principles.md): teoría
    estadística compartida vigente.
-6. El espacio del rol en [`agents/`](agents/README.md).
+7. El espacio del rol en [`agents/`](agents/README.md).
 
 ## Espacios de trabajo
 
@@ -59,3 +63,8 @@ La autoridad de lifecycle de ramas está fijada por
 [`DEC-006`](decisions/branch-lifecycle-governance.md). La vista humana de las
 ramas está en [`versioning/branches.md`](versioning/branches.md), pero
 `registry.json` sigue siendo la fuente canónica.
+
+El hito operativo transversal vigente está fijado por
+[`DEC-007`](decisions/manual-uat-checkpoint-1.md). Su PASS autoriza únicamente
+uso manual de los módulos incluidos en su baseline UAT y dentro de límites
+documentados; no implica toolbox completa ni valida un decision engine.
