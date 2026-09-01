@@ -80,6 +80,16 @@ La sincronización previa del registry por Antigravity permanece en rama documen
 9. CP-06 no puede alterar el SHA candidato ni promover `calibration_status` automáticamente.
 10. El holdout deja de ser holdout si se usa para ajustar el mismo SHA; todo fix requiere nuevo SHA y nueva evaluación independiente.
 
+## Hito transversal posterior al stage
+
+El cierre de CP-08 no constituye por sí solo autorización para construir el orquestador de decisión. `STAGE-PROP-CI-001` es uno de los bloqueantes de entrada de `DEC-007 — MANUAL UAT CHECKPOINT 1 — CURRENT STATISTICAL CORE`.
+
+Después de este stage, el proyecto todavía debe cerrar el bloque estadístico de ANOVA, realizar el accuracy closure/censo de la superficie de distribuciones y GOF que vaya a entrar al baseline, y congelar un inventario explícito de métodos antes de ejecutar el primer UAT manual con DataFrames reales/sucios.
+
+El Manual UAT 1 probará herramientas aisladas mediante invocación explícita; no probará `MethodSelector` ni un decision engine. Un PASS de ese hito habilitará sólo uso manual de los módulos incluidos dentro de sus límites documentados. Nuevas distribuciones, transformaciones, métodos no paramétricos, regresiones, DOE y el orquestador permanecen como desarrollo posterior salvo decisión explícita del Product Owner.
+
+Referencia canónica del plan: `knowledge/decisions/manual-uat-checkpoint-1.md`.
+
 ## Próximo paso
 
 Ejecutar CP-06 sobre `2df5b90a5395163e723f9c52aafbb91fdce96d43`, conservar artefactos reproducibles y entregar resultados a arquitectura antes de CP-07.
