@@ -1,5 +1,20 @@
 # Historial de la base de conocimiento
 
+## 2026-08-31 — Manual UAT Checkpoint 1
+
+- Se crea `DEC-007` — `MANUAL UAT CHECKPOINT 1 — CURRENT STATISTICAL CORE`.
+- El checkpoint se define como una pausa de madurez del alcance estadístico actual, no como cierre del toolbox ni como declaración de completitud de pyMagicStats.
+- Se fijan cuatro bloqueantes previos al UAT manual:
+  - cierre completo de `STAGE-PROP-CI-001` (CP-06/07/08);
+  - cierre estadístico propio de ANOVA one-way, sin transferir calibración de medias;
+  - accuracy closure/censo de la superficie de distribuciones y GOF realmente expuesta en el baseline;
+  - congelación de un inventario explícito de métodos admitidos al UAT.
+- El Manual UAT 1 se ejecutará con invocación manual de métodos, sin `MethodSelector` ni decision engine, sobre DataFrames reales/sucios y fixtures controlados para separar matemática, implementación/API y manejo de datos.
+- Un PASS sólo habilita uso operativo manual de los módulos incluidos y dentro de límites documentados.
+- Se registran como deuda posterior deliberadamente fuera del hito: expansión de distribuciones, transformaciones, métodos no paramétricos, regresiones, DOE y orquestador/decision engine.
+- `DEBT-001 / TD-NUM-001` permanece no bloqueante para el dominio retail/BI salvo que un caso del baseline UAT dependa de escalas subnormales.
+- `DEC-007` queda enlazado desde la ruta de lectura obligatoria de `knowledge/README.md` y desde `knowledge/decisions/README.md` para visibilidad transversal de todos los agentes.
+
 ## 2026-08-30 — KB v1.3
 
 - Se registra la integración controlada de PR #1 (`docs/project-knowledge-base`) y PR #3 (`fix/gate2-adversarial-remediation`) en `main` (`f1725ebdfebcb667c053420e4cb4c1e35048f9e0`).
