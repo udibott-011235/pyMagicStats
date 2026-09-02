@@ -1,5 +1,68 @@
 # Deuda técnica
 
+## TD-API-001: pruebas t desde estadísticos resumidos
+
+**Estado:** pendiente; no bloqueante.
+
+**Componente:** `OneSampleTTest`, `TwoSampleTTest`, `PairedTTest` y contratos
+relacionados de inferencia de medias.
+
+**Alcance afectado:** usos donde no existe la muestra fila por fila y sólo se
+dispone de tamaño muestral, media y desviación estándar.
+
+### Necesidad de uso
+
+La API actual está orientada a muestras completas. En reportes agregados,
+integraciones con ERP/BI, restricciones de privacidad, publicaciones y
+metaanálisis pueden estar disponibles únicamente los estadísticos resumidos.
+pyMagicStats no debe asumir que el analista siempre posee las observaciones
+individuales cuando el método puede resolverse exactamente sin reconstruirlas.
+
+### Alcance futuro mínimo
+
+- Una muestra: `n`, `mean`, `std` y `mu0`.
+- Dos muestras independientes: `n1`, `mean1`, `std1`, `n2`, `mean2` y `std2`.
+- Variantes Welch y Student con varianza agrupada, incluyendo alternativas
+  bilateral y unilaterales.
+- Estadístico t, grados de libertad, p-value, diferencia estimada, error
+  estándar e intervalo de confianza.
+- Convención explícita de desviación estándar muestral (`ddof=1`), validación
+  de dominio y metadato `input_mode = raw | summary`.
+- Contrato público no ambiguo y compatible con la entrada actual de muestras.
+
+### Límite matemático de la prueba pareada
+
+Los resúmenes marginales de dos grupos no bastan para una prueba t pareada,
+porque no contienen la variabilidad de las diferencias. La ruta resumida debe
+recibir `n`, `mean_diff` y `std_diff`, o información equivalente que permita
+obtener `std_diff`, como la covarianza o correlación junto con ambas
+desviaciones.
+
+Debe fallar explícitamente si sólo se proporcionan `n1`, `mean1`, `std1`,
+`n2`, `mean2` y `std2` sin información sobre el emparejamiento. No se deben
+simular ni reconstruir observaciones sintéticas para ocultar esa insuficiencia.
+
+### Criterio de cierre
+
+- La ruta resumida coincide, dentro de tolerancias documentadas, con la ruta
+  basada en los datos crudos que originaron los resúmenes.
+- Welch usa los grados de libertad de Welch-Satterthwaite y Student documenta
+  el supuesto de varianzas iguales.
+- Se cubren `n < 2`, desviación cero, no finitos, tamaños desiguales y
+  heterocedasticidad fuerte.
+- Tests adversariales impiden mezclar desviación poblacional y muestral.
+- La prueba pareada rechaza resúmenes marginales insuficientes.
+- La documentación incluye ejemplos de una muestra, dos muestras
+  independientes y diferencias pareadas resumidas.
+- La API conserva compatibilidad hacia atrás.
+
+### Generalización posterior
+
+Este pendiente establece un criterio arquitectónico más amplio: revisar cada
+método para admitir entradas resumidas sólo cuando los estadísticos disponibles
+sean matemáticamente suficientes. No autoriza cambios en selector, ANOVA,
+empirical likelihood, bootstrap ni calibraciones no vinculadas.
+
 ## Numerical hardening for subnormal float64 scales
 
 **Estado:** pendiente; no bloqueante para el alcance actual.  
@@ -61,4 +124,3 @@ fallo a otra unidad de medida y rompería el carácter relativo del diagnóstico
 - Los casos de escala comercial ya cubiertos conservan el comportamiento
   auditado.
 - La estrategia y sus límites quedan respaldados por tests numéricos dedicados.
-
