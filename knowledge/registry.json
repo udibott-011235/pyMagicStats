@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-08-30",
+  "last_updated": "2026-09-02",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -182,6 +182,19 @@
       "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["fixture", "provenance-gap"]
+    },
+    {
+      "id": "DEBT-002",
+      "kind": "debt",
+      "title": "TD-API-001: pruebas t desde estadísticos resumidos",
+      "status": "open",
+      "scope": "Pruebas t de una muestra, independientes y pareadas; no bloqueante",
+      "path": "Docs/technical-debt.md",
+      "evidence_paths": ["pyMagicStat/inference/parametric.py", "tests/test_parametric.py"],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["t-test", "summary-statistics", "api", "generality"]
     },
     {
       "id": "DEBT-001",
