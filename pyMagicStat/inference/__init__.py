@@ -1,3 +1,4 @@
+from pyMagicStat.inference.anova import ANOVAResult, OneWayANOVA, WelchANOVA
 from pyMagicStat.inference.capabilities import (
     INFERENCE_CAPABILITY_REGISTRY,
     INFERENCE_ROUTING_VERSION,
@@ -24,6 +25,7 @@ from pyMagicStat.inference.non_parametric import BootstrapCI, BootstrapMeanDiffe
 from pyMagicStat.inference.selector import MethodSelector
 
 __all__ = [
+    "ANOVAResult",
     "BootstrapCI",
     "BootstrapMeanDifferenceCI",
     "CI_ENDPOINT_RESIDUAL_TOLERANCE",
@@ -39,6 +41,8 @@ __all__ = [
     "LAMBDA_RESIDUAL_TOLERANCE",
     "MethodAlternative",
     "MethodSelector",
+    "OneWayANOVA",
+    "WelchANOVA",
     "capabilities_for",
     "capability_for",
     "empirical_likelihood_mean_ci",
