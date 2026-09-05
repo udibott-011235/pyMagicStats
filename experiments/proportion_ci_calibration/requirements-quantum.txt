@@ -1,0 +1,3 @@
+# Additional CP-06 harness dependencies beyond the project environment.
+mpmath==1.4.1
+pyarrow==25.0.1
