@@ -1,8 +1,9 @@
 # STAGE-ANOVA-001 — Statistical closure status
 
 - Fecha: `2026-09-05`
-- Rama: `audit/anova-statistical-closure`
-- Base: `main@402e4601df460811779b3238c2526ac12f463a67`
+- Rama arquitectónica: `audit/anova-statistical-closure`
+- Rama técnica: `feature/anova-production-candidate`
+- Base original: `main@402e4601df460811779b3238c2526ac12f463a67`
 - Estado global: `in_progress`
 - Objetivo: cerrar Classical one-way ANOVA y Welch one-way ANOVA como métodos explícitos, precisos, eficientes y auditables antes de cualquier selector automático o integración con el optimizador.
 
@@ -13,12 +14,27 @@
 | CP-ANOVA-01 — preflight y census | `complete` | Rama histórica tratada como evidencia, no merge candidate; arquitectura actual inspeccionada. |
 | CP-ANOVA-02 — statistical specification | `complete/frozen` | Contrato matemático y dominios congelados en `knowledge/theory/anova-one-way-statistical-spec.md`. |
 | CP-ANOVA-03 — API + execution contract | `complete/frozen` | API, ANOVAResult, strict behavior, separación validation/summaries/kernel y exports congelados en `knowledge/decisions/anova-api-execution-contract.md`. |
-| CP-ANOVA-04 — production candidate | `next` | Implementar Classical + Welch desde summaries, sin selector ONE_WAY. |
-| CP-ANOVA-05 — deterministic/oracle validation | `pending` | Fórmulas independientes, SciPy/statsmodels, invariantes, k=2 t², adversarial numerical tests. |
+| CP-ANOVA-04 — production candidate | `complete/frozen` | Candidate code SHA `5a116a4e8672dadd3fe57a51f4186f70d1440afd`; Quantum smoke `18/18 PASS`; directed regression `52/52 PASS`. |
+| CP-ANOVA-05 — deterministic/oracle validation | `next` | Ampliar oráculos independientes, invariantes y adversarial numerical tests sobre el SHA congelado, sin Monte Carlo. |
 | CP-ANOVA-06 — calibration preregistration | `pending` | Congelar escenarios, seeds, precision targets, primary metrics y holdout antes de corrida pesada. |
 | CP-ANOVA-07 — calibration/evidence | `pending` | Type-I/power/robustness evidence; no usar piloto histórico como evidencia final. |
 | CP-ANOVA-08 — adversarial audit | `pending` | Antigravity audita SHA exacto, teoría, implementación, resultados y debt. |
 | CP-ANOVA-09 — Product Owner interpretation | `pending` | Decidir integración/manual UAT y cualquier habilitación posterior. |
+
+## Candidate congelado CP-ANOVA-04
+
+```text
+5a116a4e8672dadd3fe57a51f4186f70d1440afd
+```
+
+Este SHA contiene la implementación y tests del production candidate. Commits documentales posteriores no modifican el código auditado.
+
+Evidencia:
+
+- `knowledge/evidence/anova-production-quantum-smoke-2026-09-05.md`
+- `knowledge/evidence/anova-directed-regression-2026-09-05.md`
+
+Cualquier cambio posterior en `pyMagicStat/inference/anova.py`, exports relacionados o tests del candidate reabre CP-ANOVA-04 y requiere nuevo freeze SHA.
 
 ## Decisiones congeladas en CP-ANOVA-02
 
@@ -30,12 +46,12 @@
 - Levene/Brown-Forsythe es diagnóstico; `p > alpha` no demuestra homocedasticidad.
 - Independence es metadata externa; no se infiere de los valores.
 - Selector ONE_WAY permanece `NOT_CALIBRATED`.
-- Classical debe exponer F, p, df, SS, MS y eta² descriptivo.
-- Welch debe exponer F de Welch, p, df efectivos, weights y correction metadata.
+- Classical expone F, p, df, SS, MS y eta² descriptivo.
+- Welch expone F de Welch, p, df efectivos, weights y correction metadata.
 - Welch no reutiliza eta² Classical como si fuera un effect size equivalente.
 - Kernel orientado a summaries: `O(N)` para resumir input + `O(k)` para cálculo.
 - k=2 debe satisfacer `F_classical=t_student²` y `F_welch=t_welch²`.
-- SciPy Classical oracle debe ser compatible con la dependencia mínima actual; Welch usa statsmodels como oracle principal y SciPy `equal_var=False` sólo cuando versión >=1.16 esté disponible.
+- SciPy Classical oracle compatible con la dependencia mínima actual; Welch usa statsmodels como oracle principal y SciPy `equal_var=False` sólo cuando versión >=1.16 esté disponible.
 - No post-hoc, no fallback a Kruskal, no transforms automáticas, no DOE, no optimizer integration en Step 1.
 
 ## Decisiones congeladas en CP-ANOVA-03
@@ -69,13 +85,18 @@ Este stage no debe:
 
 ## Siguiente acción autorizada
 
-**CP-ANOVA-04 — production candidate.**
+**CP-ANOVA-05 — deterministic/oracle validation.**
 
-La implementación debe hacerse en una rama técnica nueva basada en el baseline autorizado, consumiendo como especificación congelada:
+Debe ejecutarse sobre el candidate congelado y ampliar, como mínimo:
 
-1. `knowledge/theory/anova-one-way-statistical-spec.md`
-2. `knowledge/decisions/anova-api-execution-contract.md`
-3. `knowledge/evidence/anova-statistical-preflight-2026-09-05.md`
-4. `knowledge/evidence/anova-experiment-optimizer-integration-note-2026-09-05.md`
+1. Classical vs SciPy en matrices deterministas adicionales;
+2. Classical vs statsmodels `use_var="equal"`;
+3. Welch vs statsmodels `use_var="unequal", welch_correction=True`;
+4. Welch vs SciPy `equal_var=False` cuando esté disponible;
+5. k=2 t² en múltiples escalas y desbalances;
+6. offsets grandes, escalas pequeñas/grandes no subnormales;
+7. varianzas muy desiguales y tamaños adversariales;
+8. permutaciones e identidades de descomposición;
+9. verificación de tolerancias y cualquier límite numérico reproducible.
 
-No se modifica `main` directamente y no se lanza calibración pesada en CP-ANOVA-04.
+No se inicia todavía Monte Carlo de robustez/type-I/power.
