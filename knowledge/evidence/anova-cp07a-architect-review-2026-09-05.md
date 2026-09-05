@@ -82,6 +82,20 @@ The architect inspected the committed test suite and found explicit coverage for
 
 No GitHub CI/check status is registered for this commit; the reported test run is therefore handoff evidence rather than an independent remote CI run. This does not block the engineering-only E0 phase, but Phase D must not be authorized solely from E0.
 
+## E0 execution correction
+
+The first architect-issued shell command incorrectly instructed Quantum to check out the candidate in detached-HEAD mode. The harness intentionally rejects detached HEAD in `provenance()` because evidence must come from the named technical branch. The attempted E0 run aborted at provenance before parity or any Monte Carlo generation, so no E0 evidence or output was produced by that failed attempt.
+
+Correct execution requirement:
+
+```text
+branch = engineering/cp-anova-07a-harness
+HEAD   = b211dcd61be02a234386947305bc1a1c9cfffde7
+working tree = clean
+```
+
+Switching from detached HEAD to the exact remote technical branch at the same SHA is an execution-context correction only; it does not change code, manifest, RNG, candidate identity or preregistration.
+
 ## Decision
 
 `CP-ANOVA-07A` implementation is accepted and `CP-ANOVA-07B` architect review is complete.
@@ -98,4 +112,4 @@ E0 remains engineering-only:
 - no D phase authorization;
 - no H phase opening.
 
-The E0 execution must use the exact candidate SHA above from a clean checkout and write artifacts outside the repository. After E0, stop at `CP-ANOVA-07C` and return artifacts/accounting/performance/reproducibility evidence for architect review before Phase D.
+The E0 execution must use the exact candidate SHA above on the named technical branch from a clean checkout and write artifacts outside the repository. After E0, stop at `CP-ANOVA-07C` and return artifacts/accounting/performance/reproducibility evidence for architect review before Phase D.
