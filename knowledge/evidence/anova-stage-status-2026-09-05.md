@@ -12,8 +12,8 @@
 |---|---|---|
 | CP-ANOVA-01 — preflight y census | `complete` | Rama histórica tratada como evidencia, no merge candidate; arquitectura actual inspeccionada. |
 | CP-ANOVA-02 — statistical specification | `complete/frozen` | Contrato matemático y dominios congelados en `knowledge/theory/anova-one-way-statistical-spec.md`. |
-| CP-ANOVA-03 — API + execution contract | `next` | Congelar clases públicas, strict/non-strict behavior, result dataclass/dict y separación kernel/validation. |
-| CP-ANOVA-04 — production candidate | `pending` | Implementar Classical + Welch desde summaries, sin selector ONE_WAY. |
+| CP-ANOVA-03 — API + execution contract | `complete/frozen` | API, ANOVAResult, strict behavior, separación validation/summaries/kernel y exports congelados en `knowledge/decisions/anova-api-execution-contract.md`. |
+| CP-ANOVA-04 — production candidate | `next` | Implementar Classical + Welch desde summaries, sin selector ONE_WAY. |
 | CP-ANOVA-05 — deterministic/oracle validation | `pending` | Fórmulas independientes, SciPy/statsmodels, invariantes, k=2 t², adversarial numerical tests. |
 | CP-ANOVA-06 — calibration preregistration | `pending` | Congelar escenarios, seeds, precision targets, primary metrics y holdout antes de corrida pesada. |
 | CP-ANOVA-07 — calibration/evidence | `pending` | Type-I/power/robustness evidence; no usar piloto histórico como evidencia final. |
@@ -38,9 +38,25 @@
 - SciPy Classical oracle debe ser compatible con la dependencia mínima actual; Welch usa statsmodels como oracle principal y SciPy `equal_var=False` sólo cuando versión >=1.16 esté disponible.
 - No post-hoc, no fallback a Kruskal, no transforms automáticas, no DOE, no optimizer integration en Step 1.
 
+## Decisiones congeladas en CP-ANOVA-03
+
+- API pública: `OneWayANOVA(...).run()` y `WelchANOVA(...).run()`.
+- Resultado canónico: `@dataclass(frozen=True) ANOVAResult`, con `to_dict()` JSON-ready.
+- Classical y Welch comparten metadata base pero conservan `components` específicos.
+- Kernels internos trabajan desde summaries por grupo y no llaman al selector.
+- `strict` gobierna hard failures/autorización, no selección automática de método.
+- WARN de shape/outliers/variance no cambia silenciosamente Classical ↔ Welch.
+- `unknown` independence no se presenta como independencia verificada.
+- `scipy.stats.f.sf` para p-values.
+- Errores de contrato producen excepciones explícitas; no se ocultan con catches genéricos.
+- El candidate no modifica `MethodSelector(ONE_WAY) -> NOT_CALIBRATED`.
+- ANOVA no importa ni depende de `pyMagicStat.optimization`.
+
 ## Product direction posterior
 
 Después del cierre ANOVA, un Step 2 actualizará `optimization/orchestrator.py` para trabajar con evaluadores específicos por prueba. ANOVA entregará F/p-value/df y sus métricas propias; Kruskal-Wallis conservará las suyas. El orquestador será motor operativo, no definición universal de estadísticos.
+
+La arquitectura summary-based permitirá cachear `n`, media y varianza/SSW por grupo y reevaluar subconjuntos del futuro optimizador en `O(k)` después del resumen inicial, sin contaminar el motor ANOVA Step 1 con lógica de optimización.
 
 ## Protección de trabajo paralelo
 
@@ -53,4 +69,13 @@ Este stage no debe:
 
 ## Siguiente acción autorizada
 
-Abrir CP-ANOVA-03 sobre esta misma rama documental/audit para congelar el contrato de API y ejecución. Sólo después se entrega una instrucción de implementación a Cortex/Codex en una rama técnica nueva basada en el baseline autorizado.
+**CP-ANOVA-04 — production candidate.**
+
+La implementación debe hacerse en una rama técnica nueva basada en el baseline autorizado, consumiendo como especificación congelada:
+
+1. `knowledge/theory/anova-one-way-statistical-spec.md`
+2. `knowledge/decisions/anova-api-execution-contract.md`
+3. `knowledge/evidence/anova-statistical-preflight-2026-09-05.md`
+4. `knowledge/evidence/anova-experiment-optimizer-integration-note-2026-09-05.md`
+
+No se modifica `main` directamente y no se lanza calibración pesada en CP-ANOVA-04.
