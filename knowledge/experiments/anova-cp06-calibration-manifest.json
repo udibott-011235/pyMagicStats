@@ -1,1 +1,183 @@
-PLACEHOLDER
+{
+  "preregistration_version": "anova-calibration-prereg-v1.1",
+  "supersedes": "anova-calibration-prereg-v1",
+  "amendment_scope": "cell_id materialization and exact E0 subset only; statistical design unchanged",
+  "stage": "STAGE-ANOVA-001",
+  "checkpoint": "CP-ANOVA-06",
+  "primary_alpha": 0.05,
+  "alpha_grid": [
+    0.01,
+    0.05,
+    0.1
+  ],
+  "development_master_seed": 2026090501,
+  "holdout_master_seed": 2026090599,
+  "seed_contract": {
+    "canonical_string": "phase|cell_id|replicate_index",
+    "digest": "sha256",
+    "digest_uint32_count": 4,
+    "seed_sequence": "numpy.random.SeedSequence([master_seed, uint32_0, uint32_1, uint32_2, uint32_3])",
+    "python_hash_forbidden": true
+  },
+  "replications": {
+    "E0": 200,
+    "D-core-h0": 50000,
+    "D-robustness-h0": 25000,
+    "D-stress-h0": 25000,
+    "D-power-h1": 20000,
+    "H-core-normal": 50000,
+    "H-robustness": 25000,
+    "H-power": 20000
+  },
+  "development_families": [
+    "normal",
+    "gamma_shape_4",
+    "gamma_shape_1",
+    "lognormal_sigma_0p5",
+    "lognormal_sigma_1p2",
+    "student_t_df_5",
+    "student_t_df_3",
+    "laplace",
+    "mixture_symmetric_5pct_scale6",
+    "contamination_asymmetric_5pct_loc10"
+  ],
+  "stress_only_families": [
+    "lognormal_sigma_1p5",
+    "student_t_df_2p5",
+    "contamination_asymmetric_10pct_loc10"
+  ],
+  "holdout_only_families": [
+    "gamma_shape_2",
+    "lognormal_sigma_0p8",
+    "student_t_df_7",
+    "weibull_shape_1p5",
+    "pareto_alpha_3p5",
+    "beta_2_5",
+    "contamination_asymmetric_2pct_loc10"
+  ],
+  "power_delta_range": [
+    0.25,
+    0.5,
+    1.0
+  ],
+  "confirmatory_bands": {
+    "classical_normal_equal_variance_alpha_0p05": [
+      0.04,
+      0.06
+    ],
+    "welch_normal_all_variance_patterns_alpha_0p05": [
+      0.04,
+      0.06
+    ]
+  },
+  "robustness_bands_absolute_deviation_from_0p05": {
+    "green": 0.01,
+    "amber": 0.025
+  },
+  "phase_cell_counts": {
+    "E0": 12,
+    "D-core-h0": 42,
+    "D-robustness-h0": 54,
+    "D-stress-h0": 10,
+    "D-power-h1": 36,
+    "H-core-normal": 10,
+    "H-robustness": 21,
+    "H-power": 12
+  },
+  "phase_cells": {
+    "E0": [
+      {"cell_id":"E0-01","family":"normal","sizes":[5,5,5],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"E0-02","family":"normal","sizes":[5,10,20],"sd":[4,2,1],"hypothesis":"H0"},
+      {"cell_id":"E0-03","family":"normal","sizes":[5,10,20],"sd":[1,2,4],"hypothesis":"H0"},
+      {"cell_id":"E0-04","family":"gamma_shape_1","sizes":[5,5,5],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"E0-05","family":"lognormal_sigma_1p2","sizes":[5,10,20],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"E0-06","family":"student_t_df_3","sizes":[5,10,20],"sd":[4,2,1],"hypothesis":"H0"},
+      {"cell_id":"E0-07","family":"mixture_symmetric_5pct_scale6","sizes":[10,10,10,10,10],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"E0-08","family":"contamination_asymmetric_5pct_loc10","sizes":[5,10,20],"sd":[1,2,4],"hypothesis":"H0"},
+      {"cell_id":"E0-09","family":"normal","sizes":[2,2,2],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"E0-10","family":"lognormal_sigma_1p5","sizes":[5,10,20],"sd":[4,2,1],"hypothesis":"H0"},
+      {"cell_id":"E0-11","family":"normal","sizes":[10,10,10],"sd":[1,1,1],"hypothesis":"H1","delta_range":0.5},
+      {"cell_id":"E0-12","family":"gamma_shape_1","sizes":[10,10,10],"sd":[1,1,1],"hypothesis":"H1","delta_range":1.0}
+    ],
+    "D-core-h0": [
+      {"cell_id":"DCEV-k2-01","family":"normal","sizes":[5,5],"sd":[1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k2-02","family":"normal","sizes":[10,10],"sd":[1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k2-03","family":"normal","sizes":[30,30],"sd":[1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k2-04","family":"normal","sizes":[100,100],"sd":[1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k2-05","family":"normal","sizes":[5,20],"sd":[1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k2-06","family":"normal","sizes":[10,40],"sd":[1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k2-07","family":"normal","sizes":[30,120],"sd":[1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-01","family":"normal","sizes":[5,5,5],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-02","family":"normal","sizes":[10,10,10],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-03","family":"normal","sizes":[30,30,30],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-04","family":"normal","sizes":[100,100,100],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-05","family":"normal","sizes":[5,10,20],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-06","family":"normal","sizes":[20,10,5],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-07","family":"normal","sizes":[5,30,30],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k3-08","family":"normal","sizes":[30,5,5],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k5-01","family":"normal","sizes":[5,5,5,5,5],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k5-02","family":"normal","sizes":[10,10,10,10,10],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k5-03","family":"normal","sizes":[30,30,30,30,30],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k5-04","family":"normal","sizes":[100,100,100,100,100],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k5-05","family":"normal","sizes":[5,8,12,20,30],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k5-06","family":"normal","sizes":[30,20,12,8,5],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k10-01","family":"normal","sizes":[5,5,5,5,5,5,5,5,5,5],"sd":[1,1,1,1,1,1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k10-02","family":"normal","sizes":[10,10,10,10,10,10,10,10,10,10],"sd":[1,1,1,1,1,1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCEV-k10-03","family":"normal","sizes":[30,30,30,30,30,30,30,30,30,30],"sd":[1,1,1,1,1,1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k2-01","family":"normal","sizes":[5,20],"sd":[4,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k2-02","family":"normal","sizes":[5,20],"sd":[1,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k2-03","family":"normal","sizes":[10,40],"sd":[4,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k2-04","family":"normal","sizes":[10,40],"sd":[1,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-01","family":"normal","sizes":[5,5,5],"sd":[1,2,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-02","family":"normal","sizes":[10,10,10],"sd":[1,2,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-03","family":"normal","sizes":[30,30,30],"sd":[1,2,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-04","family":"normal","sizes":[5,10,20],"sd":[4,2,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-05","family":"normal","sizes":[5,10,20],"sd":[1,2,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-06","family":"normal","sizes":[10,30,60],"sd":[4,2,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-07","family":"normal","sizes":[10,30,60],"sd":[1,2,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-08","family":"normal","sizes":[5,30,30],"sd":[4,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k3-09","family":"normal","sizes":[30,5,5],"sd":[4,1,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k5-01","family":"normal","sizes":[10,10,10,10,10],"sd":[1,1.5,2,3,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k5-02","family":"normal","sizes":[30,30,30,30,30],"sd":[1,1.5,2,3,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k5-03","family":"normal","sizes":[5,8,12,20,30],"sd":[4,3,2,1.5,1],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k5-04","family":"normal","sizes":[5,8,12,20,30],"sd":[1,1.5,2,3,4],"hypothesis":"H0"},
+      {"cell_id":"DCUV-k10-01","family":"normal","sizes":[10,10,10,10,10,10,10,10,10,10],"sd":[1,4,1,4,1,4,1,4,1,4],"hypothesis":"H0"}
+    ],
+    "D-robustness-h0": [],
+    "D-stress-h0": [
+      {"cell_id":"DSH0-01","family":"normal","sizes":[2,2,2],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-02","family":"normal","sizes":[2,2,2,2,2],"sd":[1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-03","family":"normal","sizes":[2,5,20],"sd":[8,2,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-04","family":"normal","sizes":[2,5,20],"sd":[1,2,8],"hypothesis":"H0"},
+      {"cell_id":"DSH0-05","family":"lognormal_sigma_1p5","sizes":[5,5,5],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-06","family":"student_t_df_2p5","sizes":[5,5,5],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-07","family":"contamination_asymmetric_10pct_loc10","sizes":[10,10,10],"sd":[1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-08","family":"normal","sizes":[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],"sd":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-09","family":"lognormal_sigma_1p5","sizes":[5,10,20],"sd":[4,2,1],"hypothesis":"H0"},
+      {"cell_id":"DSH0-10","family":"student_t_df_2p5","sizes":[5,10,20],"sd":[1,2,4],"hypothesis":"H0"}
+    ],
+    "D-power-h1": [],
+    "H-core-normal": [
+      {"cell_id":"HCN-01","family":"normal","sizes":[7,7,7,7],"sd":[1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"HCN-02","family":"normal","sizes":[25,25,25,25],"sd":[1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"HCN-03","family":"normal","sizes":[7,7,7,7,7,7,7],"sd":[1,1,1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"HCN-04","family":"normal","sizes":[25,25,25,25,25,25,25],"sd":[1,1,1,1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"HCN-05","family":"normal","sizes":[6,15,40,80],"sd":[1,1,1,1],"hypothesis":"H0"},
+      {"cell_id":"HCN-06","family":"normal","sizes":[6,15,40,80],"sd":[3.5,2,1.5,1],"hypothesis":"H0"},
+      {"cell_id":"HCN-07","family":"normal","sizes":[6,15,40,80],"sd":[1,1.5,2,3.5],"hypothesis":"H0"},
+      {"cell_id":"HCN-08","family":"normal","sizes":[7,7,7,7,7,7,7],"sd":[1,2,1,3,1.5,2.5,4],"hypothesis":"H0"},
+      {"cell_id":"HCN-09","family":"normal","sizes":[7,35],"sd":[3,1],"hypothesis":"H0"},
+      {"cell_id":"HCN-10","family":"normal","sizes":[35,7],"sd":[3,1],"hypothesis":"H0"}
+    ],
+    "H-robustness": [],
+    "H-power": []
+  },
+  "e0_constraints": {
+    "engineering_only": true,
+    "statistical_evidence": false,
+    "contains_holdout_cells": false,
+    "cell_ids": ["E0-01","E0-02","E0-03","E0-04","E0-05","E0-06","E0-07","E0-08","E0-09","E0-10","E0-11","E0-12"]
+  },
+  "holdout_sealed": true,
+  "materialization_note": "Cross-product phases not embedded in this compact JSON are defined by the explicit materialization rules in the preregistration amendment file; implementations MUST produce the exact cell_id scheme defined there before parity/E0."
+}
