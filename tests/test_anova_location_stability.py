@@ -59,12 +59,26 @@ def test_large_common_offset_preserves_welch_statistic_and_pvalue():
     )
 
     if "equal_var" in inspect.signature(stats.f_oneway).parameters:
-        scipy_shifted = stats.f_oneway(*shifted, equal_var=False)
+        # SciPy's Welch path computes absolute per-group means/variances directly
+        # and is itself location-sensitive for large common offsets. Centering by
+        # one common observed origin is an exactly equivalent ANOVA problem and
+        # provides a numerically adjudicated SciPy oracle for this edge case.
+        common_origin = float(shifted[0][0])
+        centered_shifted = tuple(group - common_origin for group in shifted)
+        scipy_baseline = stats.f_oneway(*groups, equal_var=False)
+        scipy_centered = stats.f_oneway(*centered_shifted, equal_var=False)
+
+        assert scipy_centered.statistic == pytest.approx(
+            float(scipy_baseline.statistic), rel=1e-13, abs=1e-14
+        )
+        assert scipy_centered.pvalue == pytest.approx(
+            float(scipy_baseline.pvalue), rel=1e-13, abs=1e-14
+        )
         assert translated.statistic == pytest.approx(
-            float(scipy_shifted.statistic), rel=OFFSET_RTOL, abs=OFFSET_ATOL
+            float(scipy_centered.statistic), rel=OFFSET_RTOL, abs=OFFSET_ATOL
         )
         assert translated.p_value == pytest.approx(
-            float(scipy_shifted.pvalue), rel=OFFSET_RTOL, abs=OFFSET_ATOL
+            float(scipy_centered.pvalue), rel=OFFSET_RTOL, abs=OFFSET_ATOL
         )
 
 
