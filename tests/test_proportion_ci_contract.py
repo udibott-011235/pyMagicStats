@@ -47,6 +47,27 @@ def _from_counts(successes, trials, **kwargs):
     ).calculate_interval()
 
 
+CP06_PREREGISTERED_ALPHAS = (0.001, 0.005, 0.010, 0.025, 0.050, 0.100, 0.200)
+CP06_BOUNDARY_N = (1, 2, 3, 27, 200, 5_000, 7_500, 100_000, 1_000_000)
+
+
+def _precanonical_wilson(successes, trials, alpha):
+    p_hat = successes / trials
+    z_value = stats.norm.ppf(1.0 - alpha / 2.0)
+    z_squared = z_value**2
+    denominator = 1.0 + z_squared / trials
+    center = (p_hat + z_squared / (2.0 * trials)) / denominator
+    half_width = (
+        z_value
+        * np.sqrt(
+            p_hat * (1.0 - p_hat) / trials
+            + z_squared / (4.0 * trials**2)
+        )
+        / denominator
+    )
+    return max(0.0, center - half_width), min(1.0, center + half_width)
+
+
 def test_cp05_01_default_remains_wilson():
     assert PopulationProportionCI([0, 1]).calculate_interval()["method"] == "wilson"
 
@@ -234,6 +255,68 @@ def test_cp05_26_wilson_matches_scipy_on_deterministic_grid():
                 )
                 assert result["lb"] == pytest.approx(oracle.low, abs=1e-14)
                 assert result["ub"] == pytest.approx(oracle.high, abs=1e-14)
+
+
+@pytest.mark.parametrize("alpha", CP06_PREREGISTERED_ALPHAS)
+@pytest.mark.parametrize("n", CP06_BOUNDARY_N)
+def test_cp06_wilson_boundaries_are_exact_and_other_endpoints_are_unchanged(n, alpha):
+    at_zero = _from_counts(0, n, alpha=alpha, method="wilson")
+    at_one = _from_counts(n, n, alpha=alpha, method="wilson")
+    raw_zero = _precanonical_wilson(0, n, alpha)
+    raw_one = _precanonical_wilson(n, n, alpha)
+    assert at_zero["lb"] == 0.0
+    assert at_one["ub"] == 1.0
+    assert at_zero["ub"] == raw_zero[1]
+    assert at_one["lb"] == raw_one[0]
+
+
+@pytest.mark.parametrize("alpha", CP06_PREREGISTERED_ALPHAS)
+@pytest.mark.parametrize("n", CP06_BOUNDARY_N[1:])
+def test_cp06_wilson_boundary_neighbors_remain_bitwise_unchanged(n, alpha):
+    for x in {1, n - 1}:
+        result = _from_counts(x, n, alpha=alpha, method="wilson")
+        raw_lower, raw_upper = _precanonical_wilson(x, n, alpha)
+        assert result["lb"] == raw_lower
+        assert result["ub"] == raw_upper
+
+
+@pytest.mark.parametrize("alpha", CP06_PREREGISTERED_ALPHAS)
+@pytest.mark.parametrize("n", CP06_BOUNDARY_N)
+def test_cp06_wilson_canonical_boundaries_preserve_complement_symmetry(n, alpha):
+    for x in sorted({0, 1 if n > 1 else 0, n // 2, n - 1, n}):
+        direct = _from_counts(x, n, alpha=alpha, method="wilson")
+        complement = _from_counts(n - x, n, alpha=alpha, method="wilson")
+        assert abs(direct["lb"] - (1.0 - complement["ub"])) <= 1e-14
+        assert abs(direct["ub"] - (1.0 - complement["lb"])) <= 1e-14
+
+
+@pytest.mark.parametrize("alpha", CP06_PREREGISTERED_ALPHAS)
+@pytest.mark.parametrize("n", CP06_BOUNDARY_N)
+def test_cp06_wilson_canonical_boundaries_remain_within_scipy_tolerance(n, alpha):
+    for x in sorted({0, 1 if n > 1 else 0, n - 1, n}):
+        result = _from_counts(x, n, alpha=alpha, method="wilson")
+        oracle = stats.binomtest(x, n).proportion_ci(
+            confidence_level=1.0 - alpha,
+            method="wilson",
+        )
+        assert abs(result["lb"] - oracle.low) <= 1e-14
+        assert abs(result["ub"] - oracle.high) <= 1e-14
+
+
+@pytest.mark.parametrize(
+    ("n", "alpha"),
+    (
+        (3, 0.001),
+        (27, 0.05),
+        (1, 0.10),
+        (57, 0.05),
+        (7_500, 0.05),
+        (1_000_000, 0.001),
+    ),
+)
+def test_cp06_wilson_observed_boundary_regressions(n, alpha):
+    assert _from_counts(0, n, alpha=alpha, method="wilson")["lb"] == 0.0
+    assert _from_counts(n, n, alpha=alpha, method="wilson")["ub"] == 1.0
 
 
 def test_cp05_27_clopper_pearson_matches_scipy_exact_grid():

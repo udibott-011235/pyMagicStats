@@ -425,6 +425,10 @@ class PopulationProportionCI:
             )
             lb = max(0.0, center - half_width)
             ub = min(1.0, center + half_width)
+            if self.successes == 0:
+                lb = 0.0
+            if self.failures == 0:
+                ub = 1.0
         else:
             successes = int(self.successes)
             failures = int(self.failures)
