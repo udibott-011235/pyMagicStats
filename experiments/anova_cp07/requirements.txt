@@ -1,0 +1,3 @@
+# Harness-only dependencies; production dependency contract is unchanged.
+pyarrow>=14
+threadpoolctl>=3.2
