@@ -25,12 +25,24 @@ WELCH_ANOVA_METHOD_VERSION = "welch-one-way-anova-v1"
 
 @dataclass(frozen=True)
 class _GroupSummary:
-    """Sufficient per-group statistics used by both ANOVA kernels."""
+    """Translation-stable sufficient statistics for one group.
+
+    ``origin`` is one observed value. ``mean_offset`` and the variance are
+    computed after subtracting that local origin, so the inferential kernels do
+    not depend on subtracting nearly equal large absolute means.
+    """
 
     n: int
-    mean: float
+    origin: float
+    mean_offset: float
     variance: float
     ss_within: float
+
+    @property
+    def mean(self) -> float:
+        """Reconstruct the descriptive absolute mean for the public result."""
+
+        return float(self.origin + self.mean_offset)
 
 
 @dataclass(frozen=True)
@@ -73,7 +85,6 @@ class ANOVAResult:
     method_version: str
 
     def __post_init__(self) -> None:
-        # A frozen dataclass alone would still expose mutable dictionaries.
         object.__setattr__(self, "diagnostics", MappingProxyType(dict(self.diagnostics)))
         object.__setattr__(self, "components", MappingProxyType(dict(self.components)))
 
@@ -113,20 +124,39 @@ def _json_ready(value: Any) -> Any:
 
 
 def _summarize_groups(groups: Sequence[np.ndarray]) -> Tuple[_GroupSummary, ...]:
-    """Compute each group's summaries once in O(N)."""
+    """Compute translation-stable per-group summaries once in O(N)."""
 
     summaries = []
     for group in groups:
         n = int(group.size)
-        mean = float(np.mean(group))
-        variance = float(np.var(group, ddof=1))
+        origin = float(group[0])
+        centered = group - origin
+        mean_offset = float(np.mean(centered))
+        variance = float(np.var(centered, ddof=1))
         ss_within = float((n - 1) * variance)
-        if not np.isfinite(mean) or not np.isfinite(variance) or not np.isfinite(ss_within):
+        values = (origin, mean_offset, variance, ss_within)
+        if not all(np.isfinite(value) for value in values):
             raise ValueError("ANOVA group summaries must be finite")
         if variance <= 0.0 or ss_within <= 0.0:
             raise ValueError("ANOVA groups must have positive, non-degenerate variance")
-        summaries.append(_GroupSummary(n, mean, variance, ss_within))
+        summaries.append(_GroupSummary(n, origin, mean_offset, variance, ss_within))
     return tuple(summaries)
+
+
+def _relative_means(summaries: Sequence[_GroupSummary]) -> tuple[float, np.ndarray]:
+    """Express all group means relative to one observed reference location."""
+
+    reference = float(summaries[0].origin)
+    means = np.asarray(
+        [
+            (summary.origin - reference) + summary.mean_offset
+            for summary in summaries
+        ],
+        dtype=float,
+    )
+    if not np.all(np.isfinite(means)):
+        raise ValueError("ANOVA relative group means must be finite")
+    return reference, means
 
 
 def _classical_kernel(summaries: Sequence[_GroupSummary]) -> _ClassicalComputation:
@@ -142,12 +172,10 @@ def _classical_kernel(summaries: Sequence[_GroupSummary]) -> _ClassicalComputati
     if denominator_df <= 0.0:
         raise ValueError("Classical one-way ANOVA requires positive within-group degrees of freedom")
 
-    grand_mean = float(
-        sum(summary.n * summary.mean for summary in summaries) / n_total
-    )
-    ss_between = float(
-        sum(summary.n * (summary.mean - grand_mean) ** 2 for summary in summaries)
-    )
+    reference, means = _relative_means(summaries)
+    n_values = np.asarray([summary.n for summary in summaries], dtype=float)
+    grand_relative = float(np.dot(n_values, means) / n_total)
+    ss_between = float(np.sum(n_values * (means - grand_relative) ** 2))
     ss_within = float(sum(summary.ss_within for summary in summaries))
     ss_total = float(ss_between + ss_within)
     mean_square_between = float(ss_between / numerator_df)
@@ -162,7 +190,7 @@ def _classical_kernel(summaries: Sequence[_GroupSummary]) -> _ClassicalComputati
 
     components = MappingProxyType(
         {
-            "grand_mean": grand_mean,
+            "grand_mean": float(reference + grand_relative),
             "ss_between": ss_between,
             "ss_within": ss_within,
             "ss_total": ss_total,
@@ -191,15 +219,15 @@ def _welch_kernel(summaries: Sequence[_GroupSummary]) -> _WelchComputation:
         [summary.n / summary.variance for summary in summaries],
         dtype=float,
     )
-    means = np.asarray([summary.mean for summary in summaries], dtype=float)
+    reference, means = _relative_means(summaries)
     n_values = np.asarray([summary.n for summary in summaries], dtype=float)
     weight_sum = float(np.sum(weights))
     if weight_sum <= 0.0 or not np.isfinite(weight_sum) or not np.all(np.isfinite(weights)):
         raise ValueError("Welch ANOVA weights must be finite and positive")
 
-    weighted_mean = float(np.dot(weights, means) / weight_sum)
+    weighted_relative = float(np.dot(weights, means) / weight_sum)
     numerator_df = float(k - 1)
-    numerator = float(np.sum(weights * (means - weighted_mean) ** 2) / numerator_df)
+    numerator = float(np.sum(weights * (means - weighted_relative) ** 2) / numerator_df)
     welch_b = float(np.sum((1.0 - weights / weight_sum) ** 2 / (n_values - 1.0)))
     if welch_b <= 0.0 or not np.isfinite(welch_b):
         raise ValueError("Welch ANOVA correction term must be finite and positive")
@@ -213,7 +241,7 @@ def _welch_kernel(summaries: Sequence[_GroupSummary]) -> _WelchComputation:
     components = MappingProxyType(
         {
             "weights": tuple(float(value) for value in weights),
-            "weighted_mean": weighted_mean,
+            "weighted_mean": float(reference + weighted_relative),
             "welch_B": welch_b,
             "welch_correction": correction,
         }
@@ -263,8 +291,6 @@ class _BaseOneWayANOVA:
             *groups,
             independence=independence,
         )
-        # Copies prevent later mutation of caller-owned arrays from changing an
-        # already-constructed ANOVA object.
         self._groups = tuple(np.array(group, dtype=float, copy=True) for group in validation.samples)
         self.assumption_report = validation.report
         self._summaries = _summarize_groups(self._groups)
@@ -341,9 +367,6 @@ def _structural_failure_reasons(report: AssumptionReport) -> Tuple[str, ...]:
     for name, assessment in report.assessments.items():
         if assessment.status is not AssessmentStatus.FAIL:
             continue
-        # Data quality is already rejected by InferenceValidator and remains a
-        # hard failure. Shape/outlier/variance FAILs are diagnostic evidence,
-        # not automatic method switches or structural execution failures.
         if name.startswith("shape") or name.startswith("outliers") or name == "variance":
             continue
         reasons.extend(assessment.reasons)
