@@ -2,15 +2,15 @@
 
 > This document is a human-readable projection. knowledge/registry.json is canonical.
 
-Observación inicial materializada: `2026-08-30`; apertura de `BR-017`
-materializada: `2026-09-06`. Consulte `EV-003` para la evidencia Git
-reproducible inicial, `EV-005` para la integración de Gate 2, `EV-007` para la
-apertura de CP01 del Distribution Family Framework y `DEC-006` para la autoridad
-de lifecycle.
+Observación inicial materializada: `2026-08-30`; apertura de `BR-017` y cierre
+post-merge mediante `BR-018` materializados: `2026-09-06`. Consulte `EV-003`
+para la evidencia Git reproducible inicial, `EV-005` para la integración de
+Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
+`DEC-006` para la autoridad de lifecycle.
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `f1725ebdfebcb667c053420e4cb4c1e35048f9e0` | ninguna sin decisión expresa |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `46f827dd107aa9e6f940f0de085fbb91075ff049` | no modificar directamente; checkpoints posteriores requieren autorización |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -26,7 +26,8 @@ de lifecycle.
 | BR-014 | `refactor/inference-capability-routing` | `archived` | `fully_contained` | `merged` | 0/14 | `763ceeaab86f1ede85eb204a02249df0194346ba` | conservar archivada |
 | BR-015 | `refactor/inference-engine` | `archived` | `fully_contained` | `merged` | 0/22 | `2eb302f9a5ac07b57192af7d7b6451f672835ca4` | conservar archivada |
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
-| BR-017 | `feature/distribution-family-framework-cp01` | `accepted` | `contains_main` | `pending` | 2/0 | `c63b48eafc439de8857207fd21c1b593e38a3187` | esperar autorización separada para PR e integración |
+| BR-017 | `feature/distribution-family-framework-cp01` | `archived` | `fully_contained` | `merged` | 0/1 | `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` | conservar la rama remota; no borrar |
+| BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | esperar revisión de Arquitectura; sin PR, merge ni CP02/CP03 |
 
 ### Cronología de BR-017
 
@@ -39,8 +40,24 @@ de lifecycle.
   seguimiento y su push para reauditación arquitectónica.
 - Arquitectura aceptó CP01 en el candidato exacto
   `c63b48eafc439de8857207fd21c1b593e38a3187`.
-- La revisión arquitectónica está cerrada; la integración de BR-017 permanece
-  `pending` y CP02–CP08 permanecen `NOT_STARTED`.
+- El integration head `3f9acd5a51ce38ae62b9800d50efb0949c6531f0`
+  recibió `ADVERSARIAL_PASS` con cero blockers, majors y minors.
+- PR #6 integró ese head mediante el merge commit
+  `46f827dd107aa9e6f940f0de085fbb91075ff049`; BR-017 está completamente
+  contenido en `main`, queda archivado y su ref remota se preserva.
+
+### Apertura de BR-018
+
+- `docs/distribution-family-framework-cp01-post-merge` se abrió desde el
+  `main@46f827dd107aa9e6f940f0de085fbb91075ff049` exacto, con cero commits
+  únicos al abrir.
+- `head_sha_at_decision` conserva ese snapshot de apertura; no intenta
+  autorreferenciar el commit vigente de la rama.
+- El candidato inicial `8d5049ebc32ea9efbaec1e6550681810a229ff66` se
+  materializó y publicó; Arquitectura solicitó correcciones menores de
+  consistencia de gobernanza.
+- BR-018 espera revisión de Arquitectura del commit de seguimiento. No hay
+  autorización para PR, merge, CP02, CP03 ni implementación de familias.
 
 ## Supersesión Gate 2
 

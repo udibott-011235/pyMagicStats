@@ -1,9 +1,10 @@
 # DEC-010 — Distribution Family Framework architecture and contracts
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP01 — ARCHITECT_ACCEPTED / INTEGRATION_PENDING`
+- **Checkpoint:** `CP01 — COMPLETE / INTEGRATION_COMPLETE`
 - **Estado del registro:** `accepted`
 - **Candidato aceptado:** `c63b48eafc439de8857207fd21c1b593e38a3187`
+- **Integración:** PR #6, merge commit `46f827dd107aa9e6f940f0de085fbb91075ff049`
 - **Fecha:** 2026-09-06
 - **Baseline:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Owner de arquitectura:** `statistical-software-architecture`
@@ -32,8 +33,11 @@ the architectural substance. The acceptance covers:
 - selector exclusion;
 - unresolved `ARCHITECT_DECISION_REQUIRED` items.
 
-This is architectural-review acceptance only. BR-017 integration remains
-`PENDING`, and CP02–CP08 remain `NOT_STARTED`.
+Architecture accepted CP01 before integration. After an `ADVERSARIAL_PASS` on
+the unchanged integration head, PR #6 was integrated with merge commit
+`46f827dd107aa9e6f940f0de085fbb91075ff049`. CP01 and its integration are
+`COMPLETE`; the stage remains `in_progress`, and CP02–CP08 remain
+`NOT_STARTED`.
 
 ## 1. Purpose and non-goals
 

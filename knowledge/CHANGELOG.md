@@ -19,6 +19,15 @@
   `c63b48eafc439de8857207fd21c1b593e38a3187`; DEC-009, DEC-010 y EV-007 pasan
   a `accepted`, mientras la integración de BR-017 permanece `pending` y
   CP02–CP08 permanecen `NOT_STARTED`.
+- Antigravity emite `ADVERSARIAL_PASS` para PR #6 en el integration head
+  `3f9acd5a51ce38ae62b9800d50efb0949c6531f0`, con cero `BLOCKER`, `MAJOR` y
+  `MINOR`.
+- PR #6 se integra mediante el merge commit
+  `46f827dd107aa9e6f940f0de085fbb91075ff049`; CP01 y su integración pasan a
+  `COMPLETE`, BR-017 queda `archived`/`merged` y CP02–CP08 permanecen
+  `NOT_STARTED`.
+- Se abre `BR-018` desde el nuevo `main@46f827d…` exclusivamente para
+  materializar el cierre de gobernanza post-merge de CP01.
 
 ## 2026-08-30 — KB v1.3
 

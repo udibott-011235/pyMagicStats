@@ -1,10 +1,12 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP01 — ARCHITECT_ACCEPTED / INTEGRATION_PENDING`
+- **Checkpoint actual:** `CP01 — COMPLETE / INTEGRATION_COMPLETE`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
-- **Rama de trabajo:** `feature/distribution-family-framework-cp01`
+- **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
+- **Rama actual de gobernanza post-merge:** `docs/distribution-family-framework-cp01-post-merge`
+- **Rama de implementación de CP02:** `NONE / NOT_STARTED`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación documental:** `implementation-engineering`
@@ -25,7 +27,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 
 | Checkpoint | Estado | Resultado esperado |
 |---|---|---|
-| CP01 — Family architecture and contracts | `ARCHITECT_ACCEPTED` | Revisión arquitectónica aceptada; integración de rama pendiente |
+| CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
 | CP02 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -87,6 +89,15 @@ asigna una categoría de migración futura, pero no ejecuta ninguna migración.
    `c63b48eafc439de8857207fd21c1b593e38a3187`.
 6. La aceptación cierra la revisión arquitectónica de CP01, pero no integra la
    rama ni autoriza PR, merge, CP02, CP03 o implementación.
+7. Antigravity auditó PR #6 en el integration head
+   `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` y emitió `ADVERSARIAL_PASS`,
+   con cero `BLOCKER`, `MAJOR` y `MINOR`.
+8. PR #6 se integró mediante el merge commit
+   `46f827dd107aa9e6f940f0de085fbb91075ff049`, con parents
+   `402e4601df460811779b3238c2526ac12f463a67` y
+   `3f9acd5a51ce38ae62b9800d50efb0949c6531f0`.
+9. La integración completó CP01 sin cambiar comportamiento de producción ni
+   autorizar checkpoints posteriores.
 
 ## Dependencias y límites
 
@@ -98,13 +109,12 @@ nuevas familias.
 
 ## Estado de cierre arquitectónico de CP01
 
-La revisión arquitectónica de CP01 está `ARCHITECT_ACCEPTED` en el candidato
-exacto `c63b48eafc439de8857207fd21c1b593e38a3187`. La integración de BR-017
-permanece `PENDING`; CP01 no se considera merged ni integrado a `main`.
-CP02–CP08 permanecen `NOT_STARTED` y requieren autorización independiente.
+CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
+`main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
+`in_progress` porque CP02–CP08 permanecen `NOT_STARTED` y requieren
+autorización independiente.
 
 ## Siguiente acción
 
-Esperar autorización separada para PR e integración de BR-017. No crear PR,
-integrar la rama, iniciar CP02/CP03 ni implementar familias sin esa
-autorización.
+Arquitectura debe revisar el commit de cierre post-merge de CP01. No iniciar
+CP02/CP03 ni implementar familias sin autorización independiente.
