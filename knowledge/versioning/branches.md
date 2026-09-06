@@ -2,9 +2,11 @@
 
 > This document is a human-readable projection. knowledge/registry.json is canonical.
 
-Observación materializada: `2026-08-30`. Consulte `EV-003` para la evidencia
-Git reproducible, `EV-005` para la integración de Gate 2 y `DEC-006` para la
-autoridad de lifecycle.
+Observación inicial materializada: `2026-08-30`; apertura de `BR-017`
+materializada: `2026-09-06`. Consulte `EV-003` para la evidencia Git
+reproducible inicial, `EV-005` para la integración de Gate 2, `EV-007` para la
+apertura de CP01 del Distribution Family Framework y `DEC-006` para la autoridad
+de lifecycle.
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
@@ -24,6 +26,7 @@ autoridad de lifecycle.
 | BR-014 | `refactor/inference-capability-routing` | `archived` | `fully_contained` | `merged` | 0/14 | `763ceeaab86f1ede85eb204a02249df0194346ba` | conservar archivada |
 | BR-015 | `refactor/inference-engine` | `archived` | `fully_contained` | `merged` | 0/22 | `2eb302f9a5ac07b57192af7d7b6451f672835ca4` | conservar archivada |
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
+| BR-017 | `feature/distribution-family-framework-cp01` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `402e4601df460811779b3238c2526ac12f463a67` | crear candidato documental local y detenerse para revisión de Arquitectura |
 
 ## Supersesión Gate 2
 

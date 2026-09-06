@@ -12,6 +12,9 @@ Decisiones iniciales indexadas:
 - `DEC-004`: bootstrap explícito, reproducible y fiel al estimando.
 - `DEC-005`: no transferir calibración de una media a ANOVA sin evidencia
   específica.
+- `DEC-006`: gobernanza del lifecycle de ramas por Product Owner y Arquitectura.
+- `DEC-009`: apertura y checkpoints de `STAGE-DIST-FAMILIES-001`.
+- `DEC-010`: arquitectura y contratos del Distribution Family Framework.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
 

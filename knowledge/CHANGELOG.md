@@ -1,5 +1,16 @@
 # Historial de la base de conocimiento
 
+## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP01
+
+- Se abre `STAGE-DIST-FAMILIES-001` desde
+  `main@402e4601df460811779b3238c2526ac12f463a67` y se registra `BR-017`.
+- Se materializan `DEC-009` (estado/checkpoints) y `DEC-010` (arquitectura y
+  contratos congelados) para el Distribution Family Framework.
+- Se añade `EV-007` con el inventario de compatibilidad de la superficie actual
+  y la evidencia de validación de CP01.
+- CP01 modifica sólo `knowledge/**`; no implementa familias, fitting, GOF,
+  selección automática ni cambios de producción.
+
 ## 2026-08-30 — KB v1.3
 
 - Se registra la integración controlada de PR #1 (`docs/project-knowledge-base`) y PR #3 (`fix/gate2-adversarial-remediation`) en `main` (`f1725ebdfebcb667c053420e4cb4c1e35048f9e0`).
