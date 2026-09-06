@@ -1,0 +1,9 @@
+{
+  "action": "open-holdout",
+  "authorized_by": "Product Owner",
+  "harness_sha": "b211dcd61be02a234386947305bc1a1c9cfffde7",
+  "manifest_sha256": "affa3a1ae3c02b8081d0bdc761e6ce3725bb736899b0d2771d5d185530c0262a",
+  "phase_d_complete": true,
+  "remediations_closed": true,
+  "candidate_frozen": true
+}
