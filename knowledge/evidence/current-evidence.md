@@ -93,10 +93,14 @@ Fuente canónica:
 - **Baseline:** `main@ccff392af13d2cb52d1f3888a986ef58be0099e2`
 - **Rama:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Contrato:** `DEC-011`
-- **Demuestra al abrir:** identidad de baseline, árbol limpio, registro válido y
-  49 regresiones congeladas antes de implementar.
-- **Pendiente:** código, nuevos tests, evidencia de paridad SciPy y SHA candidato
-  local.
+- **Evidencia de apertura:** identidad de baseline, árbol limpio, registro
+  válido y 49 regresiones congeladas antes de implementar.
+- **Evidencia de implementación:** 277 tests CP02, 49 regresiones congeladas y
+  326 tests en la superficie de distribución combinada; paridad directa con
+  SciPy para Gamma/Exponential, RNG explícito y compatibilidad de exports.
+- **Candidato:** commit local de implementación identificado en el handoff; no
+  publicado.
+- **Demuestra:** mecánica determinista y contrato API en el entorno registrado.
 - **No demuestra:** fitting, estimación, GOF, calibración, selección automática
   ni autorización de CP03.
 

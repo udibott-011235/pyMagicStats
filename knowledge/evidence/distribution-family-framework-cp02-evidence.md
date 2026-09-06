@@ -53,10 +53,89 @@ empirical-likelihood, sampling-robustness, B3/UAT1, Gate-2 policy and
 
 ## Implementation evidence
 
-Pending completion in the implementation commit.
+Implemented surface:
+
+```text
+pyMagicStat/distributions/__init__.py
+pyMagicStat/distributions/families/__init__.py
+pyMagicStat/distributions/families/_core.py
+pyMagicStat/distributions/families/continuous.py
+tests/test_distribution_family_core.py
+tests/test_continuous_distribution_families.py
+```
+
+Observed implementation facts:
+
+- `GammaFamily` and `ExponentialFamily` are slot-only stateless descriptors;
+- each `bind()` call creates a separate frozen family-specific parameter object
+  inside a frozen `ParameterizedContinuousDistribution`;
+- both supports are immutable `[0, +inf)` continuous supports;
+- Gamma delegates exactly to `scipy.stats.gamma(a=shape, loc=0, scale=scale)`;
+- Exponential delegates exactly to `scipy.stats.expon(loc=0, scale=scale)`;
+- scalar results normalize to Python `float`, while array-like results preserve
+  shape as `numpy.ndarray` with `float64` dtype;
+- finite out-of-support query points are delegated without clipping;
+- query/quantile validation rejects empty, nonnumeric and non-finite inputs;
+- integer seeds create local NumPy generators; caller-owned generators are
+  passed directly and advance; no process-global NumPy RNG state is consumed;
+- no fitting, GOF, selection or discrete-family surface was introduced.
+
+Environment:
+
+```text
+Python 3.12.14
+NumPy 2.5.2
+SciPy 1.18.1
+pandas 3.0.5
+pytest 9.1.1
+OS: Windows
+```
+
+Validation results:
+
+```text
+python -m pytest -q \
+  tests/test_distribution_family_core.py \
+  tests/test_continuous_distribution_families.py
+PASS — 277 passed in 5.05s
+
+python -m pytest -q \
+  tests/test_distribution_shape_contract.py \
+  tests/test_distribution_integration.py \
+  tests/test_distribution_gof_remediation.py
+PASS — 49 passed in 5.09s
+
+python -m pytest -q \
+  tests/test_distribution_shape_contract.py \
+  tests/test_distribution_integration.py \
+  tests/test_distribution_gof_remediation.py \
+  tests/test_distribution_family_core.py \
+  tests/test_continuous_distribution_families.py
+PASS — 326 passed in 5.95s
+
+python -m pytest -q
+OBSERVED — 564 passed, 3 skipped, 2 failed in 16.79s
+```
+
+The two full-suite failures are pre-existing knowledge-test drift outside the
+CP02 implementation surface. At the exact baseline, `registry.json` already
+contains 18 branch records while `tests/test_knowledge_base.py` asserts 16,
+and baseline `BR-001.head_sha_at_decision` is `46f827dd...` while that test
+asserts the older `f1725eb...`. CP02 adds `BR-019`, bringing the observed count
+to 19, but does not alter the stale test or prior branch records. The registry's
+canonical validator passes independently.
+
+The registry validator, final diff check and path audits are recorded in the
+handoff after the complete two-commit candidate is assembled. The candidate
+SHA is the implementation commit containing this record and is reported in the
+handoff; no self-referential SHA field is maintained.
 
 ## Limitations
 
-The opening baseline and a green regression suite do not demonstrate the
-correctness of code not yet implemented and do not constitute statistical
-calibration.
+The tests establish deterministic API/backend parity only for the declared
+Gamma and Exponential parameterizations in the recorded environment. They do
+not validate estimators, fitted-family behavior, GOF, calibration, family
+selection, other backends or later families.
+
+The stale knowledge-test assertions remain an out-of-scope repository risk;
+they do not fail within the frozen or complete distribution-related surfaces.

@@ -344,7 +344,11 @@
       "scope": "Stateless continuous family core, immutable manual parameterization, GammaFamily and ExponentialFamily for STAGE-DIST-FAMILIES-001 / CP02",
       "path": "knowledge/decisions/distribution-family-framework-cp02-contract.md",
       "evidence_paths": [
-        "knowledge/evidence/distribution-family-framework-cp02-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/continuous.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py"
       ],
       "owner_role": "statistical-software-architecture",
       "reviewer_roles": [
@@ -363,7 +367,12 @@
       "scope": "Deterministic API, SciPy parity, immutable state, RNG and compatibility evidence for STAGE-DIST-FAMILIES-001 / CP02",
       "path": "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
       "evidence_paths": [
-        "knowledge/decisions/distribution-family-framework-cp02-contract.md"
+        "knowledge/decisions/distribution-family-framework-cp02-contract.md",
+        "pyMagicStat/distributions/families/__init__.py",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/continuous.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py"
       ],
       "owner_role": "implementation-engineering",
       "reviewer_roles": [

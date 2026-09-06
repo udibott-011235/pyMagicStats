@@ -130,6 +130,6 @@ evidencia asociada. CP03–CP08 permanecen `NOT_STARTED`.
 
 ## Siguiente acción
 
-Cortex debe implementar `DEC-011`, validar el candidato local y entregar sus
-dos commits a Arquitectura/Antigravity. No hay autorización de push, PR, merge
-ni de inicio de CP03.
+Cortex debe entregar los dos commits locales de CP02 y su evidencia reproducible
+a Arquitectura/Antigravity para revisión. No hay autorización de push, PR,
+merge ni de inicio de CP03.

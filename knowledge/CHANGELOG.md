@@ -8,6 +8,11 @@
   `GammaFamily` y `ExponentialFamily`.
 - Se abre `EV-008` para registrar implementación, paridad SciPy, RNG,
   compatibilidad y validaciones del candidato local.
+- Se implementan descriptores stateless, parámetros y distribuciones
+  parametrizadas inmutables, soporte matemático explícito y las familias Gamma
+  y Exponential mediante delegación a SciPy.
+- La nueva superficie registra 277 tests CP02; las 49 regresiones congeladas y
+  los 326 tests combinados de distribución pasan sin modificar clases legacy.
 - CP03–CP08 permanecen `NOT_STARTED`; no se autoriza fitting, GOF, selección,
   familias discretas, push, PR o merge.
 
