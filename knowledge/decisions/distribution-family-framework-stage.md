@@ -4,7 +4,9 @@
 - **Checkpoint actual:** `CP01 — COMPLETE / INTEGRATION_COMPLETE`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
-- **Rama de trabajo:** `feature/distribution-family-framework-cp01`
+- **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
+- **Rama actual de gobernanza post-merge:** `docs/distribution-family-framework-cp01-post-merge`
+- **Rama de implementación de CP02:** `NONE / NOT_STARTED`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación documental:** `implementation-engineering`

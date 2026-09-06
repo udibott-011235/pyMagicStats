@@ -27,7 +27,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-015 | `refactor/inference-engine` | `archived` | `fully_contained` | `merged` | 0/22 | `2eb302f9a5ac07b57192af7d7b6451f672835ca4` | conservar archivada |
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
 | BR-017 | `feature/distribution-family-framework-cp01` | `archived` | `fully_contained` | `merged` | 0/1 | `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` | conservar la rama remota; no borrar |
-| BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | crear candidato de cierre y detenerse para revisión de Arquitectura |
+| BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | esperar revisión de Arquitectura; sin PR, merge ni CP02/CP03 |
 
 ### Cronología de BR-017
 
@@ -51,8 +51,13 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 - `docs/distribution-family-framework-cp01-post-merge` se abrió desde el
   `main@46f827dd107aa9e6f940f0de085fbb91075ff049` exacto, con cero commits
   únicos al abrir.
-- Su único propósito es materializar el cierre post-merge de CP01; no autoriza
-  CP02, CP03 ni implementación de familias.
+- `head_sha_at_decision` conserva ese snapshot de apertura; no intenta
+  autorreferenciar el commit vigente de la rama.
+- El candidato inicial `8d5049ebc32ea9efbaec1e6550681810a229ff66` se
+  materializó y publicó; Arquitectura solicitó correcciones menores de
+  consistencia de gobernanza.
+- BR-018 espera revisión de Arquitectura del commit de seguimiento. No hay
+  autorización para PR, merge, CP02, CP03 ni implementación de familias.
 
 ## Supersesión Gate 2
 

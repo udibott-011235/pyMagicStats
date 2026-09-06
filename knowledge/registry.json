@@ -397,11 +397,11 @@
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Product Owner authorized a new branch from exact main@46f827d solely to materialize post-merge CP01 governance; CP02 remains unauthorized.",
+        "decision_reason": "Product Owner authorized a new branch from exact main@46f827d solely to materialize post-merge CP01 governance; head_sha_at_decision records that branch-opening snapshot and CP02 remains unauthorized.",
         "merge_base": "46f827dd107aa9e6f940f0de085fbb91075ff049",
         "parent_branch": "main",
         "parent_sha": "46f827dd107aa9e6f940f0de085fbb91075ff049",
-        "next_action": "Create and push one governance-only closure candidate, then stop for Architecture review without PR, merge or CP02 work."
+        "next_action": "Await Architecture review of the post-merge governance closure candidate; no PR, merge, CP02, CP03 or family implementation is authorized."
       }
     },
     {
