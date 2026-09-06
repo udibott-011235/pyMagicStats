@@ -72,6 +72,10 @@ Fuente canónica: `knowledge/evidence/gate2-integration-f1725eb.md`.
   la suite de regresión de distribuciones sin cambios de producción.
 - **No demuestra:** aprobación arquitectónica final, implementación de familias,
   validez de estimadores, calibración GOF ni autorización de CP02.
+- **Revisión arquitectónica:** `72ecdba…` queda preservado como primer
+  candidato; el seguimiento documental aclara sampling reproducible,
+  ownership del ajuste, semántica Negative Binomial, compatibility cores,
+  cronología de publicación y límites GOF simple/compuesto.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp01-evidence.md`.

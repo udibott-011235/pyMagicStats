@@ -61,16 +61,28 @@ asigna una categoría de migración futura, pero no ejecuta ninguna migración.
 3. El backend numérico predeterminado será SciPy; pyMagicStats conserva el
    contrato, la parametrización, la validación, la trazabilidad y el
    comportamiento fail-closed.
-4. Las familias continuas y discretas exponen operaciones coherentes con su
+4. El muestreo exige RNG controlable por el caller y estado reproducible; no se
+   autoriza RNG global implícito.
+5. Las familias continuas y discretas exponen operaciones coherentes con su
    tipo; no se crean métodos artificiales para uniformar interfaces.
-5. El soporte es explícito e independiente de los datos observados.
-6. Una distribución ajustada es inmutable desde la perspectiva del usuario.
-7. Los estados semánticamente distintos no se reducen a `NaN`.
-8. No hay selección automática de familia, ranking de modelos ni cambios a
+6. El soporte es explícito e independiente de los datos observados.
+7. Una distribución ajustada es inmutable desde la perspectiva del usuario.
+8. Los estados semánticamente distintos no se reducen a `NaN`.
+9. No hay selección automática de familia, ranking de modelos ni cambios a
    `MethodSelector` en este stage.
-9. Las decisiones de estimación y calibración reservadas permanecen como
+10. Las decisiones de estimación y calibración reservadas permanecen como
    `ARCHITECT_DECISION_REQUIRED`.
-10. Cada checkpoint posterior requiere autorización independiente.
+11. Cada checkpoint posterior requiere autorización independiente.
+
+## Cronología de revisión
+
+1. El candidato `72ecdba1b60d9efb53dfe612cf7ee4beeb3e76e5` se creó
+   localmente bajo la regla inicial de handoff sin push.
+2. Después de `READY_FOR_ARCHITECT_REVIEW`, Arquitectura autorizó por separado
+   el push de ese SHA exacto únicamente para revisar su contenido versionado.
+3. Ese push no autorizó PR, merge, CP02, CP03 ni implementación.
+4. La primera revisión arquitectónica conservó `72ecdba…` y solicitó un único
+   commit documental de seguimiento con aclaraciones A–F.
 
 ## Dependencias y límites
 

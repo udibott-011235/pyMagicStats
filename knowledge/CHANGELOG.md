@@ -10,6 +10,11 @@
   y la evidencia de validación de CP01.
 - CP01 modifica sólo `knowledge/**`; no implementa familias, fitting, GOF,
   selección automática ni cambios de producción.
+- La revisión arquitectónica de `72ecdba…` conserva ese primer candidato y
+  aclara el contrato de sampling/RNG, ownership entre `FitResult` y
+  `FittedDistribution`, semántica de Negative Binomial para `r` no entero,
+  compatibilidad futura mediante `BinomialFamily`/`PoissonFamily`, cronología
+  del push de revisión y distinción GOF entre null simple y compuesto.
 
 ## 2026-08-30 — KB v1.3
 

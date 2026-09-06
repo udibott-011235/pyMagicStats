@@ -28,6 +28,16 @@ de lifecycle.
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
 | BR-017 | `feature/distribution-family-framework-cp01` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `402e4601df460811779b3238c2526ac12f463a67` | crear candidato documental local y detenerse para revisión de Arquitectura |
 
+### Cronología de BR-017
+
+- La rama se abrió localmente en el baseline registrado y produjo
+  `72ecdba1b60d9efb53dfe612cf7ee4beeb3e76e5` bajo una regla sin push.
+- Arquitectura autorizó posteriormente el push de ese SHA exacto sólo para
+  revisión independiente de su contenido versionado.
+- El push no autorizó PR, merge, CP02, CP03 ni implementación.
+- La revisión preservó `72ecdba…` y autorizó un único commit documental de
+  seguimiento y su push para reauditación arquitectónica.
+
 ## Supersesión Gate 2
 
 ```text

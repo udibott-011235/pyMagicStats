@@ -290,7 +290,7 @@
       "kind": "decision",
       "title": "Distribution Family Framework architecture and contracts",
       "status": "under_review",
-      "scope": "Conceptual family, support, fit, result, compatibility and future validation contracts for STAGE-DIST-FAMILIES-001",
+      "scope": "Conceptual family probability and sampling API, support, fit ownership, result, compatibility and future GOF validation contracts for STAGE-DIST-FAMILIES-001",
       "path": "knowledge/decisions/distribution-family-framework-contract.md",
       "evidence_paths": [
         "knowledge/evidence/distribution-family-framework-cp01-evidence.md",
@@ -314,7 +314,7 @@
       "kind": "evidence",
       "title": "Distribution Family Framework CP01 materialization and current-surface census",
       "status": "under_review",
-      "scope": "Contract transcription, compatibility census and regression evidence at main@402e460",
+      "scope": "Contract transcription, compatibility census, Architect-review refinements and regression evidence at main@402e460",
       "path": "knowledge/evidence/distribution-family-framework-cp01-evidence.md",
       "evidence_paths": [
         "pyMagicStat/distributions/__init__.py",
@@ -365,7 +365,7 @@
         "merge_base": "402e4601df460811779b3238c2526ac12f463a67",
         "parent_branch": "main",
         "parent_sha": "402e4601df460811779b3238c2526ac12f463a67",
-        "next_action": "Create the local CP01 documentation candidate, then stop for Architecture review without push, PR or merge."
+        "next_action": "Preserve 72ecdba as the first review candidate; create and push one follow-up documentation commit solely for Architecture re-review, without PR, merge, CP02, CP03 or implementation."
       }
     },
     {

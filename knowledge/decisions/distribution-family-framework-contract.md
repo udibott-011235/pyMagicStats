@@ -91,8 +91,11 @@ support
 parameter_specs
 validate_parameters(...)
 cdf(...)
+logcdf(...)
 sf(...)
+logsf(...)
 ppf(...)
+rvs(..., rng=...)
 theoretical_mean(...)
 theoretical_variance(...)
 ```
@@ -112,7 +115,9 @@ SciPy normally owns:
 
 - `pdf` and `logpdf` for continuous families;
 - `pmf` and `logpmf` for discrete families;
-- `cdf`, `sf`, `ppf` and numerical probability calculations;
+- `cdf`, `logcdf`, `sf`, `logsf`, `ppf` and numerical probability
+  calculations;
+- numerical random-variate generation;
 - mature fitting primitives where statistically appropriate.
 
 pyMagicStats owns:
@@ -122,8 +127,14 @@ pyMagicStats owns:
 - stable API and result contracts;
 - provenance, backend identity and version metadata;
 - fit interpretation and reproducibility;
+- caller-injected RNG contracts and random-state provenance;
 - fail-closed behavior;
 - GOF contracts in their separate assessment layer.
+
+No implicit process-global RNG is authorized. The future exact Python RNG API
+remains implementation-reviewable, but callers must be able to inject and
+control reproducible RNG state. The `rvs(..., rng=...)` operation is required
+for later simulation, calibration and possible parametric-bootstrap procedures.
 
 ## 7. Support contract
 
@@ -140,7 +151,8 @@ round, discard or coerce out-of-support observations.
 
 ## 8. Fitted-distribution contract
 
-The future immutable `FittedDistribution` represents:
+The future immutable `FittedDistribution` is the authoritative representation
+of:
 
 - family identity;
 - canonical parameters;
@@ -152,20 +164,25 @@ It delegates probability operations to the family/backend using frozen
 parameters. It is immutable from the user perspective and remains conceptually
 separate from the fitting operation, raw sample descriptives and GOF.
 
-The approved high-level fitting direction is `family.fit(data, ...)`, because
-the family owns parameterization, support, validation and backend conversion.
-Internal fitting helpers may use composition. A separate global fitter
-registry is not part of the first implementation.
+The approved high-level fitting direction is:
+
+```text
+family.fit(data, ...) -> FitResult
+FitResult.fitted_distribution -> FittedDistribution
+```
+
+The family owns parameterization, support, validation and backend conversion.
+`FitResult` contains one canonical `fitted_distribution`; it must not maintain
+independent duplicated authoritative family, parameter, parameterization or
+support state. Internal fitting helpers may use composition. A separate global
+fitter registry is not part of the first implementation.
 
 ## 9. FitResult contract
 
 The future immutable `FitResult` must represent:
 
 ```text
-family
-parameters
-parameterization
-support
+fitted_distribution
 estimation_method
 fixed_parameters
 estimated_parameters
@@ -179,6 +196,14 @@ backend
 backend_version
 metadata
 ```
+
+`FittedDistribution` owns family identity, canonical fitted parameters,
+parameterization, support and backend identity. `FitResult` owns information
+about the fitting process. Convenience accessors may later expose family,
+parameters or support through `fitted_distribution`, but they must not create a
+second authoritative copy. Backend/version provenance may appear in
+`FitResult` where needed while backend identity remains part of the fitted
+distribution.
 
 Not every metric applies to every family. Semantically different states must
 not be collapsed into `NaN`. At minimum, the contract preserves:
@@ -202,6 +227,18 @@ the same sample does not automatically produce a calibrated p-value. GOF
 calibration for fitted families belongs to `STAGE-DIST-FAMILIES-001 / CP05`.
 Existing Binomial/Poisson Gate-2 behavior is not generalized automatically.
 
+CP05 must distinguish:
+
+```text
+simple null:    H0: X ~ F(theta0), theta0 known
+composite null: H0: X ~ F(theta), theta estimated from the analyzed sample
+```
+
+A nominal GOF reference distribution valid for the simple-null case must not
+be assumed valid for the composite-null case. Exact family-specific EDF, CvM,
+AD or bootstrap methodology remains `ARCHITECT_DECISION_REQUIRED`; this
+contract selects no universal GOF test.
+
 ## 11. Family roadmap
 
 | Wave | Families | Status in CP01 |
@@ -211,6 +248,30 @@ Existing Binomial/Poisson Gate-2 behavior is not generalized automatically.
 | Wave 3 / later | Logistic, Log-Logistic, Beta-Binomial, zero-inflated count models | Deferred |
 
 The roadmap is prioritization only and creates no implementation authorization.
+
+### Existing-family core compatibility track
+
+Separate from the wave roadmap, future `BinomialFamily` and `PoissonFamily`
+cores will provide probability-family operations beneath the validated legacy
+`BinomialDistribution` and `PoissonDistribution` surfaces.
+
+Conceptually:
+
+```text
+legacy BinomialDistribution
+    -> preserved legacy GOF/diagnostics
+    -> BinomialFamily for probability-family operations
+
+legacy PoissonDistribution
+    -> preserved legacy GOF/diagnostics
+    -> PoissonFamily for probability-family operations
+```
+
+This compatibility track does not authorize implementation in CP01, modify
+legacy APIs or Gate-2 behavior, transfer Gate-2 calibration to other families,
+or deprecate existing classes. `NormalDistribution` and
+`LognormalDistribution` remain `MIGRATE_LATER` and are not silently converted
+into family objects.
 
 ## 12. Parameterization matrix
 
@@ -252,8 +313,10 @@ scipy.stats.expon(loc=0, scale=scale)
 ### NegativeBinomialFamily
 
 Canonical parameters are dispersion `r > 0` and success probability
-`0 < p <= 1`. `X` counts failures before `r` successes and has support
-`{0, 1, 2, ...}`.
+`0 < p <= 1`; `r` is not restricted to integers. For integer `r`, the family
+admits the classical interpretation that `X` counts failures before `r`
+successes. For non-integer `r`, `r` is a positive generalized shape/dispersion
+parameter. Support remains `{0, 1, 2, ...}`.
 
 The public canonical parameter is `r`, not `n`, because sample size already
 uses `n` throughout the framework. Backend conversion is:
@@ -311,7 +374,8 @@ The following questions remain deliberately unresolved:
 2. Whether additional estimators become public.
 3. Finite-sample estimator behavior.
 4. Parameter uncertainty.
-5. Fitted-family GOF calibration.
+5. Exact family-specific fitted-family GOF calibration, including EDF, CvM, AD
+   and bootstrap methodology.
 6. Optimization convergence policy.
 7. Boundary estimates.
 8. Discrete-family estimation rules.
@@ -339,8 +403,10 @@ Future implementation checkpoints must define, before claiming readiness:
 - fixed-versus-estimated parameter accounting;
 - convergence, warning and semantic-state propagation;
 - reproducibility and backend-version metadata;
+- caller-controlled RNG reproducibility without process-global state;
 - family-specific fitting validation after the reserved estimator decisions;
-- separate preregistered GOF calibration in CP05.
+- separate preregistered GOF calibration in CP05, with simple and composite
+  nulls treated explicitly.
 
 Tests must distinguish software accuracy from statistical calibration. Passing
 backend-oracle tests does not validate estimation or GOF claims.
@@ -352,8 +418,8 @@ backend-oracle tests does not validate estimation or GOF claims.
 | `Distribution` | Sample snapshot and descriptives with legacy assessment storage | `KEEP_AS_IS` | The sample-description role remains distinct from probability families; legacy fields require no CP01 change |
 | `NormalDistribution` | Exact-normality/shape and Q-Q diagnostic | `MIGRATE_LATER` | Its name conflicts semantically with family terminology, but compatibility forbids a CP01 rename or behavior change |
 | `LognormalDistribution` | Diagnostic of Gaussianity after log transform | `MIGRATE_LATER` | It is an assessment rather than a fitted family and needs a future diagnostic-layer migration |
-| `BinomialDistribution` | Discrete validation, Pearson GOF, approximation diagnostic and moments helper | `WRAP_NEW_CORE` | A future wrapper can preserve the legacy surface while delegating family operations and keeping GOF separate |
-| `PoissonDistribution` | Discrete validation, Pearson GOF and approximation diagnostic | `WRAP_NEW_CORE` | A future wrapper can preserve compatibility while delegating family operations and isolating GOF |
+| `BinomialDistribution` | Discrete validation, Pearson GOF, approximation diagnostic and moments helper | `WRAP_NEW_CORE` | A future wrapper can preserve the legacy surface while delegating probability operations to `BinomialFamily` and keeping GOF separate |
+| `PoissonDistribution` | Discrete validation, Pearson GOF and approximation diagnostic | `WRAP_NEW_CORE` | A future wrapper can preserve compatibility while delegating probability operations to `PoissonFamily` and isolating GOF |
 
 No class is marked `DEPRECATE_LATER` in CP01 because the approved contract
 requires compatibility and does not yet authorize removal. These

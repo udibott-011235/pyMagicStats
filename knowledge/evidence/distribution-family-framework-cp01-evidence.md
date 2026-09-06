@@ -34,6 +34,35 @@ status = clean
 The separate `audit/uat1-distribution-gof-census` candidate was not used as a
 parent and was not modified.
 
+## Review genealogy
+
+1. `72ecdba1b60d9efb53dfe612cf7ee4beeb3e76e5` was created locally
+   under the original no-push CP01 handoff rule.
+2. Architecture subsequently authorized that exact candidate to be pushed
+   solely so its committed content could be reviewed independently.
+3. The push did not authorize a PR, merge, CP02, CP03 or implementation.
+4. Architecture accepted the structural materialization and validation
+   evidence, retained `72ecdba…` as the first review candidate, and requested
+   one follow-up documentation/governance commit.
+
+## Architect review refinements
+
+The follow-up preserves the original architecture and adds six clarifications:
+
+- shared probability-family operations include log-domain CDF/survival
+  operations and caller-controlled reproducible sampling;
+- `family.fit(...)` returns `FitResult`, whose canonical
+  `fitted_distribution` owns fitted family state without duplication;
+- non-integer negative-binomial `r` is a generalized positive
+  shape/dispersion parameter, while the classical successes interpretation is
+  limited to integer `r`;
+- future `BinomialFamily` and `PoissonFamily` cores form a separate
+  compatibility track beneath preserved legacy GOF/diagnostic surfaces;
+- the branch chronology distinguishes local creation from the later
+  review-only push authorization;
+- CP05 distinguishes simple and composite GOF nulls without selecting a
+  universal method.
+
 ## Current import and export boundary
 
 Observed facts:
@@ -129,6 +158,20 @@ PASS — zero forbidden terms introduced
 incorrect baseline SHA scan
 PASS — zero occurrences
 ```
+
+Architect-review follow-up validation:
+
+```text
+registry validator: PASS
+distribution regression set: PASS — 49 passed in 6.64s
+git diff --check: PASS
+changed-path audit: PASS — 7 paths, all under knowledge/**
+prohibited-track audit: PASS — zero prohibited paths changed
+new-line domain-term scan: PASS — zero forbidden terms introduced
+```
+
+No production evidence is transferred or reinterpreted by these documentation
+changes.
 
 The selected distribution regression set is:
 
