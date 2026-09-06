@@ -1,7 +1,7 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP01 — READY_FOR_ARCHITECT_REVIEW`
+- **Checkpoint actual:** `CP01 — ARCHITECT_ACCEPTED / INTEGRATION_PENDING`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de trabajo:** `feature/distribution-family-framework-cp01`
@@ -25,7 +25,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 
 | Checkpoint | Estado | Resultado esperado |
 |---|---|---|
-| CP01 — Family architecture and contracts | `READY_FOR_ARCHITECT_REVIEW` | Contrato congelado, inventario de compatibilidad, evidencia y registro canónico |
+| CP01 — Family architecture and contracts | `ARCHITECT_ACCEPTED` | Revisión arquitectónica aceptada; integración de rama pendiente |
 | CP02 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -83,6 +83,10 @@ asigna una categoría de migración futura, pero no ejecuta ninguna migración.
 3. Ese push no autorizó PR, merge, CP02, CP03 ni implementación.
 4. La primera revisión arquitectónica conservó `72ecdba…` y solicitó un único
    commit documental de seguimiento con aclaraciones A–F.
+5. Arquitectura revisó y aceptó el candidato exacto
+   `c63b48eafc439de8857207fd21c1b593e38a3187`.
+6. La aceptación cierra la revisión arquitectónica de CP01, pero no integra la
+   rama ni autoriza PR, merge, CP02, CP03 o implementación.
 
 ## Dependencias y límites
 
@@ -92,19 +96,15 @@ Manual UAT1 B3. Tampoco transfiere evidencia desde ANOVA, intervalos de
 proporción, empirical likelihood, robustez de muestreo o Gate 2 hacia las
 nuevas familias.
 
-## Criterio de salida de CP01
+## Estado de cierre arquitectónico de CP01
 
-CP01 queda listo para revisión arquitectónica cuando:
-
-1. el contrato y el inventario contienen todas las decisiones congeladas;
-2. el registry y la proyección de branch lifecycle son válidos;
-3. los tests de distribución existentes permanecen verdes;
-4. el diff contiene sólo archivos `knowledge/**` autorizados;
-5. no se introdujo acoplamiento a un dominio de aplicación;
-6. existe un commit local exacto y no se hizo push, PR ni merge.
+La revisión arquitectónica de CP01 está `ARCHITECT_ACCEPTED` en el candidato
+exacto `c63b48eafc439de8857207fd21c1b593e38a3187`. La integración de BR-017
+permanece `PENDING`; CP01 no se considera merged ni integrado a `main`.
+CP02–CP08 permanecen `NOT_STARTED` y requieren autorización independiente.
 
 ## Siguiente acción
 
-ChatGPT, en rol `statistical-software-architecture`, debe revisar el SHA
-candidato exacto de CP01. Cortex se detiene después del commit local y no inicia
-CP02 ni implementa ninguna familia.
+Esperar autorización separada para PR e integración de BR-017. No crear PR,
+integrar la rama, iniciar CP02/CP03 ni implementar familias sin esa
+autorización.

@@ -64,18 +64,19 @@ Fuente canónica: `knowledge/evidence/gate2-integration-f1725eb.md`.
 
 ## EV-007 — Distribution Family Framework CP01
 
-- **Estado:** `under_review`
+- **Estado:** `ARCHITECT_ACCEPTED`
+- **Candidato aceptado:** `c63b48eafc439de8857207fd21c1b593e38a3187`
 - **Baseline:** `main@402e4601df460811779b3238c2526ac12f463a67`
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Demuestra:** materialización trazable del contrato arquitectónico congelado,
-  inventario de compatibilidad de las cinco clases existentes y conservación de
-  la suite de regresión de distribuciones sin cambios de producción.
-- **No demuestra:** aprobación arquitectónica final, implementación de familias,
-  validez de estimadores, calibración GOF ni autorización de CP02.
+- **Demuestra:** materialización trazable y aceptación arquitectónica del
+  contrato congelado en `c63b48e…`, inventario de compatibilidad de las cinco
+  clases existentes y conservación de la suite de regresión de distribuciones
+  sin cambios de producción.
+- **No demuestra:** integración de BR-017, implementación de familias, validez
+  de estimadores, calibración GOF ni autorización de CP02.
 - **Revisión arquitectónica:** `72ecdba…` queda preservado como primer
-  candidato; el seguimiento documental aclara sampling reproducible,
-  ownership del ajuste, semántica Negative Binomial, compatibility cores,
-  cronología de publicación y límites GOF simple/compuesto.
+  candidato y `c63b48e…` como candidato aceptado. La integración permanece
+  pendiente.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp01-evidence.md`.

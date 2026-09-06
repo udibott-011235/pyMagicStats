@@ -26,7 +26,7 @@ de lifecycle.
 | BR-014 | `refactor/inference-capability-routing` | `archived` | `fully_contained` | `merged` | 0/14 | `763ceeaab86f1ede85eb204a02249df0194346ba` | conservar archivada |
 | BR-015 | `refactor/inference-engine` | `archived` | `fully_contained` | `merged` | 0/22 | `2eb302f9a5ac07b57192af7d7b6451f672835ca4` | conservar archivada |
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
-| BR-017 | `feature/distribution-family-framework-cp01` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `402e4601df460811779b3238c2526ac12f463a67` | crear candidato documental local y detenerse para revisión de Arquitectura |
+| BR-017 | `feature/distribution-family-framework-cp01` | `accepted` | `contains_main` | `pending` | 2/0 | `c63b48eafc439de8857207fd21c1b593e38a3187` | esperar autorización separada para PR e integración |
 
 ### Cronología de BR-017
 
@@ -37,6 +37,10 @@ de lifecycle.
 - El push no autorizó PR, merge, CP02, CP03 ni implementación.
 - La revisión preservó `72ecdba…` y autorizó un único commit documental de
   seguimiento y su push para reauditación arquitectónica.
+- Arquitectura aceptó CP01 en el candidato exacto
+  `c63b48eafc439de8857207fd21c1b593e38a3187`.
+- La revisión arquitectónica está cerrada; la integración de BR-017 permanece
+  `pending` y CP02–CP08 permanecen `NOT_STARTED`.
 
 ## Supersesión Gate 2
 

@@ -2,7 +2,8 @@
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
 - **Checkpoint:** `CP01 — Family architecture and contracts`
-- **Estado:** `under_review`
+- **Estado:** `ARCHITECT_ACCEPTED`
+- **Candidato aceptado:** `c63b48eafc439de8857207fd21c1b593e38a3187`
 - **Fecha:** 2026-09-06
 - **Repositorio:** `udibott-011235/pyMagicStats`
 - **Baseline:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
@@ -16,8 +17,9 @@ The Architect-approved CP01 contract has been materialized without changing
 production behavior, and its compatibility census matches the distribution
 surface present at the exact baseline.
 
-This evidence does not approve the architecture, implement any family, validate
-an estimator, calibrate GOF or authorize a later checkpoint.
+This evidence records Architecture's acceptance of CP01. It does not implement
+any family, validate an estimator, calibrate GOF, integrate BR-017 or authorize
+a later checkpoint.
 
 ## Repository and scope verification
 
@@ -44,6 +46,8 @@ parent and was not modified.
 4. Architecture accepted the structural materialization and validation
    evidence, retained `72ecdba…` as the first review candidate, and requested
    one follow-up documentation/governance commit.
+5. Architecture reviewed and accepted the exact follow-up candidate
+   `c63b48eafc439de8857207fd21c1b593e38a3187` as CP01.
 
 ## Architect review refinements
 
@@ -192,7 +196,6 @@ tests/test_distribution_gof_remediation.py
 
 ## Handoff target
 
-`statistical-software-architecture` must review the exact local candidate SHA,
-the frozen-contract transcription, the migration classifications and the
-open `ARCHITECT_DECISION_REQUIRED` list. A favorable review does not authorize
-CP02, push, PR or merge.
+Architectural review is `ARCHITECT_ACCEPTED` at
+`c63b48eafc439de8857207fd21c1b593e38a3187`. BR-017 integration remains
+`PENDING`; no PR, merge, CP02, CP03 or family implementation is authorized.

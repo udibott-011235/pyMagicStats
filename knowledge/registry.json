@@ -269,7 +269,7 @@
       "id": "DEC-009",
       "kind": "decision",
       "title": "Stage opening and checkpoint lifecycle — STAGE-DIST-FAMILIES-001",
-      "status": "under_review",
+      "status": "accepted",
       "scope": "Distribution Family Framework stage; CP01 documentation and governance only",
       "path": "knowledge/decisions/distribution-family-framework-stage.md",
       "evidence_paths": [
@@ -289,7 +289,7 @@
       "id": "DEC-010",
       "kind": "decision",
       "title": "Distribution Family Framework architecture and contracts",
-      "status": "under_review",
+      "status": "accepted",
       "scope": "Conceptual family probability and sampling API, support, fit ownership, result, compatibility and future GOF validation contracts for STAGE-DIST-FAMILIES-001",
       "path": "knowledge/decisions/distribution-family-framework-contract.md",
       "evidence_paths": [
@@ -313,7 +313,7 @@
       "id": "EV-007",
       "kind": "evidence",
       "title": "Distribution Family Framework CP01 materialization and current-surface census",
-      "status": "under_review",
+      "status": "accepted",
       "scope": "Contract transcription, compatibility census, Architect-review refinements and regression evidence at main@402e460",
       "path": "knowledge/evidence/distribution-family-framework-cp01-evidence.md",
       "evidence_paths": [
@@ -338,7 +338,7 @@
       "id": "BR-017",
       "kind": "branch",
       "title": "Branch lifecycle — feature/distribution-family-framework-cp01",
-      "status": "under_review",
+      "status": "accepted",
       "scope": "Documentation and governance materialization for STAGE-DIST-FAMILIES-001 / CP01",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
@@ -351,21 +351,24 @@
         "implementation-engineering"
       ],
       "supersedes": [],
-      "tags": ["branch", "distribution-families", "cp01", "under-review"],
+      "tags": ["branch", "distribution-families", "cp01", "architect-accepted"],
       "branch": {
         "name": "feature/distribution-family-framework-cp01",
-        "head_sha_at_decision": "402e4601df460811779b3238c2526ac12f463a67",
+        "head_sha_at_decision": "c63b48eafc439de8857207fd21c1b593e38a3187",
         "observed_at": "2026-09-06",
-        "relation_to_main": "same_head",
+        "relation_to_main": "contains_main",
         "integration_state": "pending",
-        "ahead_of_main": 0,
+        "ahead_of_main": 2,
         "behind_main": 0,
-        "unique_commits": [],
-        "decision_reason": "Product Owner and Architecture authorized a new local CP01 documentation branch from the exact canonical baseline.",
+        "unique_commits": [
+          "72ecdba1b60d9efb53dfe612cf7ee4beeb3e76e5",
+          "c63b48eafc439de8857207fd21c1b593e38a3187"
+        ],
+        "decision_reason": "Architecture accepted STAGE-DIST-FAMILIES-001 / CP01 at the exact c63b48e candidate; branch integration remains pending.",
         "merge_base": "402e4601df460811779b3238c2526ac12f463a67",
         "parent_branch": "main",
         "parent_sha": "402e4601df460811779b3238c2526ac12f463a67",
-        "next_action": "Preserve 72ecdba as the first review candidate; create and push one follow-up documentation commit solely for Architecture re-review, without PR, merge, CP02, CP03 or implementation."
+        "next_action": "Await separate authorization for PR and integration; do not begin CP02, CP03 or family implementation."
       }
     },
     {

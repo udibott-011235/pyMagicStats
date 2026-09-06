@@ -1,14 +1,39 @@
 # DEC-010 — Distribution Family Framework architecture and contracts
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP01 — READY_FOR_ARCHITECT_REVIEW`
-- **Estado del registro:** `under_review`
+- **Checkpoint:** `CP01 — ARCHITECT_ACCEPTED / INTEGRATION_PENDING`
+- **Estado del registro:** `accepted`
+- **Candidato aceptado:** `c63b48eafc439de8857207fd21c1b593e38a3187`
 - **Fecha:** 2026-09-06
 - **Baseline:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Owner de arquitectura:** `statistical-software-architecture`
 - **Materialización:** `implementation-engineering`
 - **Evidencia:** `EV-007`
 - **Supersedes:** ninguno
+
+## Architect acceptance
+
+Architecture reviewed the exact candidate
+`c63b48eafc439de8857207fd21c1b593e38a3187` and accepted CP01 without changing
+the architectural substance. The acceptance covers:
+
+- the five-way responsibility separation;
+- `*Family` naming and the shallow hierarchy;
+- the SciPy backend ownership boundary;
+- the explicit support model;
+- the probability API, including log-domain operations;
+- caller-controlled reproducible sampling;
+- `FittedDistribution` / `FitResult` ownership;
+- Wave-1 parameterizations;
+- generalized Negative Binomial `r` semantics;
+- the `BinomialFamily` / `PoissonFamily` compatibility track;
+- separation of fitting from GOF;
+- the simple-null versus composite-null GOF boundary;
+- selector exclusion;
+- unresolved `ARCHITECT_DECISION_REQUIRED` items.
+
+This is architectural-review acceptance only. BR-017 integration remains
+`PENDING`, and CP02–CP08 remain `NOT_STARTED`.
 
 ## 1. Purpose and non-goals
 

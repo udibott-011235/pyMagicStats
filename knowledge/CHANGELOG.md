@@ -15,6 +15,10 @@
   `FittedDistribution`, semántica de Negative Binomial para `r` no entero,
   compatibilidad futura mediante `BinomialFamily`/`PoissonFamily`, cronología
   del push de revisión y distinción GOF entre null simple y compuesto.
+- Arquitectura acepta CP01 en el candidato exacto
+  `c63b48eafc439de8857207fd21c1b593e38a3187`; DEC-009, DEC-010 y EV-007 pasan
+  a `accepted`, mientras la integración de BR-017 permanece `pending` y
+  CP02–CP08 permanecen `NOT_STARTED`.
 
 ## 2026-08-30 — KB v1.3
 
