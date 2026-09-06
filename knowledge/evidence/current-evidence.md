@@ -64,19 +64,24 @@ Fuente canónica: `knowledge/evidence/gate2-integration-f1725eb.md`.
 
 ## EV-007 — Distribution Family Framework CP01
 
-- **Estado:** `ARCHITECT_ACCEPTED`
+- **Estado:** `accepted`
+- **CP01:** `COMPLETE`
+- **Integración:** `COMPLETE` mediante PR #6
 - **Candidato aceptado:** `c63b48eafc439de8857207fd21c1b593e38a3187`
+- **Integration head:** `3f9acd5a51ce38ae62b9800d50efb0949c6531f0`
+- **Merge SHA:** `46f827dd107aa9e6f940f0de085fbb91075ff049`
+- **Antigravity pre-merge:** `ADVERSARIAL_PASS`
 - **Baseline:** `main@402e4601df460811779b3238c2526ac12f463a67`
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Demuestra:** materialización trazable y aceptación arquitectónica del
-  contrato congelado en `c63b48e…`, inventario de compatibilidad de las cinco
-  clases existentes y conservación de la suite de regresión de distribuciones
-  sin cambios de producción.
-- **No demuestra:** integración de BR-017, implementación de familias, validez
-  de estimadores, calibración GOF ni autorización de CP02.
+- **Demuestra:** materialización trazable, aceptación arquitectónica del
+  contrato congelado en `c63b48e…`, auditoría adversarial del integration head
+  e integración mediante merge commit en `main@46f827d…`, sin cambios de
+  producción.
+- **No demuestra:** implementación de familias, validez de estimadores,
+  calibración GOF ni autorización de CP02.
 - **Revisión arquitectónica:** `72ecdba…` queda preservado como primer
-  candidato y `c63b48e…` como candidato aceptado. La integración permanece
-  pendiente.
+  candidato, `c63b48e…` como candidato arquitectónico aceptado y `3f9acd5…`
+  como integration head preservado en el merge commit `46f827d…`.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp01-evidence.md`.

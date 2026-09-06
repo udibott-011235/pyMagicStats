@@ -1,13 +1,18 @@
 # EV-007 — Distribution Family Framework CP01 materialization evidence
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP01 — Family architecture and contracts`
-- **Estado:** `ARCHITECT_ACCEPTED`
+- **Checkpoint:** `CP01 — COMPLETE / INTEGRATION_COMPLETE`
+- **Estado:** `accepted`
 - **Candidato aceptado:** `c63b48eafc439de8857207fd21c1b593e38a3187`
+- **Integration head:** `3f9acd5a51ce38ae62b9800d50efb0949c6531f0`
+- **PR:** #6 — `MERGED`
+- **Merge SHA:** `46f827dd107aa9e6f940f0de085fbb91075ff049`
+- **Antigravity pre-merge:** `ADVERSARIAL_PASS` — 0 BLOCKER, 0 MAJOR, 0 MINOR
 - **Fecha:** 2026-09-06
 - **Repositorio:** `udibott-011235/pyMagicStats`
 - **Baseline:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama:** `feature/distribution-family-framework-cp01`
+- **Rama de cierre:** `docs/distribution-family-framework-cp01-post-merge`
 - **Rol ejecutor:** `implementation-engineering` (Cortex)
 - **Producción modificada:** ninguna
 
@@ -17,9 +22,10 @@ The Architect-approved CP01 contract has been materialized without changing
 production behavior, and its compatibility census matches the distribution
 surface present at the exact baseline.
 
-This evidence records Architecture's acceptance of CP01. It does not implement
-any family, validate an estimator, calibrate GOF, integrate BR-017 or authorize
-a later checkpoint.
+This evidence records Architecture's acceptance of CP01, the independent
+pre-merge adversarial PASS, and integration through PR #6 without changing
+production behavior. It does not implement any family, validate an estimator,
+calibrate GOF or authorize a later checkpoint.
 
 ## Repository and scope verification
 
@@ -48,6 +54,30 @@ parent and was not modified.
    one follow-up documentation/governance commit.
 5. Architecture reviewed and accepted the exact follow-up candidate
    `c63b48eafc439de8857207fd21c1b593e38a3187` as CP01.
+6. The governance closure produced integration head
+   `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` without altering the accepted
+   architectural substance.
+7. Antigravity audited PR #6 at that exact head and returned
+   `ADVERSARIAL_PASS` with zero blockers, majors and minors.
+8. PR #6 was merged with merge commit
+   `46f827dd107aa9e6f940f0de085fbb91075ff049`; its parents are the original
+   stage baseline and the unchanged integration head.
+
+## Post-merge integration evidence
+
+```text
+PR state = MERGED
+old main = 402e4601df460811779b3238c2526ac12f463a67
+integration head = 3f9acd5a51ce38ae62b9800d50efb0949c6531f0
+merge SHA = 46f827dd107aa9e6f940f0de085fbb91075ff049
+merge parents = 402e4601df460811779b3238c2526ac12f463a67 3f9acd5a51ce38ae62b9800d50efb0949c6531f0
+reviewed commits in main = YES
+source branch preserved = YES
+production behavior changed = NO
+```
+
+The architecture was accepted before the merge. The later merge records
+integration only and does not revise `DEC-010` or authorize CP02–CP08.
 
 ## Architect review refinements
 
@@ -196,6 +226,7 @@ tests/test_distribution_gof_remediation.py
 
 ## Handoff target
 
-Architectural review is `ARCHITECT_ACCEPTED` at
-`c63b48eafc439de8857207fd21c1b593e38a3187`. BR-017 integration remains
-`PENDING`; no PR, merge, CP02, CP03 or family implementation is authorized.
+CP01 and its integration are `COMPLETE` at
+`main@46f827dd107aa9e6f940f0de085fbb91075ff049`. The post-merge governance
+commit must receive Architecture review. CP02–CP08 remain `NOT_STARTED`; no
+family implementation is authorized.
