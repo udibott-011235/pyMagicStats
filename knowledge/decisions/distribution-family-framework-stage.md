@@ -1,15 +1,16 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP01 — COMPLETE / INTEGRATION_COMPLETE`
+- **Checkpoint actual:** `CP02 — IN_PROGRESS`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
-- **Rama actual de gobernanza post-merge:** `docs/distribution-family-framework-cp01-post-merge`
-- **Rama de implementación de CP02:** `NONE / NOT_STARTED`
+- **Rama de cierre post-merge de CP01:** `docs/distribution-family-framework-cp01-post-merge`
+- **Baseline de CP02:** `origin/main` @ `ccff392af13d2cb52d1f3888a986ef58be0099e2`
+- **Rama de implementación de CP02:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
-- **Implementación documental:** `implementation-engineering`
+- **Implementación:** `implementation-engineering`
 - **QA adversarial futuro:** `adversarial-statistical-qa`
 
 ## Objetivo
@@ -28,7 +29,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | Checkpoint | Estado | Resultado esperado |
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
-| CP02 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
+| CP02 — Continuous distribution core | `IN_PROGRESS` | Contrato congelado en DEC-011; implementación de Gamma/Exponential y core continuo |
 | CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
@@ -42,6 +43,12 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 - Evidencia de materialización e inventario: [`../evidence/distribution-family-framework-cp01-evidence.md`](../evidence/distribution-family-framework-cp01-evidence.md)
 - Índice canónico: [`../registry.json`](../registry.json)
 - Estado de rama: `BR-017`
+
+## Artefactos de CP02
+
+- Contrato ejecutable congelado: [`distribution-family-framework-cp02-contract.md`](distribution-family-framework-cp02-contract.md)
+- Evidencia de implementación: [`../evidence/distribution-family-framework-cp02-evidence.md`](../evidence/distribution-family-framework-cp02-evidence.md)
+- Estado de rama: `BR-019`
 
 ## Alcance autorizado
 
@@ -114,7 +121,15 @@ CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
 `in_progress` porque CP02–CP08 permanecen `NOT_STARTED` y requieren
 autorización independiente.
 
+## Apertura autorizada de CP02
+
+CP02 se abre desde `main@ccff392af13d2cb52d1f3888a986ef58be0099e2`
+con el contrato ejecutable congelado en `DEC-011`. Su alcance se limita al core
+continuo compartido, `GammaFamily`, `ExponentialFamily`, tests deterministas y
+evidencia asociada. CP03–CP08 permanecen `NOT_STARTED`.
+
 ## Siguiente acción
 
-Arquitectura debe revisar el commit de cierre post-merge de CP01. No iniciar
-CP02/CP03 ni implementar familias sin autorización independiente.
+Cortex debe implementar `DEC-011`, validar el candidato local y entregar sus
+dos commits a Arquitectura/Antigravity. No hay autorización de push, PR, merge
+ni de inicio de CP03.

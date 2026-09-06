@@ -1,5 +1,16 @@
 # Historial de la base de conocimiento
 
+## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP02
+
+- Se abre CP02 como `IN_PROGRESS` desde
+  `main@ccff392af13d2cb52d1f3888a986ef58be0099e2` en `BR-019`.
+- Se materializa `DEC-011`, contrato ejecutable congelado para el core continuo,
+  `GammaFamily` y `ExponentialFamily`.
+- Se abre `EV-008` para registrar implementación, paridad SciPy, RNG,
+  compatibilidad y validaciones del candidato local.
+- CP03–CP08 permanecen `NOT_STARTED`; no se autoriza fitting, GOF, selección,
+  familias discretas, push, PR o merge.
+
 ## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP01
 
 - Se abre `STAGE-DIST-FAMILIES-001` desde

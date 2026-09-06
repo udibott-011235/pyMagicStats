@@ -85,3 +85,20 @@ Fuente canónica: `knowledge/evidence/gate2-integration-f1725eb.md`.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp01-evidence.md`.
+
+## EV-008 — Distribution Family Framework CP02 continuous core
+
+- **Estado:** `under_review`
+- **CP02:** `IN_PROGRESS`
+- **Baseline:** `main@ccff392af13d2cb52d1f3888a986ef58be0099e2`
+- **Rama:** `feature/distribution-family-framework-cp02-continuous-core`
+- **Contrato:** `DEC-011`
+- **Demuestra al abrir:** identidad de baseline, árbol limpio, registro válido y
+  49 regresiones congeladas antes de implementar.
+- **Pendiente:** código, nuevos tests, evidencia de paridad SciPy y SHA candidato
+  local.
+- **No demuestra:** fitting, estimación, GOF, calibración, selección automática
+  ni autorización de CP03.
+
+Fuente canónica:
+`knowledge/evidence/distribution-family-framework-cp02-evidence.md`.
