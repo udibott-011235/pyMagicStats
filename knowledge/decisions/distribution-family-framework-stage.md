@@ -1,15 +1,16 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP01 — COMPLETE / INTEGRATION_COMPLETE`
+- **Checkpoint actual:** `CP02 — IN_PROGRESS`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
-- **Rama actual de gobernanza post-merge:** `docs/distribution-family-framework-cp01-post-merge`
-- **Rama de implementación de CP02:** `NONE / NOT_STARTED`
+- **Rama de cierre post-merge de CP01:** `docs/distribution-family-framework-cp01-post-merge`
+- **Baseline de CP02:** `origin/main` @ `ccff392af13d2cb52d1f3888a986ef58be0099e2`
+- **Rama de implementación de CP02:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
-- **Implementación documental:** `implementation-engineering`
+- **Implementación:** `implementation-engineering`
 - **QA adversarial futuro:** `adversarial-statistical-qa`
 
 ## Objetivo
@@ -28,7 +29,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | Checkpoint | Estado | Resultado esperado |
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
-| CP02 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
+| CP02 — Continuous distribution core | `IN_PROGRESS` | Remediación `e9ef63b…` aceptada; governance head `9cf25c…` con `ADVERSARIAL_PASS`; integración pendiente |
 | CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
@@ -42,6 +43,12 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 - Evidencia de materialización e inventario: [`../evidence/distribution-family-framework-cp01-evidence.md`](../evidence/distribution-family-framework-cp01-evidence.md)
 - Índice canónico: [`../registry.json`](../registry.json)
 - Estado de rama: `BR-017`
+
+## Artefactos de CP02
+
+- Contrato ejecutable congelado: [`distribution-family-framework-cp02-contract.md`](distribution-family-framework-cp02-contract.md)
+- Evidencia de implementación: [`../evidence/distribution-family-framework-cp02-evidence.md`](../evidence/distribution-family-framework-cp02-evidence.md)
+- Estado de rama: `BR-019`
 
 ## Alcance autorizado
 
@@ -111,10 +118,44 @@ nuevas familias.
 
 CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
 `main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
-`in_progress` porque CP02–CP08 permanecen `NOT_STARTED` y requieren
-autorización independiente.
+`in_progress`; CP02 está `IN_PROGRESS` y CP03–CP08 permanecen `NOT_STARTED` con
+autorización independiente requerida.
+
+## Apertura autorizada de CP02
+
+CP02 se abre desde `main@ccff392af13d2cb52d1f3888a986ef58be0099e2`
+con el contrato ejecutable congelado en `DEC-011`. Su alcance se limita al core
+continuo compartido, `GammaFamily`, `ExponentialFamily`, tests deterministas y
+evidencia asociada. CP03–CP08 permanecen `NOT_STARTED`.
+
+## Aceptación arquitectónica de CP02
+
+Arquitectura aceptó inicialmente la implementación exacta
+`874c03c70c028d0ca4966331b6fc91ec35613caa` del core continuo determinista
+congelado en `DEC-011`. La auditoría adversarial pre-merge posterior devolvió
+`ADVERSARIAL_CHANGES_REQUIRED`: `FINDING-ADV-CP02-001` (`MINOR`),
+`FINDING-ADV-CP02-002` (`INFO`) y `FINDING-ADV-CP02-003` (`INFO`).
+
+El commit `e9ef63b802a8cb08ea38b32e87b206432c08b120` corrigió
+`ADV-CP02-001` y endureció `ADV-CP02-002`. Arquitectura acepta ahora ese SHA
+exacto como candidato de implementación vigente de CP02; `874c03c…` se
+conserva como aceptación histórica, supersedida por la remediación.
+
+El primer governance/audit head `7e009503…` preservó el resultado
+`ADVERSARIAL_CHANGES_REQUIRED`. Tras la remediación `e9ef63b…`, Antigravity
+reauditó de forma independiente el governance head exacto
+`9cf25c157a4f4114f41ae74d4e04e009392414e3` y emitió `ADVERSARIAL_PASS` con
+0 `BLOCKER`, 0 `MAJOR`, 0 `MINOR` y 1 `INFO`. `ADV-CP02-001` queda
+`CLOSED_REMEDIATED`, `ADV-CP02-002` queda `CLOSED_HARDENED` y
+`ADV-CP02-003` permanece únicamente como INFO preexistente fuera de alcance.
+
+La integración permanece `PENDING`; CP02 continúa `IN_PROGRESS`. No se aceptan
+ni implementan fitting, `FitResult`,
+`FittedDistribution`, estimación o incertidumbre de parámetros, GOF,
+calibración, `MethodSelector`, routing, familias discretas ni CP03.
 
 ## Siguiente acción
 
-Arquitectura debe revisar el commit de cierre post-merge de CP01. No iniciar
-CP02/CP03 ni implementar familias sin autorización independiente.
+El governance head auditado `9cf25c157a4f4114f41ae74d4e04e009392414e3`
+queda pendiente de una autorización independiente de integración. No hay
+autorización de PR, merge ni de inicio de CP03.

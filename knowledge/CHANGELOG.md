@@ -1,5 +1,38 @@
 # Historial de la base de conocimiento
 
+## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP02
+
+- Se abre CP02 como `IN_PROGRESS` desde
+  `main@ccff392af13d2cb52d1f3888a986ef58be0099e2` en `BR-019`.
+- Se materializa `DEC-011`, contrato ejecutable congelado para el core continuo,
+  `GammaFamily` y `ExponentialFamily`.
+- Se abre `EV-008` para registrar implementación, paridad SciPy, RNG,
+  compatibilidad y validaciones del candidato local.
+- Se implementan descriptores stateless, parámetros y distribuciones
+  parametrizadas inmutables, soporte matemático explícito y las familias Gamma
+  y Exponential mediante delegación a SciPy.
+- Arquitectura acepta la implementación exacta
+  `874c03c70c028d0ca4966331b6fc91ec35613caa`; `EV-008` pasa de
+  `under_review` a `accepted`, mientras `BR-019` conserva revisión activa e
+  integración `pending` hasta la auditoría adversarial pre-merge.
+- La superficie remediada registra 311 tests CP02; las 49 regresiones congeladas
+  y los 360 tests combinados de distribución pasan sin modificar clases legacy.
+- La suite completa conserva los dos fallos preexistentes de deriva en
+  `tests/test_knowledge_base.py`: baseline 287 passed / 3 skipped / 2 failed,
+  candidato remediado 598 passed / 3 skipped / 2 failed y
+  `FULL_SUITE_DIFFERENTIAL=NO_NEW_FAILURES`.
+- El primer governance/audit head `7e009503…` conserva la auditoría
+  `ADVERSARIAL_CHANGES_REQUIRED`; la remediación exacta `e9ef63b…` cierra
+  `ADV-CP02-001` y endurece `ADV-CP02-002`.
+- Antigravity reaudita el governance head exacto `9cf25c…` y emite
+  `ADVERSARIAL_PASS` con 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO preexistente fuera
+  de alcance (`ADV-CP02-003`). Las superficies validadas registran 49 tests de
+  regresión congelada, 311 tests CP02 y 360 tests combinados de distribución.
+- CP02 conserva estado `IN_PROGRESS`, BR-019 `under_review` e integración
+  `PENDING`; no existe PR ni autorización para merge o CP03.
+- CP03–CP08 permanecen `NOT_STARTED`; no se autoriza fitting, GOF, selección,
+  familias discretas, PR o merge.
+
 ## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP01
 
 - Se abre `STAGE-DIST-FAMILIES-001` desde

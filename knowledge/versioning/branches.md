@@ -2,8 +2,9 @@
 
 > This document is a human-readable projection. knowledge/registry.json is canonical.
 
-Observación inicial materializada: `2026-08-30`; apertura de `BR-017` y cierre
-post-merge mediante `BR-018` materializados: `2026-09-06`. Consulte `EV-003`
+Observación inicial materializada: `2026-08-30`; apertura de `BR-017`, cierre
+post-merge mediante `BR-018` y apertura CP02 mediante `BR-019` materializados:
+`2026-09-06`. Consulte `EV-003`
 para la evidencia Git reproducible inicial, `EV-005` para la integración de
 Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 `DEC-006` para la autoridad de lifecycle.
@@ -28,6 +29,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
 | BR-017 | `feature/distribution-family-framework-cp01` | `archived` | `fully_contained` | `merged` | 0/1 | `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` | conservar la rama remota; no borrar |
 | BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | esperar revisión de Arquitectura; sin PR, merge ni CP02/CP03 |
+| BR-019 | `feature/distribution-family-framework-cp02-continuous-core` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `ccff392af13d2cb52d1f3888a986ef58be0099e2` | governance head `9cf25c…` con `ADVERSARIAL_PASS`; integración pendiente; sin PR, merge ni CP03 |
 
 ### Cronología de BR-017
 
@@ -58,6 +60,32 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
   consistencia de gobernanza.
 - BR-018 espera revisión de Arquitectura del commit de seguimiento. No hay
   autorización para PR, merge, CP02, CP03 ni implementación de familias.
+
+### Apertura de BR-019
+
+- `feature/distribution-family-framework-cp02-continuous-core` se abrió desde
+  `main@ccff392af13d2cb52d1f3888a986ef58be0099e2` exacto, con árbol limpio y
+  cero commits únicos al abrir.
+- `head_sha_at_decision` conserva el snapshot de apertura. El trabajo autorizado
+  materializa `DEC-011` e implementa únicamente el core continuo,
+  `GammaFamily` y `ExponentialFamily`.
+- Arquitectura aceptó inicialmente la implementación exacta
+  `874c03c70c028d0ca4966331b6fc91ec35613caa`.
+- La primera auditoría adversarial pre-merge devolvió
+  `ADVERSARIAL_CHANGES_REQUIRED`: `FINDING-ADV-CP02-001` (`MINOR`),
+  `FINDING-ADV-CP02-002` (`INFO`) y `FINDING-ADV-CP02-003` (`INFO`).
+- El commit `e9ef63b802a8cb08ea38b32e87b206432c08b120` corrigió
+  `ADV-CP02-001` y endureció `ADV-CP02-002`; Arquitectura acepta ese SHA exacto
+  como candidato vigente. `874c03c…` permanece como evidencia histórica.
+- `7e009503a253308a4a8294f280461953247b1c2f` conserva el primer governance/audit
+  head y el resultado `ADVERSARIAL_CHANGES_REQUIRED`.
+- Antigravity reaudita el governance head exacto
+  `9cf25c157a4f4114f41ae74d4e04e009392414e3` y emite `ADVERSARIAL_PASS`: cero
+  blockers, majors y minors; el único INFO es `ADV-CP02-003`, deuda
+  preexistente fuera de alcance.
+- La rama permanece `under_review` porque la integración sigue `pending`.
+- La integración permanece `pending`. No existe autorización de PR, merge o
+  CP03.
 
 ## Supersesión Gate 2
 

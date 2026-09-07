@@ -270,11 +270,13 @@
       "kind": "decision",
       "title": "Stage opening and checkpoint lifecycle — STAGE-DIST-FAMILIES-001",
       "status": "accepted",
-      "scope": "Distribution Family Framework stage; CP01 documentation and governance only",
+      "scope": "Distribution Family Framework stage lifecycle through CP02 opening; CP01 closed and continuous-family core implementation in progress",
       "path": "knowledge/decisions/distribution-family-framework-stage.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-contract.md",
-        "knowledge/evidence/distribution-family-framework-cp01-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp01-evidence.md",
+        "knowledge/decisions/distribution-family-framework-cp02-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp02-evidence.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -283,7 +285,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": ["distribution-families", "stage", "cp01", "governance"]
+      "tags": ["distribution-families", "stage", "cp01", "cp02", "governance"]
     },
     {
       "id": "DEC-010",
@@ -333,6 +335,53 @@
       ],
       "supersedes": [],
       "tags": ["distribution-families", "cp01", "census", "compatibility", "evidence"]
+    },
+    {
+      "id": "DEC-011",
+      "kind": "decision",
+      "title": "CP02 continuous distribution core executable contract",
+      "status": "accepted",
+      "scope": "Stateless continuous family core, immutable manual parameterization, GammaFamily and ExponentialFamily for STAGE-DIST-FAMILIES-001 / CP02",
+      "path": "knowledge/decisions/distribution-family-framework-cp02-contract.md",
+      "evidence_paths": [
+        "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/continuous.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py"
+      ],
+      "owner_role": "statistical-software-architecture",
+      "reviewer_roles": [
+        "implementation-engineering",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["distribution-families", "cp02", "continuous", "gamma", "exponential", "rng"]
+    },
+    {
+      "id": "EV-008",
+      "kind": "evidence",
+      "title": "CP02 continuous distribution core implementation evidence",
+      "status": "accepted",
+      "scope": "Architect-accepted remediation e9ef63b802a8cb08ea38b32e87b206432c08b120 and independently re-audited governance head 9cf25c157a4f4114f41ae74d4e04e009392414e3 for STAGE-DIST-FAMILIES-001 / CP02; ADVERSARIAL_PASS recorded and integration pending",
+      "path": "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-cp02-contract.md",
+        "pyMagicStat/distributions/families/__init__.py",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/continuous.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["distribution-families", "cp02", "implementation", "scipy-parity", "reproducibility", "architect-accepted", "adversarial-remediation", "adversarial-pass", "no-new-full-suite-failures"]
     },
     {
       "id": "BR-017",
@@ -402,6 +451,42 @@
         "parent_branch": "main",
         "parent_sha": "46f827dd107aa9e6f940f0de085fbb91075ff049",
         "next_action": "Await Architecture review of the post-merge governance closure candidate; no PR, merge, CP02, CP03 or family implementation is authorized."
+      }
+    },
+    {
+      "id": "BR-019",
+      "kind": "branch",
+      "title": "Branch lifecycle — feature/distribution-family-framework-cp02-continuous-core",
+      "status": "under_review",
+      "scope": "Architect-accepted remediation e9ef63b802a8cb08ea38b32e87b206432c08b120 of STAGE-DIST-FAMILIES-001 / CP02 under DEC-011; exact governance head 9cf25c157a4f4114f41ae74d4e04e009392414e3 received ADVERSARIAL_PASS and integration remains pending",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-stage.md",
+        "knowledge/decisions/distribution-family-framework-cp02-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp02-evidence.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "distribution-families", "cp02", "continuous", "under-review", "architect-accepted", "adversarial-pass", "integration-pending"],
+      "branch": {
+        "name": "feature/distribution-family-framework-cp02-continuous-core",
+        "head_sha_at_decision": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
+        "observed_at": "2026-09-06",
+        "relation_to_main": "same_head",
+        "integration_state": "pending",
+        "ahead_of_main": 0,
+        "behind_main": 0,
+        "unique_commits": [],
+        "decision_reason": "Product Owner authorized CP02 implementation from exact main@ccff392 under Architecture-frozen DEC-011. Architecture initially accepted 874c03c70c028d0ca4966331b6fc91ec35613caa. Governance head 7e009503a253308a4a8294f280461953247b1c2f preserved the first ADVERSARIAL_CHANGES_REQUIRED audit; Architecture accepted remediation e9ef63b802a8cb08ea38b32e87b206432c08b120; independent Antigravity re-audit of governance head 9cf25c157a4f4114f41ae74d4e04e009392414e3 returned ADVERSARIAL_PASS with 0 BLOCKER, 0 MAJOR, 0 MINOR and 1 pre-existing out-of-scope INFO. Integration remains pending. The recorded head_sha_at_decision is the clean branch-opening snapshot.",
+        "merge_base": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
+        "parent_branch": "main",
+        "parent_sha": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
+        "next_action": "Await separate authorization for integration of exact audited governance head 9cf25c157a4f4114f41ae74d4e04e009392414e3; no PR, merge or CP03 is authorized."
       }
     },
     {

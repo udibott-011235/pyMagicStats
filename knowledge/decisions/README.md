@@ -15,6 +15,7 @@ Decisiones iniciales indexadas:
 - `DEC-006`: gobernanza del lifecycle de ramas por Product Owner y Arquitectura.
 - `DEC-009`: apertura y checkpoints de `STAGE-DIST-FAMILIES-001`.
 - `DEC-010`: arquitectura y contratos del Distribution Family Framework.
+- `DEC-011`: contrato ejecutable del core continuo para CP02.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
 
