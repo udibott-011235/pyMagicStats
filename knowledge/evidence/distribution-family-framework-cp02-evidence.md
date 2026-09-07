@@ -1,7 +1,7 @@
 # EV-008 — CP02 continuous distribution core implementation evidence
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP02 — IN_PROGRESS`
+- **Checkpoint:** `CP02 — COMPLETE`
 - **Estado:** `accepted`
 - **Fecha:** 2026-09-06
 - **Repositorio:** `udibott-011235/pyMagicStats`
@@ -14,8 +14,11 @@
 - **Primera auditoría adversarial pre-merge:** `ADVERSARIAL_CHANGES_REQUIRED`
 - **Primer governance/audit head:** `7e009503a253308a4a8294f280461953247b1c2f`
 - **Governance head reaudited:** `9cf25c157a4f4114f41ae74d4e04e009392414e3`
+- **Final pre-merge governance head:** `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6`
 - **Reauditoría adversarial pre-merge:** `ADVERSARIAL_PASS`
-- **Integración:** `PENDING`
+- **Integración:** `COMPLETE` mediante PR #8
+- **Merge SHA:** `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c`
+- **Merge parents:** `ccff392af13d2cb52d1f3888a986ef58be0099e2`, `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6`
 
 ## Claim
 
@@ -26,7 +29,10 @@ remediation, Architecture accepts exact candidate
 continuous probability-family implementation under frozen contract `DEC-011`.
 Independent Antigravity re-audit of exact governance head
 `9cf25c157a4f4114f41ae74d4e04e009392414e3` returned `ADVERSARIAL_PASS`.
-CP02 remains `IN_PROGRESS` because integration is still pending.
+Final pre-merge governance head `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6`
+was integrated by PR #8 in merge commit
+`aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c`. CP02 implementation,
+integration and governance are complete; the overall stage remains in progress.
 
 It does not claim estimation validity, GOF calibration, family selection or
 authorization for CP03.
@@ -81,9 +87,28 @@ ADV-CP02-003=INFO_PRE_EXISTING_OUT_OF_SCOPE
 ```
 
 The accepted implementation remains `e9ef63b…`; `9cf25c…` is the exact audited
-governance head. `FINDING-ADV-CP02-003` records only pre-existing, out-of-scope
-Knowledge Base drift. Integration remains `PENDING`, so this evidence does not
-claim CP02 completion, PR creation, merge or authorization of CP03.
+governance head and `b3d116f…` is the final pre-merge governance head.
+`FINDING-ADV-CP02-003` records only pre-existing, out-of-scope Knowledge Base
+drift and is not a CP02 blocker. PR #8 integrated `b3d116f…` through merge
+commit `aa5723d…`. This evidence does not claim stage completion or
+authorization of CP03.
+
+## Integration evidence
+
+```text
+PR = #8
+baseline = ccff392af13d2cb52d1f3888a986ef58be0099e2
+accepted implementation = e9ef63b802a8cb08ea38b32e87b206432c08b120
+final pre-merge governance = b3d116f2f3e82b74ab6fb5f8337e217104c3bca6
+merge commit = aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c
+parent 1 = ccff392af13d2cb52d1f3888a986ef58be0099e2
+parent 2 = b3d116f2f3e82b74ab6fb5f8337e217104c3bca6
+CP02 integration = COMPLETE
+CP02 governance = CLOSED
+CP02 overall = COMPLETE
+STAGE-DIST-FAMILIES-001 = IN_PROGRESS
+CP03-CP08 = NOT_STARTED
+```
 
 ## Branch-opening evidence
 
@@ -195,10 +220,10 @@ to 19, but does not alter the stale test or prior branch records. The registry's
 canonical validator passes independently.
 
 The registry validator, final diff check and path audits are recorded in the
-handoff for exact audited governance head
-`9cf25c157a4f4114f41ae74d4e04e009392414e3`. The accepted implementation is
+handoff for final pre-merge governance head
+`b3d116f2f3e82b74ab6fb5f8337e217104c3bca6`. The accepted implementation is
 `e9ef63b802a8cb08ea38b32e87b206432c08b120`; no self-referential SHA for this
-new governance commit is maintained.
+post-merge governance commit is maintained.
 
 ## Limitations
 

@@ -28,10 +28,16 @@
   `ADVERSARIAL_PASS` con 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO preexistente fuera
   de alcance (`ADV-CP02-003`). Las superficies validadas registran 49 tests de
   regresión congelada, 311 tests CP02 y 360 tests combinados de distribución.
-- CP02 conserva estado `IN_PROGRESS`, BR-019 `under_review` e integración
-  `PENDING`; no existe PR ni autorización para merge o CP03.
+- `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6` materializa el governance head
+  pre-merge final. PR #8 lo integra mediante merge commit
+  `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c`, con parents `ccff392…` y
+  `b3d116f…`.
+- CP02 pasa a implementación `COMPLETE`, integración `COMPLETE`, gobernanza
+  `CLOSED` y estado general `COMPLETE`; BR-019 queda `archived`/`merged` y se
+  abre BR-020 para materializar este cierre post-merge.
 - CP03–CP08 permanecen `NOT_STARTED`; no se autoriza fitting, GOF, selección,
-  familias discretas, PR o merge.
+  familias discretas ni funcionalidad CP03. El stage general permanece
+  `IN_PROGRESS`.
 
 ## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP01
 
