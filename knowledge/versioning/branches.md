@@ -29,7 +29,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
 | BR-017 | `feature/distribution-family-framework-cp01` | `archived` | `fully_contained` | `merged` | 0/1 | `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` | conservar la rama remota; no borrar |
 | BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | esperar revisión de Arquitectura; sin PR, merge ni CP02/CP03 |
-| BR-019 | `feature/distribution-family-framework-cp02-continuous-core` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `ccff392af13d2cb52d1f3888a986ef58be0099e2` | implementación `874c03c…` aceptada por Arquitectura; auditoría adversarial pendiente; sin PR, merge ni CP03 |
+| BR-019 | `feature/distribution-family-framework-cp02-continuous-core` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `ccff392af13d2cb52d1f3888a986ef58be0099e2` | remediación `e9ef63b…` aceptada por Arquitectura; reauditoría adversarial pendiente; sin PR, merge ni CP03 |
 
 ### Cronología de BR-017
 
@@ -69,9 +69,16 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 - `head_sha_at_decision` conserva el snapshot de apertura. El trabajo autorizado
   materializa `DEC-011` e implementa únicamente el core continuo,
   `GammaFamily` y `ExponentialFamily`.
-- Arquitectura acepta la implementación exacta
-  `874c03c70c028d0ca4966331b6fc91ec35613caa`; la rama publicada permanece
-  `under_review` porque la auditoría adversarial pre-merge sigue `PENDING`.
+- Arquitectura aceptó inicialmente la implementación exacta
+  `874c03c70c028d0ca4966331b6fc91ec35613caa`.
+- La primera auditoría adversarial pre-merge devolvió
+  `ADVERSARIAL_CHANGES_REQUIRED`: `FINDING-ADV-CP02-001` (`MINOR`),
+  `FINDING-ADV-CP02-002` (`INFO`) y `FINDING-ADV-CP02-003` (`INFO`).
+- El commit `e9ef63b802a8cb08ea38b32e87b206432c08b120` corrigió
+  `ADV-CP02-001` y endureció `ADV-CP02-002`; Arquitectura acepta ese SHA exacto
+  como candidato vigente. `874c03c…` permanece como evidencia histórica.
+- La rama permanece `under_review` porque la reauditoría adversarial pre-merge
+  sigue `PENDING`.
 - La integración permanece `pending`. No existe autorización de PR, merge o
   CP03.
 

@@ -364,7 +364,7 @@
       "kind": "evidence",
       "title": "CP02 continuous distribution core implementation evidence",
       "status": "accepted",
-      "scope": "Architect-accepted deterministic API, SciPy parity, immutable state, RNG and compatibility evidence at implementation candidate 874c03c70c028d0ca4966331b6fc91ec35613caa for STAGE-DIST-FAMILIES-001 / CP02; adversarial review and integration pending",
+      "scope": "Architect-accepted deterministic API, SciPy parity, immutable state, RNG, boolean-coercion remediation and explicit backend-NaN failure evidence at current candidate e9ef63b802a8cb08ea38b32e87b206432c08b120 for STAGE-DIST-FAMILIES-001 / CP02; adversarial re-audit and integration pending",
       "path": "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-cp02-contract.md",
@@ -381,7 +381,7 @@
         "decision-owner"
       ],
       "supersedes": [],
-      "tags": ["distribution-families", "cp02", "implementation", "scipy-parity", "reproducibility", "architect-accepted", "no-new-full-suite-failures"]
+      "tags": ["distribution-families", "cp02", "implementation", "scipy-parity", "reproducibility", "architect-accepted", "adversarial-remediation", "no-new-full-suite-failures"]
     },
     {
       "id": "BR-017",
@@ -458,7 +458,7 @@
       "kind": "branch",
       "title": "Branch lifecycle — feature/distribution-family-framework-cp02-continuous-core",
       "status": "under_review",
-      "scope": "Architect-accepted implementation 874c03c70c028d0ca4966331b6fc91ec35613caa of STAGE-DIST-FAMILIES-001 / CP02 continuous distribution core under DEC-011; pre-merge adversarial review and integration pending",
+      "scope": "Architect-accepted remediation candidate e9ef63b802a8cb08ea38b32e87b206432c08b120 of STAGE-DIST-FAMILIES-001 / CP02 continuous distribution core under DEC-011; adversarial re-audit and integration pending",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-stage.md",
@@ -482,11 +482,11 @@
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Product Owner authorized CP02 implementation from exact main@ccff392 under the Architecture-frozen DEC-011 contract; Architecture accepted exact implementation candidate 874c03c70c028d0ca4966331b6fc91ec35613caa, while pre-merge adversarial review and integration remain pending. The recorded head_sha_at_decision is the clean branch-opening snapshot.",
+        "decision_reason": "Product Owner authorized CP02 implementation from exact main@ccff392 under Architecture-frozen DEC-011. Architecture initially accepted 874c03c70c028d0ca4966331b6fc91ec35613caa; the first adversarial audit returned ADVERSARIAL_CHANGES_REQUIRED, and Architecture then accepted remediation candidate e9ef63b802a8cb08ea38b32e87b206432c08b120. Adversarial re-audit and integration remain pending. The recorded head_sha_at_decision is the clean branch-opening snapshot.",
         "merge_base": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
         "parent_branch": "main",
         "parent_sha": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
-        "next_action": "Preserve accepted implementation 874c03c70c028d0ca4966331b6fc91ec35613caa and obtain pre-merge adversarial review; no PR, merge or CP03 is authorized."
+        "next_action": "Submit exact remediation candidate e9ef63b802a8cb08ea38b32e87b206432c08b120 for pre-merge adversarial re-audit; no PR, merge or CP03 is authorized."
       }
     },
     {

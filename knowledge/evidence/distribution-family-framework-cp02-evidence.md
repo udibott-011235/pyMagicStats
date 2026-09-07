@@ -9,16 +9,21 @@
 - **Rama:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Rol ejecutor:** `implementation-engineering` (Cortex)
 - **Contrato:** `DEC-011`
-- **Implementación aceptada por Arquitectura:** `874c03c70c028d0ca4966331b6fc91ec35613caa`
-- **Auditoría adversarial pre-merge:** `PENDING`
+- **Implementación inicialmente aceptada por Arquitectura:** `874c03c70c028d0ca4966331b6fc91ec35613caa`
+- **Remediación vigente aceptada por Arquitectura:** `e9ef63b802a8cb08ea38b32e87b206432c08b120`
+- **Primera auditoría adversarial pre-merge:** `ADVERSARIAL_CHANGES_REQUIRED`
+- **Reauditoría adversarial pre-merge:** `PENDING`
 - **Integración:** `PENDING`
 
 ## Claim
 
-Architecture accepted exact implementation candidate
-`874c03c70c028d0ca4966331b6fc91ec35613caa` for deterministic continuous
-probability-family mechanics under the frozen `DEC-011` contract. CP02 remains
-`IN_PROGRESS` because pre-merge adversarial review and integration are pending.
+Architecture initially accepted exact implementation candidate
+`874c03c70c028d0ca4966331b6fc91ec35613caa`. After adversarial findings and
+remediation, Architecture accepts exact candidate
+`e9ef63b802a8cb08ea38b32e87b206432c08b120` as the current deterministic
+continuous probability-family implementation under frozen contract `DEC-011`.
+CP02 remains `IN_PROGRESS` because adversarial re-audit and integration are
+pending.
 
 It does not claim estimation validity, GOF calibration, family selection or
 authorization for CP03.
@@ -35,6 +40,29 @@ mechanics and the frozen CP02 parameterization and RNG contracts.
 It does not cover or imply `fit()`, `FitResult`, a `FittedDistribution`
 implementation, parameter estimation or uncertainty, GOF, calibration,
 `MethodSelector`, routing, discrete families, CP03, integration or merge.
+
+## Adversarial findings and remediation
+
+The first pre-merge adversarial audit returned
+`ADVERSARIAL_CHANGES_REQUIRED` with `FINDING-ADV-CP02-001` (`MINOR`),
+`FINDING-ADV-CP02-002` (`INFO`) and `FINDING-ADV-CP02-003` (`INFO`).
+
+Remediation commit `e9ef63b802a8cb08ea38b32e87b206432c08b120` records:
+
+- `ADV-CP02-001` — mixed bool/numeric query coercion is remediated:
+  `pdf([0.5, True])` and `ppf([0.5, True])` raise `TypeError`, while
+  `support.contains([0.5, True])` returns `[True, False]` elementwise;
+- `ADV-CP02-002` — extreme Gamma backend NaN is hardened: the canonical
+  positive finite parameter domain is unchanged and no arbitrary threshold is
+  introduced; a SciPy NaN becomes an explicit `FloatingPointError`, while
+  legitimate infinities remain valid results; a SciPy `RuntimeWarning` may
+  occur before the explicit failure;
+- `ADV-CP02-003` — the two failing `tests/test_knowledge_base.py` assertions
+  remain pre-existing Knowledge Base debt outside CP02.
+
+The historical Architecture acceptance of `874c03c…` is retained; the current
+Architecture-accepted implementation candidate is `e9ef63b…`. Adversarial
+re-audit remains `PENDING` and this record does not claim `ADVERSARIAL_PASS`.
 
 ## Branch-opening evidence
 
@@ -112,13 +140,13 @@ Validation results:
 python -m pytest -q \
   tests/test_distribution_family_core.py \
   tests/test_continuous_distribution_families.py
-PASS — 277 passed in 5.05s
+PASS — 311 passed
 
 python -m pytest -q \
   tests/test_distribution_shape_contract.py \
   tests/test_distribution_integration.py \
   tests/test_distribution_gof_remediation.py
-PASS — 49 passed in 5.09s
+PASS — 49 passed
 
 python -m pytest -q \
   tests/test_distribution_shape_contract.py \
@@ -126,10 +154,10 @@ python -m pytest -q \
   tests/test_distribution_gof_remediation.py \
   tests/test_distribution_family_core.py \
   tests/test_continuous_distribution_families.py
-PASS — 326 passed in 5.95s
+PASS — 360 passed
 
 python -m pytest -q
-OBSERVED — 564 passed, 3 skipped, 2 failed in 16.79s
+OBSERVED — 598 passed, 3 skipped, 2 failed
 
 baseline main@ccff392af13d2cb52d1f3888a986ef58be0099e2
 OBSERVED — 287 passed, 3 skipped, 2 failed
@@ -146,9 +174,9 @@ to 19, but does not alter the stale test or prior branch records. The registry's
 canonical validator passes independently.
 
 The registry validator, final diff check and path audits are recorded in the
-handoff after the complete two-commit candidate is assembled. The candidate
-SHA is the implementation commit containing this record and is reported in the
-handoff; no self-referential SHA field is maintained.
+handoff for the current accepted remediation candidate. The implementation
+candidate is `e9ef63b802a8cb08ea38b32e87b206432c08b120`; no self-referential
+governance-commit SHA field is maintained.
 
 ## Limitations
 
@@ -163,3 +191,9 @@ they do not fail within the frozen or complete distribution-related surfaces.
 Object equality and hash semantics across separately instantiated Family
 descriptors are not part of the CP02 contractual guarantee and remain an
 explicit future architecture decision.
+
+Mathematical parameter admissibility is distinct from backend numerical
+resolvability. CP02 does not establish calibrated numerical operating
+boundaries for Gamma shape/scale across the entire float64 domain. Backend NaN
+is now an explicit failure rather than a returned probability value; this does
+not claim that the entire IEEE-754 Gamma domain is numerically stable.

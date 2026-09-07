@@ -29,7 +29,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | Checkpoint | Estado | Resultado esperado |
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
-| CP02 — Continuous distribution core | `IN_PROGRESS` | Implementación `874c03c…` aceptada por Arquitectura; auditoría adversarial e integración pendientes |
+| CP02 — Continuous distribution core | `IN_PROGRESS` | Remediación `e9ef63b…` aceptada por Arquitectura; reauditoría adversarial e integración pendientes |
 | CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
@@ -130,20 +130,24 @@ evidencia asociada. CP03–CP08 permanecen `NOT_STARTED`.
 
 ## Aceptación arquitectónica de CP02
 
-Arquitectura acepta la implementación exacta
+Arquitectura aceptó inicialmente la implementación exacta
 `874c03c70c028d0ca4966331b6fc91ec35613caa` del core continuo determinista
-congelado en `DEC-011`. La aceptación cubre las abstracciones, parámetros,
-familias Gamma/Exponential y operaciones `pdf`, `logpdf`, `cdf`, `logcdf`,
-`sf`, `logsf`, `ppf` y `rvs` dentro de los contratos de parametrización y RNG
-de CP02.
+congelado en `DEC-011`. La auditoría adversarial pre-merge posterior devolvió
+`ADVERSARIAL_CHANGES_REQUIRED`: `FINDING-ADV-CP02-001` (`MINOR`),
+`FINDING-ADV-CP02-002` (`INFO`) y `FINDING-ADV-CP02-003` (`INFO`).
 
-La auditoría adversarial pre-merge y la integración permanecen `PENDING`; CP02
-continúa `IN_PROGRESS`. No se aceptan ni implementan fitting, `FitResult`,
+El commit `e9ef63b802a8cb08ea38b32e87b206432c08b120` corrigió
+`ADV-CP02-001` y endureció `ADV-CP02-002`. Arquitectura acepta ahora ese SHA
+exacto como candidato de implementación vigente de CP02; `874c03c…` se
+conserva como aceptación histórica, supersedida por la remediación.
+
+La reauditoría adversarial pre-merge y la integración permanecen `PENDING`;
+CP02 continúa `IN_PROGRESS`. No se aceptan ni implementan fitting, `FitResult`,
 `FittedDistribution`, estimación o incertidumbre de parámetros, GOF,
 calibración, `MethodSelector`, routing, familias discretas ni CP03.
 
 ## Siguiente acción
 
-El follow-up de gobernanza debe recibir revisión sobre su SHA exacto y el
-candidato aceptado debe pasar auditoría adversarial pre-merge antes de cualquier
-integración. No hay autorización de PR, merge ni de inicio de CP03.
+El candidato vigente `e9ef63b802a8cb08ea38b32e87b206432c08b120` debe pasar
+reauditoría adversarial pre-merge antes de cualquier integración. No hay
+autorización de PR, merge ni de inicio de CP03.
