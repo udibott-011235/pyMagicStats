@@ -166,9 +166,34 @@ def test_support_is_immutable_and_validates_infinite_endpoint_closure():
         )
 
 
-@pytest.mark.parametrize("bad", ["x", 1 + 0j, True, None])
+@pytest.mark.parametrize("bad", ["x", 1 + 0j, True, np.bool_(True), None])
 def test_support_nonnumeric_membership_fails_closed(bad):
     assert not bool(GammaFamily().support.contains(bad))
+
+
+@pytest.mark.parametrize(
+    "values, expected",
+    [
+        ([0.5, True, -1.0], [True, False, False]),
+        (
+            [[0.5, True], [False, 2.0]],
+            [[True, False], [False, True]],
+        ),
+        (
+            np.array([0.5, np.bool_(True), -1.0], dtype=object),
+            [True, False, False],
+        ),
+    ],
+)
+def test_support_mixed_boolean_membership_is_elementwise_and_preserves_shape(
+    values, expected
+):
+    membership = GammaFamily().support.contains(values)
+
+    assert isinstance(membership, np.ndarray)
+    assert membership.dtype == np.bool_
+    assert membership.shape == np.asarray(values).shape
+    np.testing.assert_array_equal(membership, np.asarray(expected, dtype=bool))
 
 
 def test_support_membership_fails_closed_for_unrepresentable_real_value():

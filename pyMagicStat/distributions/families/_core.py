@@ -31,6 +31,26 @@ def _canonical_bound(value: Any, *, name: str) -> float:
     return canonical
 
 
+def _object_array_and_boolean_mask(
+    value: Any,
+) -> tuple[np.ndarray, np.ndarray] | None:
+    """Inspect original elements before NumPy can coerce booleans to numbers."""
+
+    try:
+        object_array = np.asarray(value, dtype=object)
+    except (OverflowError, TypeError, ValueError):
+        return None
+    boolean_mask = np.fromiter(
+        (
+            isinstance(element, (bool, np.bool_))
+            for element in object_array.flat
+        ),
+        dtype=np.bool_,
+        count=object_array.size,
+    ).reshape(object_array.shape)
+    return object_array, boolean_mask
+
+
 @dataclass(frozen=True, slots=True)
 class DistributionSupport:
     """Immutable mathematical support independent of observed data."""
@@ -66,25 +86,50 @@ class DistributionSupport:
         """Return mathematical membership, elementwise for array-like input."""
 
         scalar_input = np.isscalar(value)
+        inspection = _object_array_and_boolean_mask(value)
         try:
             array = np.asarray(value)
         except (TypeError, ValueError):
             return False if scalar_input else np.asarray(False)
 
-        if (
-            np.issubdtype(array.dtype, np.bool_)
-            or not np.issubdtype(array.dtype, np.number)
-            or np.issubdtype(array.dtype, np.complexfloating)
+        if inspection is None:
+            boolean_mask = np.zeros(array.shape, dtype=bool)
+            object_array = None
+        else:
+            object_array, boolean_mask = inspection
+            if object_array.shape != array.shape:
+                result = np.zeros(array.shape, dtype=bool)
+                return bool(result.item()) if scalar_input else result
+
+        if np.issubdtype(array.dtype, np.bool_) or np.issubdtype(
+            array.dtype, np.complexfloating
         ):
             result = np.zeros(array.shape, dtype=bool)
             return bool(result.item()) if scalar_input else result
 
+        numeric_source = array
+        if not np.issubdtype(array.dtype, np.number):
+            if object_array is None or not np.any(boolean_mask):
+                result = np.zeros(array.shape, dtype=bool)
+                return bool(result.item()) if scalar_input else result
+            non_boolean_values = object_array[~boolean_mask]
+            if any(
+                not isinstance(element, Real)
+                or isinstance(element, (bool, np.bool_))
+                for element in non_boolean_values.flat
+            ):
+                result = np.zeros(array.shape, dtype=bool)
+                return bool(result.item()) if scalar_input else result
+            numeric_source = object_array.copy()
+            numeric_source[boolean_mask] = np.nan
+
         try:
-            numeric = np.asarray(array, dtype=np.float64)
+            numeric = np.asarray(numeric_source, dtype=np.float64)
         except (OverflowError, TypeError, ValueError):
             result = np.zeros(array.shape, dtype=bool)
             return bool(result.item()) if scalar_input else result
         result = np.isfinite(numeric)
+        result &= ~boolean_mask
         if self.lower_closed:
             result &= numeric >= self.lower
         else:
@@ -102,6 +147,9 @@ def _query_input(value: Any, *, name: str) -> tuple[np.ndarray, bool]:
     """Validate and normalize one probability-operation input."""
 
     scalar_input = np.isscalar(value)
+    inspection = _object_array_and_boolean_mask(value)
+    if inspection is not None and np.any(inspection[1]):
+        raise TypeError(f"{name} must contain only real numeric values")
     if scalar_input and isinstance(value, Real) and not isinstance(
         value, (bool, np.bool_)
     ):
@@ -136,8 +184,17 @@ def _query_input(value: Any, *, name: str) -> tuple[np.ndarray, bool]:
     return numeric, scalar_input
 
 
-def _normalize_result(value: Any, *, scalar_input: bool) -> float | np.ndarray:
+def _normalize_result(
+    value: Any,
+    *,
+    scalar_input: bool,
+    operation: str,
+) -> float | np.ndarray:
     result = np.asarray(value, dtype=np.float64)
+    if np.any(np.isnan(result)):
+        raise FloatingPointError(
+            f"backend numerical failure: {operation} returned NaN"
+        )
     if scalar_input:
         return float(result.item())
     return result
@@ -303,7 +360,11 @@ class ParameterizedDistribution:
     def _evaluate(self, method: str, value: Any, *, name: str) -> float | np.ndarray:
         query, scalar_input = _query_input(value, name=name)
         result = getattr(self.family._backend(self.parameters), method)(query)
-        return _normalize_result(result, scalar_input=scalar_input)
+        return _normalize_result(
+            result,
+            scalar_input=scalar_input,
+            operation=method,
+        )
 
     def cdf(self, x: Any) -> float | np.ndarray:
         return self._evaluate("cdf", x, name="x")
@@ -322,7 +383,11 @@ class ParameterizedDistribution:
         if np.any((probabilities < 0.0) | (probabilities > 1.0)):
             raise ValueError("q must contain only values in [0, 1]")
         result = self.family._backend(self.parameters).ppf(probabilities)
-        return _normalize_result(result, scalar_input=scalar_input)
+        return _normalize_result(
+            result,
+            scalar_input=scalar_input,
+            operation="ppf",
+        )
 
     def rvs(
         self,
@@ -343,7 +408,11 @@ class ParameterizedDistribution:
             size=validated_size,
             random_state=generator,
         )
-        return _normalize_result(result, scalar_input=validated_size is None)
+        return _normalize_result(
+            result,
+            scalar_input=validated_size is None,
+            operation="rvs",
+        )
 
 
 @dataclass(frozen=True, slots=True)

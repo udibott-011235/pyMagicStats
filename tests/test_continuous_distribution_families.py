@@ -138,6 +138,36 @@ def test_probability_query_rejects_real_value_not_representable_as_float64(
 
 
 @pytest.mark.parametrize(
+    "method, mixed_query",
+    [
+        ("pdf", True),
+        ("cdf", np.bool_(True)),
+        ("pdf", [0.5, True]),
+        ("cdf", [False, 0.5]),
+        ("ppf", [0.5, True]),
+        ("pdf", [[0.2, 0.4], [True, 0.8]]),
+        ("cdf", np.array([0.5, np.bool_(True)], dtype=object)),
+        ("pdf", pd.Series([0.5, True], dtype=object)),
+        (
+            "cdf",
+            pd.DataFrame(
+                {
+                    "first": [0.2, True],
+                    "second": [0.4, 0.8],
+                }
+            ),
+        ),
+    ],
+)
+def test_probability_queries_reject_boolean_elements_before_numeric_coercion(
+    bound_and_backend, method, mixed_query
+):
+    bound, _ = bound_and_backend
+    with pytest.raises(TypeError, match="real numeric values"):
+        getattr(bound, method)(mixed_query)
+
+
+@pytest.mark.parametrize(
     "bad",
     [
         [],
@@ -158,6 +188,58 @@ def test_ppf_queries_fail_closed(bound_and_backend, bad):
     bound, _ = bound_and_backend
     with pytest.raises((TypeError, ValueError)):
         bound.ppf(bad)
+
+
+@pytest.mark.parametrize(
+    "shape, method, query",
+    [
+        (np.nextafter(0.0, 1.0), "pdf", 0.0),
+        (np.nextafter(0.0, 1.0), "ppf", 0.5),
+        (np.finfo(np.float64).max, "pdf", np.finfo(np.float64).max),
+    ],
+)
+def test_extreme_gamma_backend_nan_raises_explicit_numerical_failure(
+    shape, method, query
+):
+    bound = GammaFamily().bind(shape=shape, scale=1.0)
+
+    with pytest.raises(
+        FloatingPointError,
+        match=rf"backend numerical failure: {method} returned NaN",
+    ):
+        getattr(bound, method)(query)
+
+
+@pytest.mark.parametrize("method", (*PROBABILITY_METHODS, "ppf", "rvs"))
+def test_nan_guard_applies_to_every_backend_operation(monkeypatch, method):
+    class NaNBackend:
+        def __getattr__(self, operation):
+            return lambda *args, **kwargs: np.array([0.0, np.nan])
+
+    monkeypatch.setattr(
+        GammaFamily,
+        "_backend",
+        lambda self, parameters: NaNBackend(),
+    )
+    bound = GammaFamily().bind(shape=2.0, scale=1.0)
+
+    with pytest.raises(
+        FloatingPointError,
+        match=rf"backend numerical failure: {method} returned NaN",
+    ):
+        if method == "rvs":
+            bound.rvs(size=2, rng=7)
+        else:
+            getattr(bound, method)([0.25, 0.5])
+
+
+def test_mathematically_legitimate_infinite_results_are_preserved():
+    bound = GammaFamily().bind(shape=0.5, scale=1.0)
+
+    assert bound.ppf(1.0) == np.inf
+    assert bound.logpdf(-1.0) == -np.inf
+    assert bound.pdf(0.0) == np.inf
+    assert bound.logpdf(0.0) == np.inf
 
 
 def test_integer_seed_is_deterministic_and_matches_scipy_generator_mapping(
