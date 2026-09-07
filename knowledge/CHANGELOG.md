@@ -11,10 +11,18 @@
 - Se implementan descriptores stateless, parámetros y distribuciones
   parametrizadas inmutables, soporte matemático explícito y las familias Gamma
   y Exponential mediante delegación a SciPy.
+- Arquitectura acepta la implementación exacta
+  `874c03c70c028d0ca4966331b6fc91ec35613caa`; `EV-008` pasa de
+  `under_review` a `accepted`, mientras `BR-019` conserva revisión activa e
+  integración `pending` hasta la auditoría adversarial pre-merge.
 - La nueva superficie registra 277 tests CP02; las 49 regresiones congeladas y
   los 326 tests combinados de distribución pasan sin modificar clases legacy.
+- La suite completa conserva los dos fallos preexistentes de deriva en
+  `tests/test_knowledge_base.py`: baseline 287 passed / 3 skipped / 2 failed,
+  candidato 564 passed / 3 skipped / 2 failed y
+  `FULL_SUITE_DIFFERENTIAL=NO_NEW_FAILURES`.
 - CP03–CP08 permanecen `NOT_STARTED`; no se autoriza fitting, GOF, selección,
-  familias discretas, push, PR o merge.
+  familias discretas, PR o merge.
 
 ## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP01
 

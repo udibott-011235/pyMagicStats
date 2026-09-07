@@ -88,21 +88,26 @@ Fuente canónica:
 
 ## EV-008 — Distribution Family Framework CP02 continuous core
 
-- **Estado:** `under_review`
+- **Estado:** `accepted`
 - **CP02:** `IN_PROGRESS`
 - **Baseline:** `main@ccff392af13d2cb52d1f3888a986ef58be0099e2`
 - **Rama:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Contrato:** `DEC-011`
+- **Implementación aceptada por Arquitectura:**
+  `874c03c70c028d0ca4966331b6fc91ec35613caa`
+- **Auditoría adversarial pre-merge:** `PENDING`
+- **Integración:** `PENDING`
 - **Evidencia de apertura:** identidad de baseline, árbol limpio, registro
   válido y 49 regresiones congeladas antes de implementar.
 - **Evidencia de implementación:** 277 tests CP02, 49 regresiones congeladas y
   326 tests en la superficie de distribución combinada; paridad directa con
   SciPy para Gamma/Exponential, RNG explícito y compatibilidad de exports.
-- **Candidato:** commit local de implementación identificado en el handoff; no
-  publicado.
+- **Diferencial de suite completa:** baseline 287 passed / 3 skipped / 2 failed;
+  candidato 564 passed / 3 skipped / 2 failed; `NO_NEW_FAILURES`.
 - **Demuestra:** mecánica determinista y contrato API en el entorno registrado.
 - **No demuestra:** fitting, estimación, GOF, calibración, selección automática
-  ni autorización de CP03.
+  ni autorización de CP03; tampoco garantiza semántica de igualdad/hash entre
+  instancias separadas de descriptores Family.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp02-evidence.md`.

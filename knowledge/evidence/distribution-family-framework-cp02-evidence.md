@@ -2,24 +2,39 @@
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
 - **Checkpoint:** `CP02 — IN_PROGRESS`
-- **Estado:** `under_review`
+- **Estado:** `accepted`
 - **Fecha:** 2026-09-06
 - **Repositorio:** `udibott-011235/pyMagicStats`
 - **Baseline:** `origin/main` @ `ccff392af13d2cb52d1f3888a986ef58be0099e2`
 - **Rama:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Rol ejecutor:** `implementation-engineering` (Cortex)
 - **Contrato:** `DEC-011`
+- **Implementación aceptada por Arquitectura:** `874c03c70c028d0ca4966331b6fc91ec35613caa`
+- **Auditoría adversarial pre-merge:** `PENDING`
+- **Integración:** `PENDING`
 
 ## Claim
 
-CP02 is authorized to implement deterministic continuous probability-family
-mechanics for `GammaFamily` and `ExponentialFamily` under the frozen `DEC-011`
-contract. This record is opened with the branch and will be completed with the
-exact implementation surface, commands, environment, observations and
-limitations before the local candidate handoff.
+Architecture accepted exact implementation candidate
+`874c03c70c028d0ca4966331b6fc91ec35613caa` for deterministic continuous
+probability-family mechanics under the frozen `DEC-011` contract. CP02 remains
+`IN_PROGRESS` because pre-merge adversarial review and integration are pending.
 
 It does not claim estimation validity, GOF calibration, family selection or
 authorization for CP03.
+
+## Architecture acceptance
+
+Acceptance covers `DistributionFamily`, `ContinuousDistributionFamily`,
+`DistributionSupport`, `SupportKind`, `ParameterizedDistribution`,
+`ParameterizedContinuousDistribution`, `GammaParameters`,
+`ExponentialParameters`, `GammaFamily` and `ExponentialFamily`, together with
+the tested `pdf`, `logpdf`, `cdf`, `logcdf`, `sf`, `logsf`, `ppf` and `rvs`
+mechanics and the frozen CP02 parameterization and RNG contracts.
+
+It does not cover or imply `fit()`, `FitResult`, a `FittedDistribution`
+implementation, parameter estimation or uncertainty, GOF, calibration,
+`MethodSelector`, routing, discrete families, CP03, integration or merge.
 
 ## Branch-opening evidence
 
@@ -115,6 +130,11 @@ PASS — 326 passed in 5.95s
 
 python -m pytest -q
 OBSERVED — 564 passed, 3 skipped, 2 failed in 16.79s
+
+baseline main@ccff392af13d2cb52d1f3888a986ef58be0099e2
+OBSERVED — 287 passed, 3 skipped, 2 failed
+
+FULL_SUITE_DIFFERENTIAL=NO_NEW_FAILURES
 ```
 
 The two full-suite failures are pre-existing knowledge-test drift outside the
@@ -139,3 +159,7 @@ selection, other backends or later families.
 
 The stale knowledge-test assertions remain an out-of-scope repository risk;
 they do not fail within the frozen or complete distribution-related surfaces.
+
+Object equality and hash semantics across separately instantiated Family
+descriptors are not part of the CP02 contractual guarantee and remain an
+explicit future architecture decision.

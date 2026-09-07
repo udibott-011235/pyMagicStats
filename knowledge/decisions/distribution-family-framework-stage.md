@@ -29,7 +29,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | Checkpoint | Estado | Resultado esperado |
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
-| CP02 — Continuous distribution core | `IN_PROGRESS` | Contrato congelado en DEC-011; implementación de Gamma/Exponential y core continuo |
+| CP02 — Continuous distribution core | `IN_PROGRESS` | Implementación `874c03c…` aceptada por Arquitectura; auditoría adversarial e integración pendientes |
 | CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
@@ -118,8 +118,8 @@ nuevas familias.
 
 CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
 `main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
-`in_progress` porque CP02–CP08 permanecen `NOT_STARTED` y requieren
-autorización independiente.
+`in_progress`; CP02 está `IN_PROGRESS` y CP03–CP08 permanecen `NOT_STARTED` con
+autorización independiente requerida.
 
 ## Apertura autorizada de CP02
 
@@ -128,8 +128,22 @@ con el contrato ejecutable congelado en `DEC-011`. Su alcance se limita al core
 continuo compartido, `GammaFamily`, `ExponentialFamily`, tests deterministas y
 evidencia asociada. CP03–CP08 permanecen `NOT_STARTED`.
 
+## Aceptación arquitectónica de CP02
+
+Arquitectura acepta la implementación exacta
+`874c03c70c028d0ca4966331b6fc91ec35613caa` del core continuo determinista
+congelado en `DEC-011`. La aceptación cubre las abstracciones, parámetros,
+familias Gamma/Exponential y operaciones `pdf`, `logpdf`, `cdf`, `logcdf`,
+`sf`, `logsf`, `ppf` y `rvs` dentro de los contratos de parametrización y RNG
+de CP02.
+
+La auditoría adversarial pre-merge y la integración permanecen `PENDING`; CP02
+continúa `IN_PROGRESS`. No se aceptan ni implementan fitting, `FitResult`,
+`FittedDistribution`, estimación o incertidumbre de parámetros, GOF,
+calibración, `MethodSelector`, routing, familias discretas ni CP03.
+
 ## Siguiente acción
 
-Cortex debe entregar los dos commits locales de CP02 y su evidencia reproducible
-a Arquitectura/Antigravity para revisión. No hay autorización de push, PR,
-merge ni de inicio de CP03.
+El follow-up de gobernanza debe recibir revisión sobre su SHA exacto y el
+candidato aceptado debe pasar auditoría adversarial pre-merge antes de cualquier
+integración. No hay autorización de PR, merge ni de inicio de CP03.

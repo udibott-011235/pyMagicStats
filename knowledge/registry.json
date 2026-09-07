@@ -363,8 +363,8 @@
       "id": "EV-008",
       "kind": "evidence",
       "title": "CP02 continuous distribution core implementation evidence",
-      "status": "under_review",
-      "scope": "Deterministic API, SciPy parity, immutable state, RNG and compatibility evidence for STAGE-DIST-FAMILIES-001 / CP02",
+      "status": "accepted",
+      "scope": "Architect-accepted deterministic API, SciPy parity, immutable state, RNG and compatibility evidence at implementation candidate 874c03c70c028d0ca4966331b6fc91ec35613caa for STAGE-DIST-FAMILIES-001 / CP02; adversarial review and integration pending",
       "path": "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-cp02-contract.md",
@@ -381,7 +381,7 @@
         "decision-owner"
       ],
       "supersedes": [],
-      "tags": ["distribution-families", "cp02", "implementation", "scipy-parity", "reproducibility"]
+      "tags": ["distribution-families", "cp02", "implementation", "scipy-parity", "reproducibility", "architect-accepted", "no-new-full-suite-failures"]
     },
     {
       "id": "BR-017",
@@ -458,7 +458,7 @@
       "kind": "branch",
       "title": "Branch lifecycle — feature/distribution-family-framework-cp02-continuous-core",
       "status": "under_review",
-      "scope": "Implementation of STAGE-DIST-FAMILIES-001 / CP02 continuous distribution core under DEC-011",
+      "scope": "Architect-accepted implementation 874c03c70c028d0ca4966331b6fc91ec35613caa of STAGE-DIST-FAMILIES-001 / CP02 continuous distribution core under DEC-011; pre-merge adversarial review and integration pending",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-stage.md",
@@ -472,7 +472,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": ["branch", "distribution-families", "cp02", "continuous", "under-review"],
+      "tags": ["branch", "distribution-families", "cp02", "continuous", "under-review", "architect-accepted", "integration-pending"],
       "branch": {
         "name": "feature/distribution-family-framework-cp02-continuous-core",
         "head_sha_at_decision": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
@@ -482,11 +482,11 @@
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Product Owner authorized CP02 implementation from exact main@ccff392 under the Architecture-frozen DEC-011 contract; the recorded SHA is the clean branch-opening snapshot.",
+        "decision_reason": "Product Owner authorized CP02 implementation from exact main@ccff392 under the Architecture-frozen DEC-011 contract; Architecture accepted exact implementation candidate 874c03c70c028d0ca4966331b6fc91ec35613caa, while pre-merge adversarial review and integration remain pending. The recorded head_sha_at_decision is the clean branch-opening snapshot.",
         "merge_base": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
         "parent_branch": "main",
         "parent_sha": "ccff392af13d2cb52d1f3888a986ef58be0099e2",
-        "next_action": "Implement and validate DEC-011 locally, then hand the exact two-commit candidate to Architecture and Antigravity; no push, PR, merge or CP03 is authorized."
+        "next_action": "Preserve accepted implementation 874c03c70c028d0ca4966331b6fc91ec35613caa and obtain pre-merge adversarial review; no PR, merge or CP03 is authorized."
       }
     },
     {
