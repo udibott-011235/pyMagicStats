@@ -270,13 +270,15 @@
       "kind": "decision",
       "title": "Stage opening and checkpoint lifecycle — STAGE-DIST-FAMILIES-001",
       "status": "accepted",
-      "scope": "Distribution Family Framework stage lifecycle through CP02 closure; CP01 and CP02 complete, stage in progress, CP03-CP08 not started",
+      "scope": "Distribution Family Framework through CP03 architecture freeze; CP01 and CP02 complete, CP03 in progress with implementation pending, CP04-CP08 not started",
       "path": "knowledge/decisions/distribution-family-framework-stage.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-contract.md",
         "knowledge/evidence/distribution-family-framework-cp01-evidence.md",
         "knowledge/decisions/distribution-family-framework-cp02-contract.md",
-        "knowledge/evidence/distribution-family-framework-cp02-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
+        "knowledge/decisions/distribution-family-framework-cp03-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp03-baseline.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -285,7 +287,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": ["distribution-families", "stage", "cp01", "cp02", "governance"]
+      "tags": ["distribution-families", "stage", "cp01", "cp02", "cp03", "governance"]
     },
     {
       "id": "DEC-010",
@@ -360,6 +362,28 @@
       "tags": ["distribution-families", "cp02", "continuous", "gamma", "exponential", "rng"]
     },
     {
+      "id": "DEC-012",
+      "kind": "decision",
+      "title": "CP03 discrete distribution core executable contract",
+      "status": "accepted",
+      "scope": "Frozen architecture for contiguous integer support, discrete family abstractions and canonical NegativeBinomialFamily r,p parameterization; production implementation pending",
+      "path": "knowledge/decisions/distribution-family-framework-cp03-contract.md",
+      "evidence_paths": [
+        "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/distributions.py",
+        "pyMagicStat/distributions/_discrete_gof.py"
+      ],
+      "owner_role": "statistical-software-architecture",
+      "reviewer_roles": [
+        "implementation-engineering",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["distribution-families", "cp03", "discrete", "negative-binomial", "support", "rng", "architecture-frozen"]
+    },
+    {
       "id": "EV-008",
       "kind": "evidence",
       "title": "CP02 continuous distribution core implementation evidence",
@@ -382,6 +406,33 @@
       ],
       "supersedes": [],
       "tags": ["distribution-families", "cp02", "implementation", "scipy-parity", "reproducibility", "architect-accepted", "adversarial-remediation", "adversarial-pass", "no-new-full-suite-failures", "integrated", "pr-8"]
+    },
+    {
+      "id": "EV-009",
+      "kind": "evidence",
+      "title": "CP03 discrete core reconnaissance and baseline",
+      "status": "accepted",
+      "scope": "Pre-implementation CP03 reconnaissance, frozen discrete-core architecture and inherited 49/311/360 distribution regression baseline at main@02a65c80c5da10295d6eeef42e691772d0686ca2",
+      "path": "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-cp03-contract.md",
+        "pyMagicStat/distributions/distributions.py",
+        "pyMagicStat/distributions/_discrete_gof.py",
+        "pyMagicStat/distributions/families/_core.py",
+        "tests/test_distribution_shape_contract.py",
+        "tests/test_distribution_integration.py",
+        "tests/test_distribution_gof_remediation.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["distribution-families", "cp03", "discrete", "negative-binomial", "reconnaissance", "baseline", "pre-implementation"]
     },
     {
       "id": "BR-017",
@@ -495,8 +546,8 @@
       "id": "BR-020",
       "kind": "branch",
       "title": "Branch lifecycle — docs/distribution-family-framework-cp02-post-merge",
-      "status": "under_review",
-      "scope": "Post-merge governance closure for STAGE-DIST-FAMILIES-001 / CP02; CP03 remains not started",
+      "status": "archived",
+      "scope": "Post-merge CP02 governance integrated through PR #9 into main@02a65c80c5da10295d6eeef42e691772d0686ca2",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-stage.md",
@@ -508,21 +559,59 @@
         "implementation-engineering"
       ],
       "supersedes": [],
-      "tags": ["branch", "distribution-families", "cp02", "post-merge", "governance", "under-review"],
+      "tags": ["branch", "distribution-families", "cp02", "post-merge", "governance", "archived", "merged", "pr-9"],
       "branch": {
         "name": "docs/distribution-family-framework-cp02-post-merge",
-        "head_sha_at_decision": "aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c",
-        "observed_at": "2026-09-06",
+        "head_sha_at_decision": "37bc8de97185794e9ef14b33d4ed00d3da1a660e",
+        "observed_at": "2026-09-07",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 1,
+        "unique_commits": [],
+        "decision_reason": "Product Owner authorized a branch from main@aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c to materialize CP02 closure. Architecture accepted head 37bc8de97185794e9ef14b33d4ed00d3da1a660e; PR #9 integrated it through merge commit 02a65c80c5da10295d6eeef42e691772d0686ca2.",
+        "merge_base": "37bc8de97185794e9ef14b33d4ed00d3da1a660e",
+        "parent_branch": "main",
+        "parent_sha": "aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c",
+        "next_action": "Preserve the archived remote source branch; do not delete it without a separate lifecycle decision.",
+        "merged_via": "PR #9 / merge commit 02a65c80c5da10295d6eeef42e691772d0686ca2",
+        "pr_number": 9
+      }
+    },
+    {
+      "id": "BR-021",
+      "kind": "branch",
+      "title": "Branch lifecycle — feature/distribution-family-framework-cp03-discrete-core",
+      "status": "under_review",
+      "scope": "Governance-only materialization of the frozen STAGE-DIST-FAMILIES-001 / CP03 discrete-core architecture; production implementation pending",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-stage.md",
+        "knowledge/decisions/distribution-family-framework-cp03-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp03-baseline.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "distribution-families", "cp03", "discrete", "under-review", "architecture-frozen", "implementation-pending"],
+      "branch": {
+        "name": "feature/distribution-family-framework-cp03-discrete-core",
+        "head_sha_at_decision": "02a65c80c5da10295d6eeef42e691772d0686ca2",
+        "observed_at": "2026-09-07",
         "relation_to_main": "same_head",
         "integration_state": "pending",
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Product Owner authorized a new branch from exact main@aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c solely to materialize post-merge CP02 governance. CP02 is complete; STAGE-DIST-FAMILIES-001 remains in progress and CP03-CP08 remain not started.",
-        "merge_base": "aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c",
+        "decision_reason": "Product Owner authorized governance-only materialization of Architecture-frozen CP03 from exact main@02a65c80c5da10295d6eeef42e691772d0686ca2. DEC-012 fixes the discrete-core contract and EV-009 records reconnaissance and baseline; production implementation remains pending.",
+        "merge_base": "02a65c80c5da10295d6eeef42e691772d0686ca2",
         "parent_branch": "main",
-        "parent_sha": "aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c",
-        "next_action": "Await Architecture review of the post-merge CP02 governance closure candidate; no push, PR, merge, CP03 or production change is authorized."
+        "parent_sha": "02a65c80c5da10295d6eeef42e691772d0686ca2",
+        "next_action": "Await Architecture review and separate implementation authorization; no push, PR, merge or production work is authorized."
       }
     },
     {
@@ -536,7 +625,8 @@
         "knowledge/evidence/branch-inventory-2026-08-30.md",
         "knowledge/evidence/gate2-integration-f1725eb.md",
         "knowledge/evidence/distribution-family-framework-cp01-evidence.md",
-        "knowledge/evidence/distribution-family-framework-cp02-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
+        "knowledge/evidence/distribution-family-framework-cp03-baseline.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": ["statistical-software-architecture", "implementation-engineering"],
@@ -544,16 +634,16 @@
       "tags": ["branch", "canonical", "main"],
       "branch": {
         "name": "main",
-        "head_sha_at_decision": "aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c",
-        "observed_at": "2026-09-06",
+        "head_sha_at_decision": "02a65c80c5da10295d6eeef42e691772d0686ca2",
+        "observed_at": "2026-09-07",
         "relation_to_main": "canonical",
         "integration_state": "not_applicable",
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Rama canónica después de integrar STAGE-DIST-FAMILIES-001 / CP02 mediante PR #8 y merge commit aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c.",
-        "merge_base": "aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c",
-        "next_action": "No modificar directamente; CP03 y cualquier checkpoint posterior requieren rama y autorización independientes."
+        "decision_reason": "Rama canónica después de integrar el cierre de gobernanza de STAGE-DIST-FAMILIES-001 / CP02 mediante PR #9 y merge commit 02a65c80c5da10295d6eeef42e691772d0686ca2.",
+        "merge_base": "02a65c80c5da10295d6eeef42e691772d0686ca2",
+        "next_action": "No modificar directamente; CP03 está abierto con arquitectura congelada e implementación pendiente en BR-021."
       }
     },
     {

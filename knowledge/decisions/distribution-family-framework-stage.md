@@ -1,7 +1,7 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP02 — COMPLETE`
+- **Checkpoint actual:** `CP03 — IN_PROGRESS / ARCHITECTURE_FROZEN`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
@@ -9,6 +9,8 @@
 - **Baseline de CP02:** `origin/main` @ `ccff392af13d2cb52d1f3888a986ef58be0099e2`
 - **Rama de implementación de CP02:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Rama de cierre post-merge de CP02:** `docs/distribution-family-framework-cp02-post-merge`
+- **Baseline de CP03:** `origin/main` @ `02a65c80c5da10295d6eeef42e691772d0686ca2`
+- **Rama de CP03:** `feature/distribution-family-framework-cp03-discrete-core`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación:** `implementation-engineering`
@@ -31,7 +33,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
 | CP02 — Continuous distribution core | `COMPLETE` | Implementación `e9ef63b…`, `ADVERSARIAL_PASS` e integración mediante PR #8 en `main@aa5723d…` |
-| CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
+| CP03 — Discrete distribution core | `IN_PROGRESS` | Arquitectura `FROZEN` en `DEC-012`; implementación `PENDING` |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
 | CP06 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -51,6 +53,12 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 - Evidencia de implementación: [`../evidence/distribution-family-framework-cp02-evidence.md`](../evidence/distribution-family-framework-cp02-evidence.md)
 - Rama de implementación integrada: `BR-019`
 - Rama de cierre post-merge: `BR-020`
+
+## Artefactos de CP03
+
+- Contrato ejecutable congelado: [`distribution-family-framework-cp03-contract.md`](distribution-family-framework-cp03-contract.md)
+- Evidencia de reconnaissance y baseline: [`../evidence/distribution-family-framework-cp03-baseline.md`](../evidence/distribution-family-framework-cp03-baseline.md)
+- Rama de materialización: `BR-021`
 
 ## Alcance autorizado
 
@@ -120,8 +128,9 @@ nuevas familias.
 
 CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
 `main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
-`in_progress`; CP02 está ahora `COMPLETE` y CP03–CP08 permanecen `NOT_STARTED`
-con autorización independiente requerida.
+`in_progress`; CP02 está `COMPLETE`, CP03 está `IN_PROGRESS` con arquitectura
+`FROZEN` e implementación `PENDING`, y CP04–CP08 permanecen `NOT_STARTED` con
+autorización independiente requerida.
 
 ## Apertura autorizada de CP02
 
@@ -158,13 +167,27 @@ el merge commit `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c`, cuyos parents son
 `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6`.
 
 La integración y la gobernanza de CP02 están cerradas; CP02 queda `COMPLETE`.
-El stage general permanece `IN_PROGRESS` y CP03–CP08 siguen `NOT_STARTED`. CP02
+El stage general permanece `IN_PROGRESS`; CP03 está `IN_PROGRESS` con
+arquitectura `FROZEN` e implementación `PENDING`, y CP04–CP08 siguen
+`NOT_STARTED`. CP02
 no acepta ni implementa fitting, `FitResult`,
 `FittedDistribution`, estimación o incertidumbre de parámetros, GOF,
 calibración, `MethodSelector`, routing, familias discretas ni CP03.
 
+## Apertura y arquitectura congelada de CP03
+
+CP03 se abre desde `main@02a65c80c5da10295d6eeef42e691772d0686ca2` en
+`BR-021`. Reconnaissance queda `COMPLETE`; `DEC-012` congela la arquitectura
+del core discreto, `SupportKind.DISCRETE`, el modelo de objetos discreto y la
+parametrización canónica `NegativeBinomialFamily().bind(r=..., p=...)`.
+
+Esta materialización es exclusivamente de gobernanza. No implementa producción
+ni tests, no modifica las APIs discretas legacy y no autoriza fitting, GOF,
+selector/routing, otras familias discretas o CP04. CP04–CP08 permanecen
+`NOT_STARTED`.
+
 ## Siguiente acción
 
-La rama `docs/distribution-family-framework-cp02-post-merge`, registrada como
-`BR-020`, materializa este cierre para revisión de Arquitectura. No hay
-autorización de push, PR, merge ni de inicio de CP03 para esa rama.
+Arquitectura debe revisar el candidato de materialización de `DEC-012` y
+`EV-009`. La implementación de CP03 permanece `PENDING` y requiere autorización
+separada; no hay autorización de push, PR ni merge.

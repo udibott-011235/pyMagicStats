@@ -1,5 +1,21 @@
 # Historial de la base de conocimiento
 
+## 2026-09-07 — STAGE-DIST-FAMILIES-001 / CP03
+
+- PR #9 integra el cierre canónico de CP02 en
+  `main@02a65c80c5da10295d6eeef42e691772d0686ca2`; CP01 y CP02 permanecen
+  `COMPLETE` y el stage general permanece `IN_PROGRESS`.
+- Se abre CP03 como `IN_PROGRESS` desde ese baseline exacto en `BR-021`.
+- Se materializa `DEC-012`, arquitectura `FROZEN` para el core discreto,
+  `SupportKind.DISCRETE`, `ParameterizedDiscreteDistribution` y
+  `NegativeBinomialFamily().bind(r=..., p=...)`.
+- Se registra `EV-009`: reconnaissance `COMPLETE`, nueva superficie discreta de
+  familias inexistente antes de CP03, soporte/normalización discreta todavía no
+  implementados y baseline heredado de 49/311/360 tests en PASS.
+- La implementación CP03 permanece `PENDING`; esta tarea no cambia producción,
+  tests, legacy discreto, fitting, GOF, routing ni familias adicionales.
+- CP04–CP08 permanecen `NOT_STARTED`; no hay autorización de push, PR o merge.
+
 ## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP02
 
 - Se abre CP02 como `IN_PROGRESS` desde

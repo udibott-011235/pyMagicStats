@@ -117,7 +117,34 @@ Fuente canónica:
 - **No demuestra:** fitting, estimación, GOF, calibración, selección automática
   ni autorización de CP03; tampoco garantiza semántica de igualdad/hash entre
   instancias separadas de descriptores Family. El stage general permanece
-  `IN_PROGRESS` y CP03–CP08 siguen `NOT_STARTED`.
+  `IN_PROGRESS`; CP03 está `IN_PROGRESS` con arquitectura `FROZEN` e
+  implementación `PENDING`, y CP04–CP08 siguen `NOT_STARTED`.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp02-evidence.md`.
+
+## EV-009 — Distribution Family Framework CP03 discrete core baseline
+
+- **Estado:** `accepted`
+- **CP03:** `IN_PROGRESS`
+- **Reconnaissance:** `COMPLETE`
+- **Arquitectura:** `FROZEN`
+- **Implementación:** `PENDING`
+- **Baseline:** `main@02a65c80c5da10295d6eeef42e691772d0686ca2`
+- **Rama:** `feature/distribution-family-framework-cp03-discrete-core`
+- **Contrato:** `DEC-012`
+- **Superficie legacy actual:** `BinomialDistribution`,
+  `PoissonDistribution`, `DiscreteDistributionValidator` y helpers Pearson GOF.
+- **Nueva superficie discreta de familias antes de CP03:** ninguna.
+- **Gaps confirmados antes de implementar:** `DistributionSupport` todavía no
+  expresa membership entero discreto y el normalizador CP02 de resultados no
+  satisface el contrato `int`/`int64` de RVS discreto.
+- **Baseline heredado:** 49 regresiones legacy, 311 tests CP02 y 360 tests
+  combinados de distribución en PASS; no se reejecutaron en esta tarea de
+  gobernanza.
+- **Demuestra:** reconnaissance completo y contrato discreto congelado.
+- **No demuestra:** implementación CP03, ejecutabilidad numérica de RVS extremo,
+  fitting, GOF, routing, familias adicionales ni autorización de producción.
+
+Fuente canónica:
+`knowledge/evidence/distribution-family-framework-cp03-baseline.md`.
