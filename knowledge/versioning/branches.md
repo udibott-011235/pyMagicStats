@@ -29,7 +29,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-016 | `refactor/sampling-robustness-v3` | `archived` | `fully_contained` | `merged` | 0/15 | `12d5167bdf6dedec748d890b77f3ad683ba22bae` | conservar archivada |
 | BR-017 | `feature/distribution-family-framework-cp01` | `archived` | `fully_contained` | `merged` | 0/1 | `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` | conservar la rama remota; no borrar |
 | BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | esperar revisión de Arquitectura; sin PR, merge ni CP02/CP03 |
-| BR-019 | `feature/distribution-family-framework-cp02-continuous-core` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `ccff392af13d2cb52d1f3888a986ef58be0099e2` | remediación `e9ef63b…` aceptada por Arquitectura; reauditoría adversarial pendiente; sin PR, merge ni CP03 |
+| BR-019 | `feature/distribution-family-framework-cp02-continuous-core` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `ccff392af13d2cb52d1f3888a986ef58be0099e2` | governance head `9cf25c…` con `ADVERSARIAL_PASS`; integración pendiente; sin PR, merge ni CP03 |
 
 ### Cronología de BR-017
 
@@ -77,8 +77,13 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 - El commit `e9ef63b802a8cb08ea38b32e87b206432c08b120` corrigió
   `ADV-CP02-001` y endureció `ADV-CP02-002`; Arquitectura acepta ese SHA exacto
   como candidato vigente. `874c03c…` permanece como evidencia histórica.
-- La rama permanece `under_review` porque la reauditoría adversarial pre-merge
-  sigue `PENDING`.
+- `7e009503a253308a4a8294f280461953247b1c2f` conserva el primer governance/audit
+  head y el resultado `ADVERSARIAL_CHANGES_REQUIRED`.
+- Antigravity reaudita el governance head exacto
+  `9cf25c157a4f4114f41ae74d4e04e009392414e3` y emite `ADVERSARIAL_PASS`: cero
+  blockers, majors y minors; el único INFO es `ADV-CP02-003`, deuda
+  preexistente fuera de alcance.
+- La rama permanece `under_review` porque la integración sigue `pending`.
 - La integración permanece `pending`. No existe autorización de PR, merge o
   CP03.
 

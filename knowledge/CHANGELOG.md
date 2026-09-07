@@ -15,12 +15,21 @@
   `874c03c70c028d0ca4966331b6fc91ec35613caa`; `EV-008` pasa de
   `under_review` a `accepted`, mientras `BR-019` conserva revisión activa e
   integración `pending` hasta la auditoría adversarial pre-merge.
-- La nueva superficie registra 277 tests CP02; las 49 regresiones congeladas y
-  los 326 tests combinados de distribución pasan sin modificar clases legacy.
+- La superficie remediada registra 311 tests CP02; las 49 regresiones congeladas
+  y los 360 tests combinados de distribución pasan sin modificar clases legacy.
 - La suite completa conserva los dos fallos preexistentes de deriva en
   `tests/test_knowledge_base.py`: baseline 287 passed / 3 skipped / 2 failed,
-  candidato 564 passed / 3 skipped / 2 failed y
+  candidato remediado 598 passed / 3 skipped / 2 failed y
   `FULL_SUITE_DIFFERENTIAL=NO_NEW_FAILURES`.
+- El primer governance/audit head `7e009503…` conserva la auditoría
+  `ADVERSARIAL_CHANGES_REQUIRED`; la remediación exacta `e9ef63b…` cierra
+  `ADV-CP02-001` y endurece `ADV-CP02-002`.
+- Antigravity reaudita el governance head exacto `9cf25c…` y emite
+  `ADVERSARIAL_PASS` con 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO preexistente fuera
+  de alcance (`ADV-CP02-003`). Las superficies validadas registran 49 tests de
+  regresión congelada, 311 tests CP02 y 360 tests combinados de distribución.
+- CP02 conserva estado `IN_PROGRESS`, BR-019 `under_review` e integración
+  `PENDING`; no existe PR ni autorización para merge o CP03.
 - CP03–CP08 permanecen `NOT_STARTED`; no se autoriza fitting, GOF, selección,
   familias discretas, PR o merge.
 

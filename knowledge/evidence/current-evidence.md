@@ -94,20 +94,24 @@ Fuente canónica:
 - **Rama:** `feature/distribution-family-framework-cp02-continuous-core`
 - **Contrato:** `DEC-011`
 - **Implementación aceptada por Arquitectura:**
-  `874c03c70c028d0ca4966331b6fc91ec35613caa`
-- **Auditoría adversarial pre-merge:** `PENDING`
+  `e9ef63b802a8cb08ea38b32e87b206432c08b120`
+- **Governance head auditado:**
+  `9cf25c157a4f4114f41ae74d4e04e009392414e3`
+- **Auditoría adversarial pre-merge:** `ADVERSARIAL_PASS`
+- **Clasificación:** 0 BLOCKER, 0 MAJOR, 0 MINOR, 1 INFO preexistente
+  fuera de alcance (`FINDING-ADV-CP02-003`).
 - **Integración:** `PENDING`
 - **Evidencia de apertura:** identidad de baseline, árbol limpio, registro
   válido y 49 regresiones congeladas antes de implementar.
-- **Evidencia de implementación:** 277 tests CP02, 49 regresiones congeladas y
-  326 tests en la superficie de distribución combinada; paridad directa con
+- **Evidencia de implementación:** 311 tests CP02, 49 regresiones congeladas y
+  360 tests en la superficie de distribución combinada; paridad directa con
   SciPy para Gamma/Exponential, RNG explícito y compatibilidad de exports.
 - **Diferencial de suite completa:** baseline 287 passed / 3 skipped / 2 failed;
-  candidato 564 passed / 3 skipped / 2 failed; `NO_NEW_FAILURES`.
+  candidato 598 passed / 3 skipped / 2 failed; `NO_NEW_FAILURES`.
 - **Demuestra:** mecánica determinista y contrato API en el entorno registrado.
 - **No demuestra:** fitting, estimación, GOF, calibración, selección automática
-  ni autorización de CP03; tampoco garantiza semántica de igualdad/hash entre
-  instancias separadas de descriptores Family.
+  ni autorización de integración o CP03; tampoco garantiza semántica de
+  igualdad/hash entre instancias separadas de descriptores Family.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp02-evidence.md`.

@@ -12,7 +12,9 @@
 - **Implementación inicialmente aceptada por Arquitectura:** `874c03c70c028d0ca4966331b6fc91ec35613caa`
 - **Remediación vigente aceptada por Arquitectura:** `e9ef63b802a8cb08ea38b32e87b206432c08b120`
 - **Primera auditoría adversarial pre-merge:** `ADVERSARIAL_CHANGES_REQUIRED`
-- **Reauditoría adversarial pre-merge:** `PENDING`
+- **Primer governance/audit head:** `7e009503a253308a4a8294f280461953247b1c2f`
+- **Governance head reaudited:** `9cf25c157a4f4114f41ae74d4e04e009392414e3`
+- **Reauditoría adversarial pre-merge:** `ADVERSARIAL_PASS`
 - **Integración:** `PENDING`
 
 ## Claim
@@ -22,8 +24,9 @@ Architecture initially accepted exact implementation candidate
 remediation, Architecture accepts exact candidate
 `e9ef63b802a8cb08ea38b32e87b206432c08b120` as the current deterministic
 continuous probability-family implementation under frozen contract `DEC-011`.
-CP02 remains `IN_PROGRESS` because adversarial re-audit and integration are
-pending.
+Independent Antigravity re-audit of exact governance head
+`9cf25c157a4f4114f41ae74d4e04e009392414e3` returned `ADVERSARIAL_PASS`.
+CP02 remains `IN_PROGRESS` because integration is still pending.
 
 It does not claim estimation validity, GOF calibration, family selection or
 authorization for CP03.
@@ -60,9 +63,27 @@ Remediation commit `e9ef63b802a8cb08ea38b32e87b206432c08b120` records:
 - `ADV-CP02-003` — the two failing `tests/test_knowledge_base.py` assertions
   remain pre-existing Knowledge Base debt outside CP02.
 
-The historical Architecture acceptance of `874c03c…` is retained; the current
-Architecture-accepted implementation candidate is `e9ef63b…`. Adversarial
-re-audit remains `PENDING` and this record does not claim `ADVERSARIAL_PASS`.
+The historical Architecture acceptance of `874c03c…` is retained. Governance
+head `7e009503…` recorded the first audit state, whose Antigravity review
+returned `ADVERSARIAL_CHANGES_REQUIRED`. Architecture accepted remediation
+`e9ef63b…`, and exact governance head `9cf25c…` was then independently
+re-audited with this final classification:
+
+```text
+FINAL_VERDICT=ADVERSARIAL_PASS
+BLOCKER=0
+MAJOR=0
+MINOR=0
+INFO=1
+ADV-CP02-001=CLOSED_REMEDIATED
+ADV-CP02-002=CLOSED_HARDENED
+ADV-CP02-003=INFO_PRE_EXISTING_OUT_OF_SCOPE
+```
+
+The accepted implementation remains `e9ef63b…`; `9cf25c…` is the exact audited
+governance head. `FINDING-ADV-CP02-003` records only pre-existing, out-of-scope
+Knowledge Base drift. Integration remains `PENDING`, so this evidence does not
+claim CP02 completion, PR creation, merge or authorization of CP03.
 
 ## Branch-opening evidence
 
@@ -174,9 +195,10 @@ to 19, but does not alter the stale test or prior branch records. The registry's
 canonical validator passes independently.
 
 The registry validator, final diff check and path audits are recorded in the
-handoff for the current accepted remediation candidate. The implementation
-candidate is `e9ef63b802a8cb08ea38b32e87b206432c08b120`; no self-referential
-governance-commit SHA field is maintained.
+handoff for exact audited governance head
+`9cf25c157a4f4114f41ae74d4e04e009392414e3`. The accepted implementation is
+`e9ef63b802a8cb08ea38b32e87b206432c08b120`; no self-referential SHA for this
+new governance commit is maintained.
 
 ## Limitations
 
