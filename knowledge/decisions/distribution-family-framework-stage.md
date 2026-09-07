@@ -1,13 +1,14 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP02 — IN_PROGRESS`
+- **Checkpoint actual:** `CP02 — COMPLETE`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
 - **Rama de cierre post-merge de CP01:** `docs/distribution-family-framework-cp01-post-merge`
 - **Baseline de CP02:** `origin/main` @ `ccff392af13d2cb52d1f3888a986ef58be0099e2`
 - **Rama de implementación de CP02:** `feature/distribution-family-framework-cp02-continuous-core`
+- **Rama de cierre post-merge de CP02:** `docs/distribution-family-framework-cp02-post-merge`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación:** `implementation-engineering`
@@ -29,7 +30,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | Checkpoint | Estado | Resultado esperado |
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
-| CP02 — Continuous distribution core | `IN_PROGRESS` | Remediación `e9ef63b…` aceptada; governance head `9cf25c…` con `ADVERSARIAL_PASS`; integración pendiente |
+| CP02 — Continuous distribution core | `COMPLETE` | Implementación `e9ef63b…`, `ADVERSARIAL_PASS` e integración mediante PR #8 en `main@aa5723d…` |
 | CP03 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
@@ -48,7 +49,8 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 
 - Contrato ejecutable congelado: [`distribution-family-framework-cp02-contract.md`](distribution-family-framework-cp02-contract.md)
 - Evidencia de implementación: [`../evidence/distribution-family-framework-cp02-evidence.md`](../evidence/distribution-family-framework-cp02-evidence.md)
-- Estado de rama: `BR-019`
+- Rama de implementación integrada: `BR-019`
+- Rama de cierre post-merge: `BR-020`
 
 ## Alcance autorizado
 
@@ -118,8 +120,8 @@ nuevas familias.
 
 CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
 `main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
-`in_progress`; CP02 está `IN_PROGRESS` y CP03–CP08 permanecen `NOT_STARTED` con
-autorización independiente requerida.
+`in_progress`; CP02 está ahora `COMPLETE` y CP03–CP08 permanecen `NOT_STARTED`
+con autorización independiente requerida.
 
 ## Apertura autorizada de CP02
 
@@ -149,13 +151,20 @@ reauditó de forma independiente el governance head exacto
 `CLOSED_REMEDIATED`, `ADV-CP02-002` queda `CLOSED_HARDENED` y
 `ADV-CP02-003` permanece únicamente como INFO preexistente fuera de alcance.
 
-La integración permanece `PENDING`; CP02 continúa `IN_PROGRESS`. No se aceptan
-ni implementan fitting, `FitResult`,
+El commit `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6` materializó el resultado
+adversarial como governance head pre-merge final. PR #8 integró ese head mediante
+el merge commit `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c`, cuyos parents son
+`ccff392af13d2cb52d1f3888a986ef58be0099e2` y
+`b3d116f2f3e82b74ab6fb5f8337e217104c3bca6`.
+
+La integración y la gobernanza de CP02 están cerradas; CP02 queda `COMPLETE`.
+El stage general permanece `IN_PROGRESS` y CP03–CP08 siguen `NOT_STARTED`. CP02
+no acepta ni implementa fitting, `FitResult`,
 `FittedDistribution`, estimación o incertidumbre de parámetros, GOF,
 calibración, `MethodSelector`, routing, familias discretas ni CP03.
 
 ## Siguiente acción
 
-El governance head auditado `9cf25c157a4f4114f41ae74d4e04e009392414e3`
-queda pendiente de una autorización independiente de integración. No hay
-autorización de PR, merge ni de inicio de CP03.
+La rama `docs/distribution-family-framework-cp02-post-merge`, registrada como
+`BR-020`, materializa este cierre para revisión de Arquitectura. No hay
+autorización de push, PR, merge ni de inicio de CP03 para esa rama.
