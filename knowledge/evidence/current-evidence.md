@@ -160,8 +160,10 @@ Fuente canónica:
   `a1e4d61f0026f8407506d039788bb2df2eafa680`
 - **Baseline:** `main@02a65c80c5da10295d6eeef42e691772d0686ca2`
 - **Rama:** `feature/distribution-family-framework-cp03-discrete-core`
-- **Auditoría adversarial pre-merge:** `ADVERSARIAL_PASS`
-- **Clasificación:** 0 BLOCKER, 0 MAJOR, 0 MINOR, 1 INFO.
+- **Auditoría de implementación (`4f7fa09…`):** `ADVERSARIAL_PASS`;
+  0 BLOCKER, 0 MAJOR, 0 MINOR, 1 INFO (`INFO-001`).
+- **Auditoría final del PR head (`a1e4d61…`):** clon independiente fresco
+  PASS; `ADVERSARIAL_PASS`; 0 BLOCKER, 0 MAJOR, 0 MINOR, 2 INFO.
 - **Regresión congelada:** 360 passed.
 - **Tests CP03:** 215 passed.
 - **Superficie de distribución:** 575 passed.
@@ -176,6 +178,13 @@ Fuente canónica:
   sampling extremo; los fallos backend numéricos/de rango se traducen a
   `FloatingPointError` después de la validación pública, sin thresholds
   matemáticos para `r` o `p`.
+- **INFO-002:** deuda heredada y fuera de alcance de Knowledge Base:
+  `test_registry_has_unique_ids_and_exactly_the_governed_branches` y
+  `test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly`.
+- **Auditoría final del PR head:** registro PASS; base 7 passed / 2 failed;
+  head 7 passed / 2 failed; `NO_NEW_FAILURES`; superficie de distribución 575
+  passed; `NO_CHECKS_REPORTED`; 0 workflow runs, 0 reviews registradas y 0
+  threads sin resolver.
 - **Validación de Knowledge Base:** parent 7 passed / 2 failed; candidato 7
   passed / 2 failed; `NO_NEW_FAILURES`. Los dos fallos heredados exactos y el
   entorno de materialización constan en EV-010. La suite completa del

@@ -440,7 +440,7 @@
       "kind": "evidence",
       "title": "CP03 discrete core implementation and adversarial evidence",
       "status": "accepted",
-      "scope": "Exact CP03 implementation 4f7fa09bc7ab501d21f6d27dada30ade23397588 with ADVERSARIAL_PASS, final governance head a1e4d61f0026f8407506d039788bb2df2eafa680 and PR #10 integration at main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
+      "scope": "CP03 implementation audit 4f7fa09bc7ab501d21f6d27dada30ade23397588 with ADVERSARIAL_PASS and INFO=1; distinct final PR-head audit a1e4d61f0026f8407506d039788bb2df2eafa680 from a fresh independent clone with ADVERSARIAL_PASS, INFO=2 and no new Knowledge Base failures; PR #10 integration at main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
       "path": "knowledge/evidence/distribution-family-framework-cp03-evidence.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-cp03-contract.md",
@@ -460,7 +460,7 @@
         "decision-owner"
       ],
       "supersedes": [],
-      "tags": ["distribution-families", "cp03", "discrete", "negative-binomial", "implementation", "adversarial-pass", "pre-merge", "integrated", "pr-10", "scipy-backend-limit"]
+      "tags": ["distribution-families", "cp03", "discrete", "negative-binomial", "implementation", "adversarial-pass", "final-pr-head-audit", "fresh-independent-clone", "no-new-knowledge-failures", "arch-cp03-pm-001", "integrated", "pr-10", "scipy-backend-limit"]
     },
     {
       "id": "BR-017",
@@ -636,7 +636,7 @@
         "ahead_of_main": 0,
         "behind_main": 1,
         "unique_commits": [],
-        "decision_reason": "Product Owner authorized CP03 architecture and implementation from exact main@02a65c80c5da10295d6eeef42e691772d0686ca2. DEC-012 froze the contract, EV-009 recorded baseline, implementation 4f7fa09bc7ab501d21f6d27dada30ade23397588 received independent ADVERSARIAL_PASS, and final governance head a1e4d61f0026f8407506d039788bb2df2eafa680 was integrated through PR #10 in tree-equivalent merge commit 28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649.",
+        "decision_reason": "Product Owner authorized CP03 architecture and implementation from exact main@02a65c80c5da10295d6eeef42e691772d0686ca2. DEC-012 froze the contract and EV-009 recorded baseline. Implementation 4f7fa09bc7ab501d21f6d27dada30ade23397588 received independent ADVERSARIAL_PASS with INFO=1. The distinct final PR-head audit of a1e4d61f0026f8407506d039788bb2df2eafa680 used a fresh independent clone and returned ADVERSARIAL_PASS with INFO=2 and no new Knowledge Base failures. That final head was integrated through PR #10 in tree-equivalent merge commit 28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649.",
         "merge_base": "a1e4d61f0026f8407506d039788bb2df2eafa680",
         "parent_branch": "main",
         "parent_sha": "02a65c80c5da10295d6eeef42e691772d0686ca2",

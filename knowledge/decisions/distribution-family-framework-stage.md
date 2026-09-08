@@ -34,7 +34,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
 | CP02 — Continuous distribution core | `COMPLETE` | Implementación `e9ef63b…`, `ADVERSARIAL_PASS` e integración mediante PR #8 en `main@aa5723d…` |
-| CP03 — Discrete distribution core | `COMPLETE` | Implementación `4f7fa09…`, `ADVERSARIAL_PASS` e integración mediante PR #10 en `main@28b57a2…` |
+| CP03 — Discrete distribution core | `COMPLETE` | Implementación `4f7fa09…` y PR head `a1e4d61…` con auditorías `ADVERSARIAL_PASS`; integración mediante PR #10 en `main@28b57a2…` |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
 | CP06 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -196,8 +196,9 @@ familias discretas o CP04. CP04–CP08 permanecen `NOT_STARTED`.
 
 La implementación exacta `4f7fa09bc7ab501d21f6d27dada30ade23397588`
 materializa el contrato discreto congelado en `DEC-012`. Antigravity completó
-la auditoría independiente pre-merge y emitió `ADVERSARIAL_PASS`: 0 `BLOCKER`,
-0 `MAJOR`, 0 `MINOR` y 1 `INFO`.
+su auditoría de implementación y emitió `ADVERSARIAL_PASS`: 0 `BLOCKER`,
+0 `MAJOR`, 0 `MINOR` y 1 `INFO` (`INFO-001`, limitación acotada del backend
+SciPy correctamente traducida).
 
 Las superficies registradas son 360 tests de regresión congelada, 215 tests
 CP03 y 575 tests de distribución. `INFO-001` documenta únicamente una
@@ -206,8 +207,17 @@ los fallos numéricos o de rango posteriores a la validación pública se traduc
 correctamente a `FloatingPointError`, sin añadir thresholds matemáticos para
 `r` o `p`.
 
-`EV-010` materializa esta evidencia. El governance head pre-merge final
-`a1e4d61f0026f8407506d039788bb2df2eafa680` fue integrado por PR #10 mediante
+`EV-010` preserva por separado ese resultado y la auditoría final del PR head
+exacto `a1e4d61f0026f8407506d039788bb2df2eafa680`. La auditoría final se realizó
+desde un clon independiente fresco y emitió `ADVERSARIAL_PASS`: 0 `BLOCKER`,
+0 `MAJOR`, 0 `MINOR` y 2 `INFO`. `INFO-001` conserva la limitación acotada del
+backend; `INFO-002` registra únicamente los dos fallos heredados y fuera de
+alcance de Knowledge Base. El registro pasó, la superficie de distribución
+registró 575 passed y el diferencial de Knowledge Base fue `NO_NEW_FAILURES`
+(base y head: 7 passed, 2 failed). GitHub reportó `NO_CHECKS_REPORTED`, cero
+workflow runs, cero reviews registradas y cero threads sin resolver.
+
+El PR head final fue integrado por PR #10 mediante
 el merge commit `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`, cuyos parents exactos son
 `02a65c80c5da10295d6eeef42e691772d0686ca2` y
 `a1e4d61f0026f8407506d039788bb2df2eafa680`. El tree del merge y el tree del

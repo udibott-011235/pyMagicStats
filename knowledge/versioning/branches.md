@@ -132,15 +132,22 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 - `da1b9d51e4bfeb7f262db182cf10993f59b1162b` materializó y publicó la
   arquitectura congelada; `4f7fa09bc7ab501d21f6d27dada30ade23397588`
   implementó y publicó el candidato discreto para revisión.
-- Antigravity completó la auditoría pre-merge del SHA de implementación con
-  `ADVERSARIAL_PASS`: 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO.
+- Antigravity completó la auditoría del SHA de implementación `4f7fa09…` con
+  `ADVERSARIAL_PASS`: 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO (`INFO-001`).
 - `INFO-001` registra solamente una limitación acotada de ejecutabilidad del
   backend SciPy, traducida correctamente a `FloatingPointError` sin añadir
   thresholds matemáticos.
 - `EV-010` materializa 360 tests de regresión congelada, 215 tests CP03 y 575
   tests de distribución.
 - `a1e4d61f0026f8407506d039788bb2df2eafa680` materializa el governance head
-  pre-merge final. PR #10 integra ese head mediante
+  pre-merge final.
+- Una auditoría distinta del PR head exacto `a1e4d61…`, ejecutada desde clon
+  independiente fresco, devuelve `ADVERSARIAL_PASS`: 0 BLOCKER, 0 MAJOR,
+  0 MINOR y 2 INFO. `INFO-001` preserva la limitación backend acotada;
+  `INFO-002` registra los dos fallos heredados de Knowledge Base. Registro y
+  superficie de 575 tests pasan, el diferencial es `NO_NEW_FAILURES` y GitHub
+  reporta 0 checks/workflows, 0 reviews y 0 threads sin resolver.
+- PR #10 integra ese head mediante
   `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`, con parents exactos
   `02a65c80c5da10295d6eeef42e691772d0686ca2` y
   `a1e4d61f0026f8407506d039788bb2df2eafa680`.

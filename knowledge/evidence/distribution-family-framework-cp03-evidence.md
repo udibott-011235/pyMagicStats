@@ -9,7 +9,8 @@
 - **Parent:** `da1b9d51e4bfeb7f262db182cf10993f59b1162b`
 - **Baseline:** `origin/main` @ `02a65c80c5da10295d6eeef42e691772d0686ca2`
 - **Rama:** `feature/distribution-family-framework-cp03-discrete-core`
-- **Auditoría independiente:** `ADVERSARIAL_PASS`
+- **Auditoría de implementación:** `ADVERSARIAL_PASS` @ `4f7fa09bc7ab501d21f6d27dada30ade23397588`
+- **Auditoría final del PR head:** `ADVERSARIAL_PASS` @ `a1e4d61f0026f8407506d039788bb2df2eafa680`
 - **Integración:** `COMPLETE` mediante PR #10
 - **Merge SHA:** `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`
 - **Merge parents:** `02a65c80c5da10295d6eeef42e691772d0686ca2`, `a1e4d61f0026f8407506d039788bb2df2eafa680`
@@ -27,7 +28,14 @@ Final pre-merge governance head
 merge commit `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`. CP03 implementation,
 integration and governance are complete; the overall stage remains in progress.
 
-The audit classification is:
+## ARCH-CP03-PM-001 — independent audit-record separation
+
+This correction preserves two independent records: the implementation audit at
+`4f7fa09bc7ab501d21f6d27dada30ade23397588` and the final exact PR-head audit
+at `a1e4d61f0026f8407506d039788bb2df2eafa680`. Their classifications are not
+interchangeable. No integration identity or lifecycle state is changed.
+
+The implementation audit classification is:
 
 ```text
 ADVERSARIAL_PASS
@@ -36,6 +44,10 @@ MAJOR=0
 MINOR=0
 INFO=1
 ```
+
+This classification belongs only to the implementation audit at
+`4f7fa09bc7ab501d21f6d27dada30ade23397588`. Its sole informational finding is
+`INFO-001` below.
 
 ## Validated surfaces
 
@@ -114,6 +126,45 @@ After public parameters, RNG and size pass validation, backend numerical or
 integer-range failures are translated to `FloatingPointError` with stable
 `backend numerical failure: rvs` semantics and the original exception chained.
 No arbitrary mathematical threshold for `r` or `p` is introduced.
+
+## Final exact PR-head audit
+
+Antigravity independently audited the final exact PR head
+`a1e4d61f0026f8407506d039788bb2df2eafa680` from a fresh independent clone.
+This is a distinct audit record from the implementation audit above.
+
+```text
+SHA=a1e4d61f0026f8407506d039788bb2df2eafa680
+FRESH_INDEPENDENT_CLONE=PASS
+ADVERSARIAL_PASS
+BLOCKER=0
+MAJOR=0
+MINOR=0
+INFO=2
+REGISTRY=PASS
+BASE_KNOWLEDGE_TESTS=7 passed, 2 failed
+HEAD_KNOWLEDGE_TESTS=7 passed, 2 failed
+KNOWLEDGE_DIFFERENTIAL=NO_NEW_FAILURES
+DISTRIBUTION_SURFACE=575 passed
+CI_STATUS=NO_CHECKS_REPORTED
+WORKFLOW_RUNS=0
+RECORDED_REVIEWS=0
+UNRESOLVED_THREADS=0
+```
+
+`INFO-001` remains the bounded SciPy extreme-RVS backend limitation correctly
+translated to `FloatingPointError`.
+
+### INFO-002 — inherited out-of-scope Knowledge Base debt
+
+The second informational finding belongs to the final PR-head audit and is
+limited to the two inherited Knowledge Base failures:
+
+- `test_registry_has_unique_ids_and_exactly_the_governed_branches`
+- `test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly`
+
+The base and final head each produced 7 passed / 2 failed; therefore the exact
+Knowledge Base differential is `NO_NEW_FAILURES`.
 
 ## Knowledge Base validation traceability
 

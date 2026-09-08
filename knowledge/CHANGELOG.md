@@ -18,14 +18,22 @@
   materializa el core discreto y `NegativeBinomialFamily` congelados en
   `DEC-012`.
 - Antigravity completó la auditoría independiente pre-merge con
-  `ADVERSARIAL_PASS`: 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO.
+  `ADVERSARIAL_PASS` sobre la implementación exacta `4f7fa09…`: 0 BLOCKER,
+  0 MAJOR, 0 MINOR y 1 INFO (`INFO-001`).
 - `EV-010` registra 360 tests de regresión congelada, 215 tests CP03 y 575
   tests de superficie de distribución en PASS.
 - `INFO-001` queda acotado a una limitación de ejecutabilidad extrema del
   backend SciPy correctamente traducida a `FloatingPointError`; no se añaden
   thresholds matemáticos para `r` o `p`.
 - `a1e4d61f0026f8407506d039788bb2df2eafa680` materializa el governance head
-  pre-merge final. PR #10 lo integra mediante merge commit
+  pre-merge final. Una segunda auditoría del head exacto del PR, desde clon
+  independiente fresco, devuelve `ADVERSARIAL_PASS`: 0 BLOCKER, 0 MAJOR,
+  0 MINOR y 2 INFO (`INFO-001` y la deuda heredada `INFO-002`); registro PASS,
+  575 tests de distribución y Knowledge Base 7 passed / 2 inherited failed sin
+  fallos nuevos. GitHub reportó cero workflows, checks, reviews y threads.
+- `ARCH-CP03-PM-001` queda corregido al preservar esas dos auditorías como
+  registros distintos, sin alterar identidad, integración ni lifecycle.
+- PR #10 integra ese head mediante merge commit
   `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`, con parents
   `02a65c80c5da10295d6eeef42e691772d0686ca2` y
   `a1e4d61f0026f8407506d039788bb2df2eafa680`.
