@@ -4,14 +4,15 @@
 
 Observación inicial materializada: `2026-08-30`; apertura de `BR-017`, cierre
 post-merge mediante `BR-018`, apertura CP02 mediante `BR-019` y cierre
-post-merge CP02 mediante `BR-020` materializados: `2026-09-06`. Consulte `EV-003`
+post-merge CP02 mediante `BR-020` materializados: `2026-09-06`; apertura CP03
+y evidencia adversarial pre-merge mediante `BR-021`: `2026-09-07`. Consulte `EV-003`
 para la evidencia Git reproducible inicial, `EV-005` para la integración de
 Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 `DEC-006` para la autoridad de lifecycle.
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c` | CP02 integrado; no modificar directamente; CP03 requiere autorización |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `02a65c80c5da10295d6eeef42e691772d0686ca2` | CP02 cerrado; no modificar directamente; CP03 auditado con integración pendiente |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -30,7 +31,8 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-017 | `feature/distribution-family-framework-cp01` | `archived` | `fully_contained` | `merged` | 0/1 | `3f9acd5a51ce38ae62b9800d50efb0949c6531f0` | conservar la rama remota; no borrar |
 | BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | esperar revisión de Arquitectura; sin PR, merge ni CP02/CP03 |
 | BR-019 | `feature/distribution-family-framework-cp02-continuous-core` | `archived` | `fully_contained` | `merged` | 0/1 | `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6` | integrada vía PR #8; preservar rama remota |
-| BR-020 | `docs/distribution-family-framework-cp02-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c` | esperar revisión de Arquitectura; sin push, PR, merge ni CP03 |
+| BR-020 | `docs/distribution-family-framework-cp02-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `37bc8de97185794e9ef14b33d4ed00d3da1a660e` | integrada vía PR #9; preservar rama remota |
+| BR-021 | `feature/distribution-family-framework-cp03-discrete-core` | `under_review` | `contains_main` | `pending` | 2/0 | `4f7fa09bc7ab501d21f6d27dada30ade23397588` | `ADVERSARIAL_PASS`; revisar EV-010; sin PR ni merge |
 
 ### Cronología de BR-017
 
@@ -100,7 +102,42 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 - `head_sha_at_decision` conserva ese snapshot de apertura y no intenta
   autorreferenciar el commit de gobernanza posterior.
 - BR-020 materializa únicamente el cierre post-merge de CP02 para revisión de
-  Arquitectura. No autoriza push, PR, merge, CP03 ni cambios de producción.
+  Arquitectura.
+- Arquitectura aceptó el candidato `37bc8de97185794e9ef14b33d4ed00d3da1a660e`;
+  PR #9 lo integró mediante `02a65c80c5da10295d6eeef42e691772d0686ca2`,
+  con parents `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c` y
+  `37bc8de97185794e9ef14b33d4ed00d3da1a660e`.
+- BR-020 queda `archived`, `fully_contained` y `merged`; su rama remota se
+  preserva.
+
+### Apertura de BR-021
+
+- `feature/distribution-family-framework-cp03-discrete-core` se abre desde
+  `main@02a65c80c5da10295d6eeef42e691772d0686ca2` exacto, con árbol limpio y
+  cero commits únicos al abrir.
+- En la apertura, el snapshot registrado fue
+  `main@02a65c80c5da10295d6eeef42e691772d0686ca2`. Después de la implementación
+  autorizada por separado y de su aceptación por Arquitectura/Owner,
+  `head_sha_at_decision` se avanzó explícitamente al SHA de implementación
+  auditado `4f7fa09bc7ab501d21f6d27dada30ade23397588`.
+- La relación registrada es `relation_to_main=contains_main`, con
+  `ahead/behind=2/0`; los commits únicos son
+  `da1b9d51e4bfeb7f262db182cf10993f59b1162b` y
+  `4f7fa09bc7ab501d21f6d27dada30ade23397588`.
+- El commit documental que materializa esta corrección no se autorreferencia ni
+  sustituye el `head_sha_at_decision` aceptado. `DEC-012` congela la
+  arquitectura del core discreto y `EV-009` registra reconnaissance y baseline.
+- `da1b9d51e4bfeb7f262db182cf10993f59b1162b` materializó y publicó la
+  arquitectura congelada; `4f7fa09bc7ab501d21f6d27dada30ade23397588`
+  implementó y publicó el candidato discreto para revisión.
+- Antigravity completó la auditoría pre-merge del SHA de implementación con
+  `ADVERSARIAL_PASS`: 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO.
+- `INFO-001` registra solamente una limitación acotada de ejecutabilidad del
+  backend SciPy, traducida correctamente a `FloatingPointError` sin añadir
+  thresholds matemáticos.
+- `EV-010` materializa 360 tests de regresión congelada, 215 tests CP03 y 575
+  tests de distribución. BR-021 permanece `under_review`, con integración
+  `pending`; no hay autorización de PR, merge o CP04.
 
 ## Supersesión Gate 2
 

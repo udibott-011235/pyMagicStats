@@ -16,6 +16,7 @@ Decisiones iniciales indexadas:
 - `DEC-009`: apertura y checkpoints de `STAGE-DIST-FAMILIES-001`.
 - `DEC-010`: arquitectura y contratos del Distribution Family Framework.
 - `DEC-011`: contrato ejecutable del core continuo para CP02.
+- `DEC-012`: contrato ejecutable congelado del core discreto para CP03.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
 

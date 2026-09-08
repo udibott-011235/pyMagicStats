@@ -17,6 +17,7 @@ class SupportKind(str, Enum):
     """Mathematical domain kind for a probability distribution."""
 
     CONTINUOUS = "continuous"
+    DISCRETE = "discrete"
 
 
 def _canonical_bound(value: Any, *, name: str) -> float:
@@ -130,6 +131,9 @@ class DistributionSupport:
             return bool(result.item()) if scalar_input else result
         result = np.isfinite(numeric)
         result &= ~boolean_mask
+        if self.kind is SupportKind.DISCRETE:
+            with np.errstate(invalid="ignore"):
+                result &= numeric == np.trunc(numeric)
         if self.lower_closed:
             result &= numeric >= self.lower
         else:
@@ -198,6 +202,76 @@ def _normalize_result(
     if scalar_input:
         return float(result.item())
     return result
+
+
+def _discrete_sample_failure(detail: str) -> FloatingPointError:
+    return FloatingPointError(f"backend numerical failure: rvs {detail}")
+
+
+def _normalize_discrete_sample_result(
+    value: Any,
+    *,
+    scalar_input: bool,
+    expected_shape: tuple[int, ...] | None,
+) -> int | np.ndarray:
+    """Normalize backend samples without rounding or integer overflow."""
+
+    try:
+        result = np.asarray(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise _discrete_sample_failure("returned non-numeric samples") from exc
+
+    if np.issubdtype(result.dtype, np.bool_) or np.issubdtype(
+        result.dtype, np.complexfloating
+    ):
+        raise _discrete_sample_failure("returned non-integer samples")
+
+    if np.issubdtype(result.dtype, np.signedinteger):
+        normalized = np.asarray(result, dtype=np.int64)
+    elif np.issubdtype(result.dtype, np.unsignedinteger):
+        if np.any(result > np.iinfo(np.int64).max):
+            raise _discrete_sample_failure("returned samples outside int64 range")
+        normalized = np.asarray(result, dtype=np.int64)
+    elif np.issubdtype(result.dtype, np.floating):
+        if not np.all(np.isfinite(result)):
+            raise _discrete_sample_failure("returned non-finite samples")
+        with np.errstate(invalid="ignore"):
+            if not np.all(result == np.trunc(result)):
+                raise _discrete_sample_failure("returned fractional samples")
+        int64_limit = float(2**63)
+        if np.any((result < -int64_limit) | (result >= int64_limit)):
+            raise _discrete_sample_failure("returned samples outside int64 range")
+        normalized = np.asarray(result, dtype=np.int64)
+    elif result.dtype == object:
+        normalized = np.empty(result.shape, dtype=np.int64)
+        for index, sample in np.ndenumerate(result):
+            if isinstance(sample, (bool, np.bool_)) or not isinstance(sample, Real):
+                raise _discrete_sample_failure("returned non-numeric samples")
+            try:
+                finite_sample = float(sample)
+            except (OverflowError, TypeError, ValueError) as exc:
+                raise _discrete_sample_failure(
+                    "returned samples outside int64 range"
+                ) from exc
+            if not math.isfinite(finite_sample):
+                raise _discrete_sample_failure("returned non-finite samples")
+            if finite_sample != math.trunc(finite_sample):
+                raise _discrete_sample_failure("returned fractional samples")
+            integer_sample = int(sample)
+            if not -(2**63) <= integer_sample < 2**63:
+                raise _discrete_sample_failure("returned samples outside int64 range")
+            normalized[index] = integer_sample
+    else:
+        raise _discrete_sample_failure("returned non-numeric samples")
+
+    if scalar_input:
+        try:
+            return int(normalized.item())
+        except ValueError as exc:
+            raise _discrete_sample_failure("returned a non-scalar sample") from exc
+    if normalized.shape != expected_shape:
+        raise _discrete_sample_failure("returned an unexpected sample shape")
+    return normalized
 
 
 def _validated_rng(rng: Any) -> np.random.Generator:
@@ -305,6 +379,12 @@ class DistributionFamily(ABC):
 
 class ContinuousDistributionFamily(DistributionFamily, ABC):
     """Stateless descriptor for a continuous probability family."""
+
+    __slots__ = ()
+
+
+class DiscreteDistributionFamily(DistributionFamily, ABC):
+    """Stateless descriptor for a discrete probability family."""
 
     __slots__ = ()
 
@@ -431,11 +511,89 @@ class ParameterizedContinuousDistribution(ParameterizedDistribution):
         return self._evaluate("logpdf", x, name="x")
 
 
+@dataclass(frozen=True, slots=True)
+class ParameterizedDiscreteDistribution(ParameterizedDistribution):
+    """Immutable parameterized distribution with discrete operations."""
+
+    def __post_init__(self) -> None:
+        ParameterizedDistribution.__post_init__(self)
+        if not isinstance(self.family, DiscreteDistributionFamily):
+            raise TypeError("family must be a DiscreteDistributionFamily")
+
+    def pmf(self, x: Any) -> float | np.ndarray:
+        return self._evaluate("pmf", x, name="x")
+
+    def logpmf(self, x: Any) -> float | np.ndarray:
+        return self._evaluate("logpmf", x, name="x")
+
+    def ppf(self, q: Any) -> float | np.ndarray:
+        probabilities, scalar_input = _query_input(q, name="q")
+        if np.any((probabilities < 0.0) | (probabilities > 1.0)):
+            raise ValueError("q must contain only values in [0, 1]")
+
+        if scalar_input:
+            probability = float(probabilities.item())
+            if probability == 0.0:
+                return float(self.support.lower)
+            if probability == 1.0:
+                return float(self.support.upper)
+            result = self.family._backend(self.parameters).ppf(probabilities)
+            return _normalize_result(
+                result,
+                scalar_input=True,
+                operation="ppf",
+            )
+
+        result = np.empty(probabilities.shape, dtype=np.float64)
+        lower_endpoint = probabilities == 0.0
+        upper_endpoint = probabilities == 1.0
+        interior = ~(lower_endpoint | upper_endpoint)
+        result[lower_endpoint] = self.support.lower
+        result[upper_endpoint] = self.support.upper
+        if np.any(interior):
+            interior_result = self.family._backend(self.parameters).ppf(
+                probabilities[interior]
+            )
+            result[interior] = _normalize_result(
+                interior_result,
+                scalar_input=False,
+                operation="ppf",
+            )
+        return result
+
+    def rvs(
+        self,
+        size: None | int | tuple[int, ...] = None,
+        *,
+        rng: Any,
+    ) -> int | np.ndarray:
+        """Sample integers with the frozen explicit RNG contract."""
+
+        validated_size = _validated_size(size)
+        generator = _validated_rng(rng)
+        try:
+            result = self.family._backend(self.parameters).rvs(
+                size=validated_size,
+                random_state=generator,
+            )
+        except (ValueError, OverflowError, FloatingPointError) as exc:
+            raise _discrete_sample_failure("could not generate samples") from exc
+        return _normalize_discrete_sample_result(
+            result,
+            scalar_input=validated_size is None,
+            expected_shape=(validated_size,)
+            if isinstance(validated_size, int)
+            else validated_size,
+        )
+
+
 __all__ = [
     "ContinuousDistributionFamily",
+    "DiscreteDistributionFamily",
     "DistributionFamily",
     "DistributionSupport",
     "ParameterizedContinuousDistribution",
+    "ParameterizedDiscreteDistribution",
     "ParameterizedDistribution",
     "SupportKind",
 ]

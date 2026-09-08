@@ -117,7 +117,73 @@ Fuente canónica:
 - **No demuestra:** fitting, estimación, GOF, calibración, selección automática
   ni autorización de CP03; tampoco garantiza semántica de igualdad/hash entre
   instancias separadas de descriptores Family. El stage general permanece
-  `IN_PROGRESS` y CP03–CP08 siguen `NOT_STARTED`.
+  `IN_PROGRESS`; CP03 está `IN_PROGRESS` con integración `PENDING`, y
+  CP04–CP08 siguen `NOT_STARTED`.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp02-evidence.md`.
+
+## EV-009 — Distribution Family Framework CP03 discrete core baseline
+
+- **Estado:** `accepted`
+- **CP03:** `IN_PROGRESS`
+- **Reconnaissance:** `COMPLETE`
+- **Arquitectura:** `FROZEN`
+- **Implementación:** `PENDING`
+- **Baseline:** `main@02a65c80c5da10295d6eeef42e691772d0686ca2`
+- **Rama:** `feature/distribution-family-framework-cp03-discrete-core`
+- **Contrato:** `DEC-012`
+- **Superficie legacy actual:** `BinomialDistribution`,
+  `PoissonDistribution`, `DiscreteDistributionValidator` y helpers Pearson GOF.
+- **Nueva superficie discreta de familias antes de CP03:** ninguna.
+- **Gaps confirmados antes de implementar:** `DistributionSupport` todavía no
+  expresa membership entero discreto y el normalizador CP02 de resultados no
+  satisface el contrato `int`/`int64` de RVS discreto.
+- **Baseline heredado:** 49 regresiones legacy, 311 tests CP02 y 360 tests
+  combinados de distribución en PASS; no se reejecutaron en esta tarea de
+  gobernanza.
+- **Demuestra:** reconnaissance completo y contrato discreto congelado.
+- **No demuestra:** implementación CP03, ejecutabilidad numérica de RVS extremo,
+  fitting, GOF, routing, familias adicionales ni autorización de producción.
+
+Fuente canónica:
+`knowledge/evidence/distribution-family-framework-cp03-baseline.md`.
+
+## EV-010 — Distribution Family Framework CP03 implementation
+
+- **Estado:** `accepted`
+- **CP03:** `IN_PROGRESS`
+- **Arquitectura:** `FROZEN` mediante `DEC-012`
+- **Implementación auditada:**
+  `4f7fa09bc7ab501d21f6d27dada30ade23397588`
+- **Baseline:** `main@02a65c80c5da10295d6eeef42e691772d0686ca2`
+- **Rama:** `feature/distribution-family-framework-cp03-discrete-core`
+- **Auditoría adversarial pre-merge:** `ADVERSARIAL_PASS`
+- **Clasificación:** 0 BLOCKER, 0 MAJOR, 0 MINOR, 1 INFO.
+- **Regresión congelada:** 360 passed.
+- **Tests CP03:** 215 passed.
+- **Superficie de distribución:** 575 passed.
+- **Diff exacto de implementación:** cinco rutas: exports de
+  `pyMagicStat/distributions`, exports y core de `families`, implementación
+  discreta y `tests/test_discrete_distribution_families.py`; la lista canónica
+  exacta consta en EV-010.
+- **Probes RVS extremos acotados:** matriz completa de 16 casos en EV-010,
+  todos con `size=5`, `rng=42` y timeout externo de 10 segundos: 10 `SUCCESS`,
+  6 `NUMERICAL_FAILURE`, 0 `BACKEND_RANGE_FAILURE` y 0 `TIMEOUT`.
+- **INFO-001:** limitación acotada de ejecutabilidad del backend SciPy para
+  sampling extremo; los fallos backend numéricos/de rango se traducen a
+  `FloatingPointError` después de la validación pública, sin thresholds
+  matemáticos para `r` o `p`.
+- **Validación de Knowledge Base:** parent 7 passed / 2 failed; candidato 7
+  passed / 2 failed; `NO_NEW_FAILURES`. Los dos fallos heredados exactos y el
+  entorno de materialización constan en EV-010. La suite completa del
+  repositorio no se reejecutó para esta corrección documental.
+- **Integración:** `PENDING`.
+- **Demuestra:** implementación del contrato discreto, paridad SciPy,
+  endpoints PPF canónicos, RNG explícito, normalización `int`/`int64`, guards
+  fail-closed y aislamiento legacy en el SHA auditado.
+- **No demuestra:** integración canónica, finalización de CP03, fitting, GOF,
+  routing, familias discretas adicionales ni autorización de CP04.
+
+Fuente canónica:
+`knowledge/evidence/distribution-family-framework-cp03-evidence.md`.
