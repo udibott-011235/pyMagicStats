@@ -163,10 +163,21 @@ Fuente canónica:
 - **Regresión congelada:** 360 passed.
 - **Tests CP03:** 215 passed.
 - **Superficie de distribución:** 575 passed.
+- **Diff exacto de implementación:** cinco rutas: exports de
+  `pyMagicStat/distributions`, exports y core de `families`, implementación
+  discreta y `tests/test_discrete_distribution_families.py`; la lista canónica
+  exacta consta en EV-010.
+- **Probes RVS extremos acotados:** matriz completa de 16 casos en EV-010,
+  todos con `size=5`, `rng=42` y timeout externo de 10 segundos: 10 `SUCCESS`,
+  6 `NUMERICAL_FAILURE`, 0 `BACKEND_RANGE_FAILURE` y 0 `TIMEOUT`.
 - **INFO-001:** limitación acotada de ejecutabilidad del backend SciPy para
   sampling extremo; los fallos backend numéricos/de rango se traducen a
   `FloatingPointError` después de la validación pública, sin thresholds
   matemáticos para `r` o `p`.
+- **Validación de Knowledge Base:** parent 7 passed / 2 failed; candidato 7
+  passed / 2 failed; `NO_NEW_FAILURES`. Los dos fallos heredados exactos y el
+  entorno de materialización constan en EV-010. La suite completa del
+  repositorio no se reejecutó para esta corrección documental.
 - **Integración:** `PENDING`.
 - **Demuestra:** implementación del contrato discreto, paridad SciPy,
   endpoints PPF canónicos, RNG explícito, normalización `int`/`int64`, guards

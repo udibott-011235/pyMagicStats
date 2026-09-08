@@ -115,7 +115,17 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 - `feature/distribution-family-framework-cp03-discrete-core` se abre desde
   `main@02a65c80c5da10295d6eeef42e691772d0686ca2` exacto, con árbol limpio y
   cero commits únicos al abrir.
-- `head_sha_at_decision` conserva el snapshot de apertura. `DEC-012` congela la
+- En la apertura, el snapshot registrado fue
+  `main@02a65c80c5da10295d6eeef42e691772d0686ca2`. Después de la implementación
+  autorizada por separado y de su aceptación por Arquitectura/Owner,
+  `head_sha_at_decision` se avanzó explícitamente al SHA de implementación
+  auditado `4f7fa09bc7ab501d21f6d27dada30ade23397588`.
+- La relación registrada es `relation_to_main=contains_main`, con
+  `ahead/behind=2/0`; los commits únicos son
+  `da1b9d51e4bfeb7f262db182cf10993f59b1162b` y
+  `4f7fa09bc7ab501d21f6d27dada30ade23397588`.
+- El commit documental que materializa esta corrección no se autorreferencia ni
+  sustituye el `head_sha_at_decision` aceptado. `DEC-012` congela la
   arquitectura del core discreto y `EV-009` registra reconnaissance y baseline.
 - `da1b9d51e4bfeb7f262db182cf10993f59b1162b` materializó y publicó la
   arquitectura congelada; `4f7fa09bc7ab501d21f6d27dada30ade23397588`
