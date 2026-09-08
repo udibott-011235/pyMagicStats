@@ -12,9 +12,20 @@
 - Se registra `EV-009`: reconnaissance `COMPLETE`, nueva superficie discreta de
   familias inexistente antes de CP03, soporte/normalización discreta todavía no
   implementados y baseline heredado de 49/311/360 tests en PASS.
-- La implementación CP03 permanece `PENDING`; esta tarea no cambia producción,
-  tests, legacy discreto, fitting, GOF, routing ni familias adicionales.
-- CP04–CP08 permanecen `NOT_STARTED`; no hay autorización de push, PR o merge.
+- La fase inicial de arquitectura no cambió producción, tests, legacy discreto,
+  fitting, GOF, routing ni familias adicionales.
+- La implementación exacta `4f7fa09bc7ab501d21f6d27dada30ade23397588`
+  materializa el core discreto y `NegativeBinomialFamily` congelados en
+  `DEC-012`.
+- Antigravity completó la auditoría independiente pre-merge con
+  `ADVERSARIAL_PASS`: 0 BLOCKER, 0 MAJOR, 0 MINOR y 1 INFO.
+- `EV-010` registra 360 tests de regresión congelada, 215 tests CP03 y 575
+  tests de superficie de distribución en PASS.
+- `INFO-001` queda acotado a una limitación de ejecutabilidad extrema del
+  backend SciPy correctamente traducida a `FloatingPointError`; no se añaden
+  thresholds matemáticos para `r` o `p`.
+- La integración permanece `PENDING`, CP03 permanece `IN_PROGRESS` y
+  CP04–CP08 permanecen `NOT_STARTED`; no hay autorización de PR o merge.
 
 ## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP02
 

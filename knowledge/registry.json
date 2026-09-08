@@ -270,7 +270,7 @@
       "kind": "decision",
       "title": "Stage opening and checkpoint lifecycle — STAGE-DIST-FAMILIES-001",
       "status": "accepted",
-      "scope": "Distribution Family Framework through CP03 architecture freeze; CP01 and CP02 complete, CP03 in progress with implementation pending, CP04-CP08 not started",
+      "scope": "Distribution Family Framework through CP03 pre-merge acceptance evidence; CP01 and CP02 complete, CP03 in progress with implementation 4f7fa09bc7ab501d21f6d27dada30ade23397588 at ADVERSARIAL_PASS and integration pending, CP04-CP08 not started",
       "path": "knowledge/decisions/distribution-family-framework-stage.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-contract.md",
@@ -278,7 +278,8 @@
         "knowledge/decisions/distribution-family-framework-cp02-contract.md",
         "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
         "knowledge/decisions/distribution-family-framework-cp03-contract.md",
-        "knowledge/evidence/distribution-family-framework-cp03-baseline.md"
+        "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
+        "knowledge/evidence/distribution-family-framework-cp03-evidence.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -435,6 +436,33 @@
       "tags": ["distribution-families", "cp03", "discrete", "negative-binomial", "reconnaissance", "baseline", "pre-implementation"]
     },
     {
+      "id": "EV-010",
+      "kind": "evidence",
+      "title": "CP03 discrete core implementation and adversarial evidence",
+      "status": "accepted",
+      "scope": "Exact CP03 implementation 4f7fa09bc7ab501d21f6d27dada30ade23397588 with ADVERSARIAL_PASS, 360 frozen regressions, 215 CP03 tests, 575 distribution-surface tests and integration pending",
+      "path": "knowledge/evidence/distribution-family-framework-cp03-evidence.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-cp03-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
+        "pyMagicStat/distributions/__init__.py",
+        "pyMagicStat/distributions/families/__init__.py",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/discrete.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py",
+        "tests/test_discrete_distribution_families.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["distribution-families", "cp03", "discrete", "negative-binomial", "implementation", "adversarial-pass", "pre-merge", "integration-pending", "scipy-backend-limit"]
+    },
+    {
       "id": "BR-017",
       "kind": "branch",
       "title": "Branch lifecycle — feature/distribution-family-framework-cp01",
@@ -583,12 +611,13 @@
       "kind": "branch",
       "title": "Branch lifecycle — feature/distribution-family-framework-cp03-discrete-core",
       "status": "under_review",
-      "scope": "Governance-only materialization of the frozen STAGE-DIST-FAMILIES-001 / CP03 discrete-core architecture; production implementation pending",
+      "scope": "STAGE-DIST-FAMILIES-001 / CP03 discrete-core implementation 4f7fa09bc7ab501d21f6d27dada30ade23397588 with ADVERSARIAL_PASS and integration pending",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-stage.md",
         "knowledge/decisions/distribution-family-framework-cp03-contract.md",
-        "knowledge/evidence/distribution-family-framework-cp03-baseline.md"
+        "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
+        "knowledge/evidence/distribution-family-framework-cp03-evidence.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -597,21 +626,24 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": ["branch", "distribution-families", "cp03", "discrete", "under-review", "architecture-frozen", "implementation-pending"],
+      "tags": ["branch", "distribution-families", "cp03", "discrete", "under-review", "architecture-frozen", "implementation", "adversarial-pass", "integration-pending"],
       "branch": {
         "name": "feature/distribution-family-framework-cp03-discrete-core",
-        "head_sha_at_decision": "02a65c80c5da10295d6eeef42e691772d0686ca2",
+        "head_sha_at_decision": "4f7fa09bc7ab501d21f6d27dada30ade23397588",
         "observed_at": "2026-09-07",
-        "relation_to_main": "same_head",
+        "relation_to_main": "contains_main",
         "integration_state": "pending",
-        "ahead_of_main": 0,
+        "ahead_of_main": 2,
         "behind_main": 0,
-        "unique_commits": [],
-        "decision_reason": "Product Owner authorized governance-only materialization of Architecture-frozen CP03 from exact main@02a65c80c5da10295d6eeef42e691772d0686ca2. DEC-012 fixes the discrete-core contract and EV-009 records reconnaissance and baseline; production implementation remains pending.",
+        "unique_commits": [
+          "da1b9d51e4bfeb7f262db182cf10993f59b1162b",
+          "4f7fa09bc7ab501d21f6d27dada30ade23397588"
+        ],
+        "decision_reason": "Product Owner authorized CP03 architecture and implementation from exact main@02a65c80c5da10295d6eeef42e691772d0686ca2. DEC-012 freezes the contract, EV-009 records baseline, implementation 4f7fa09bc7ab501d21f6d27dada30ade23397588 received independent ADVERSARIAL_PASS, and EV-010 materializes the pre-merge evidence; integration remains pending.",
         "merge_base": "02a65c80c5da10295d6eeef42e691772d0686ca2",
         "parent_branch": "main",
         "parent_sha": "02a65c80c5da10295d6eeef42e691772d0686ca2",
-        "next_action": "Await Architecture review and separate implementation authorization; no push, PR, merge or production work is authorized."
+        "next_action": "Await Architecture review of EV-010 and a separate PR/integration decision; no merge or CP04 work is authorized."
       }
     },
     {
@@ -643,7 +675,7 @@
         "unique_commits": [],
         "decision_reason": "Rama canónica después de integrar el cierre de gobernanza de STAGE-DIST-FAMILIES-001 / CP02 mediante PR #9 y merge commit 02a65c80c5da10295d6eeef42e691772d0686ca2.",
         "merge_base": "02a65c80c5da10295d6eeef42e691772d0686ca2",
-        "next_action": "No modificar directamente; CP03 está abierto con arquitectura congelada e implementación pendiente en BR-021."
+        "next_action": "No modificar directamente; CP03 tiene ADVERSARIAL_PASS en BR-021 y su integración permanece pendiente."
       }
     },
     {
