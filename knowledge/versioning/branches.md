@@ -5,14 +5,15 @@
 Observación inicial materializada: `2026-08-30`; apertura de `BR-017`, cierre
 post-merge mediante `BR-018`, apertura CP02 mediante `BR-019` y cierre
 post-merge CP02 mediante `BR-020` materializados: `2026-09-06`; apertura CP03
-y evidencia adversarial pre-merge mediante `BR-021`: `2026-09-07`. Consulte `EV-003`
+y evidencia adversarial pre-merge mediante `BR-021`, y cierre post-merge CP03
+mediante `BR-022`: `2026-09-07`. Consulte `EV-003`
 para la evidencia Git reproducible inicial, `EV-005` para la integración de
 Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 `DEC-006` para la autoridad de lifecycle.
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `02a65c80c5da10295d6eeef42e691772d0686ca2` | CP02 cerrado; no modificar directamente; CP03 auditado con integración pendiente |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649` | CP03 integrado; no modificar directamente; CP04 no iniciado |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -32,7 +33,8 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-018 | `docs/distribution-family-framework-cp01-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `46f827dd107aa9e6f940f0de085fbb91075ff049` | esperar revisión de Arquitectura; sin PR, merge ni CP02/CP03 |
 | BR-019 | `feature/distribution-family-framework-cp02-continuous-core` | `archived` | `fully_contained` | `merged` | 0/1 | `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6` | integrada vía PR #8; preservar rama remota |
 | BR-020 | `docs/distribution-family-framework-cp02-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `37bc8de97185794e9ef14b33d4ed00d3da1a660e` | integrada vía PR #9; preservar rama remota |
-| BR-021 | `feature/distribution-family-framework-cp03-discrete-core` | `under_review` | `contains_main` | `pending` | 2/0 | `4f7fa09bc7ab501d21f6d27dada30ade23397588` | `ADVERSARIAL_PASS`; revisar EV-010; sin PR ni merge |
+| BR-021 | `feature/distribution-family-framework-cp03-discrete-core` | `archived` | `fully_contained` | `merged` | 0/1 | `a1e4d61f0026f8407506d039788bb2df2eafa680` | integrada vía PR #10; preservar rama remota |
+| BR-022 | `docs/distribution-family-framework-cp03-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649` | esperar revisión; sin PR, merge ni CP04 |
 
 ### Cronología de BR-017
 
@@ -136,8 +138,26 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
   backend SciPy, traducida correctamente a `FloatingPointError` sin añadir
   thresholds matemáticos.
 - `EV-010` materializa 360 tests de regresión congelada, 215 tests CP03 y 575
-  tests de distribución. BR-021 permanece `under_review`, con integración
-  `pending`; no hay autorización de PR, merge o CP04.
+  tests de distribución.
+- `a1e4d61f0026f8407506d039788bb2df2eafa680` materializa el governance head
+  pre-merge final. PR #10 integra ese head mediante
+  `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`, con parents exactos
+  `02a65c80c5da10295d6eeef42e691772d0686ca2` y
+  `a1e4d61f0026f8407506d039788bb2df2eafa680`.
+- El tree del merge y el tree del head integrado coinciden exactamente en
+  `13002c3ca716a3b2a2aa8914bce078afd623d9ff`.
+- BR-021 queda `archived`, `fully_contained` y `merged`; su rama remota se
+  preserva. CP03 queda `COMPLETE` y CP04 permanece `NOT_STARTED`.
+
+### Apertura de BR-022
+
+- `docs/distribution-family-framework-cp03-post-merge` se abre exactamente
+  desde `main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`, con árbol limpio y cero
+  commits únicos al abrir.
+- `head_sha_at_decision` conserva ese snapshot de apertura y no intenta
+  autorreferenciar el commit documental posterior.
+- BR-022 materializa únicamente el cierre post-merge de CP03 para revisión. No
+  autoriza PR, merge, eliminación de ramas ni inicio de CP04.
 
 ## Supersesión Gate 2
 

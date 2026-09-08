@@ -1,7 +1,7 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP03 — IN_PROGRESS / ADVERSARIAL_PASS / INTEGRATION_PENDING`
+- **Checkpoint actual:** `CP03 — COMPLETE`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
@@ -11,6 +11,7 @@
 - **Rama de cierre post-merge de CP02:** `docs/distribution-family-framework-cp02-post-merge`
 - **Baseline de CP03:** `origin/main` @ `02a65c80c5da10295d6eeef42e691772d0686ca2`
 - **Rama de CP03:** `feature/distribution-family-framework-cp03-discrete-core`
+- **Rama de cierre post-merge de CP03:** `docs/distribution-family-framework-cp03-post-merge`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación:** `implementation-engineering`
@@ -33,7 +34,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 |---|---|---|
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
 | CP02 — Continuous distribution core | `COMPLETE` | Implementación `e9ef63b…`, `ADVERSARIAL_PASS` e integración mediante PR #8 en `main@aa5723d…` |
-| CP03 — Discrete distribution core | `IN_PROGRESS` | Implementación `4f7fa09…` con `ADVERSARIAL_PASS`; integración `PENDING` |
+| CP03 — Discrete distribution core | `COMPLETE` | Implementación `4f7fa09…`, `ADVERSARIAL_PASS` e integración mediante PR #10 en `main@28b57a2…` |
 | CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
 | CP06 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -59,7 +60,8 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 - Contrato ejecutable congelado: [`distribution-family-framework-cp03-contract.md`](distribution-family-framework-cp03-contract.md)
 - Evidencia de reconnaissance y baseline: [`../evidence/distribution-family-framework-cp03-baseline.md`](../evidence/distribution-family-framework-cp03-baseline.md)
 - Evidencia de implementación y auditoría: [`../evidence/distribution-family-framework-cp03-evidence.md`](../evidence/distribution-family-framework-cp03-evidence.md)
-- Rama de materialización: `BR-021`
+- Rama de implementación integrada: `BR-021`
+- Rama de cierre post-merge: `BR-022`
 
 ## Alcance autorizado
 
@@ -129,10 +131,9 @@ nuevas familias.
 
 CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
 `main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
-`in_progress`; CP02 está `COMPLETE`, CP03 está `IN_PROGRESS` con arquitectura
-`FROZEN`, implementación auditada en `4f7fa09…`, `ADVERSARIAL_PASS` e
-integración `PENDING`, y CP04–CP08 permanecen `NOT_STARTED` con autorización
-independiente requerida.
+`in_progress`; CP02 y CP03 están `COMPLETE`, la implementación CP03 auditada
+`4f7fa09…` está integrada mediante PR #10 en `main@28b57a2…`, y CP04–CP08
+permanecen `NOT_STARTED` con autorización independiente requerida.
 
 ## Apertura autorizada de CP02
 
@@ -169,9 +170,10 @@ el merge commit `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c`, cuyos parents son
 `b3d116f2f3e82b74ab6fb5f8337e217104c3bca6`.
 
 La integración y la gobernanza de CP02 están cerradas; CP02 queda `COMPLETE`.
-El stage general permanece `IN_PROGRESS`; CP03 está `IN_PROGRESS` con
+El stage general permanece `IN_PROGRESS`; CP03 está `COMPLETE` con
 arquitectura `FROZEN`, implementación auditada en `4f7fa09…`,
-`ADVERSARIAL_PASS` e integración `PENDING`; CP04–CP08 siguen `NOT_STARTED`.
+`ADVERSARIAL_PASS` e integración mediante PR #10; CP04–CP08 siguen
+`NOT_STARTED`.
 CP02
 no acepta ni implementa fitting, `FitResult`,
 `FittedDistribution`, estimación o incertidumbre de parámetros, GOF,
@@ -204,11 +206,19 @@ los fallos numéricos o de rango posteriores a la validación pública se traduc
 correctamente a `FloatingPointError`, sin añadir thresholds matemáticos para
 `r` o `p`.
 
-`EV-010` materializa esta evidencia. La integración permanece `PENDING`, CP03
-permanece `IN_PROGRESS` y CP04–CP08 permanecen `NOT_STARTED`.
+`EV-010` materializa esta evidencia. El governance head pre-merge final
+`a1e4d61f0026f8407506d039788bb2df2eafa680` fue integrado por PR #10 mediante
+el merge commit `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`, cuyos parents exactos son
+`02a65c80c5da10295d6eeef42e691772d0686ca2` y
+`a1e4d61f0026f8407506d039788bb2df2eafa680`. El tree del merge y el tree del
+head integrado son idénticos:
+`13002c3ca716a3b2a2aa8914bce078afd623d9ff`.
+
+La integración y la gobernanza de CP03 están cerradas; CP03 queda `COMPLETE`.
+El stage permanece `IN_PROGRESS` y CP04–CP08 permanecen `NOT_STARTED`.
 
 ## Siguiente acción
 
-Arquitectura debe revisar el candidato de gobernanza que materializa `EV-010`
-y decidir por separado cualquier autorización de PR o integración. No hay
-autorización de merge ni de CP04.
+La rama `docs/distribution-family-framework-cp03-post-merge`, registrada como
+`BR-022` desde el snapshot exacto `main@28b57a2…`, materializa este cierre para
+revisión. No hay autorización de PR, merge ni de inicio de CP04 para esa rama.

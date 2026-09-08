@@ -1,15 +1,18 @@
 # EV-010 — CP03 discrete core implementation and adversarial evidence
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP03 — IN_PROGRESS`
+- **Checkpoint:** `CP03 — COMPLETE`
 - **Estado:** `accepted`
 - **Arquitectura:** `FROZEN` mediante `DEC-012`
 - **Implementación auditada:** `4f7fa09bc7ab501d21f6d27dada30ade23397588`
+- **Final pre-merge governance head:** `a1e4d61f0026f8407506d039788bb2df2eafa680`
 - **Parent:** `da1b9d51e4bfeb7f262db182cf10993f59b1162b`
 - **Baseline:** `origin/main` @ `02a65c80c5da10295d6eeef42e691772d0686ca2`
 - **Rama:** `feature/distribution-family-framework-cp03-discrete-core`
 - **Auditoría independiente:** `ADVERSARIAL_PASS`
-- **Integración:** `PENDING`
+- **Integración:** `COMPLETE` mediante PR #10
+- **Merge SHA:** `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`
+- **Merge parents:** `02a65c80c5da10295d6eeef42e691772d0686ca2`, `a1e4d61f0026f8407506d039788bb2df2eafa680`
 - **Fecha:** 2026-09-07
 
 ## Claim
@@ -19,6 +22,10 @@ result for the exact CP03 implementation commit
 `4f7fa09bc7ab501d21f6d27dada30ade23397588`. The implementation realizes the
 discrete-family contract frozen in `DEC-012` without changing the legacy
 discrete implementation or introducing mathematical parameter thresholds.
+Final pre-merge governance head
+`a1e4d61f0026f8407506d039788bb2df2eafa680` was integrated by PR #10 through
+merge commit `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`. CP03 implementation,
+integration and governance are complete; the overall stage remains in progress.
 
 The audit classification is:
 
@@ -139,6 +146,26 @@ operating_system=Windows-11-10.0.26200-SP0
 This is the evidence-materialization environment. It is not asserted to be the
 independent Antigravity audit environment.
 
+## Integration evidence
+
+```text
+PR = #10
+baseline = 02a65c80c5da10295d6eeef42e691772d0686ca2
+accepted implementation = 4f7fa09bc7ab501d21f6d27dada30ade23397588
+final pre-merge governance = a1e4d61f0026f8407506d039788bb2df2eafa680
+merge commit = 28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649
+parent 1 = 02a65c80c5da10295d6eeef42e691772d0686ca2
+parent 2 = a1e4d61f0026f8407506d039788bb2df2eafa680
+merge tree = 13002c3ca716a3b2a2aa8914bce078afd623d9ff
+integrated-head tree = 13002c3ca716a3b2a2aa8914bce078afd623d9ff
+TREE_EQUIVALENCE = PASS
+CP03 integration = COMPLETE
+CP03 governance = CLOSED
+CP03 overall = COMPLETE
+STAGE-DIST-FAMILIES-001 = IN_PROGRESS
+CP04-CP08 = NOT_STARTED
+```
+
 ## Scope and isolation
 
 The implementation is limited to the additive family core, discrete family
@@ -151,12 +178,12 @@ Negative Binomial parameterization or additional discrete family.
 ## Status and nonclaims
 
 ```text
-INTEGRATION=PENDING
-CP03_OVERALL=IN_PROGRESS
+INTEGRATION=COMPLETE
+CP03_GOVERNANCE=CLOSED
+CP03_OVERALL=COMPLETE
 CP04_CP08=NOT_STARTED
 ```
 
-`ADVERSARIAL_PASS` makes the exact implementation and this evidence eligible
-for Architecture review. It does not authorize or claim PR creation, merge,
-canonical integration, CP03 completion, CP04 start or completion of the overall
+`ADVERSARIAL_PASS` and the exact tree-equivalent PR #10 merge close CP03. This
+evidence does not authorize or claim CP04 start or completion of the overall
 stage.

@@ -117,8 +117,8 @@ Fuente canónica:
 - **No demuestra:** fitting, estimación, GOF, calibración, selección automática
   ni autorización de CP03; tampoco garantiza semántica de igualdad/hash entre
   instancias separadas de descriptores Family. El stage general permanece
-  `IN_PROGRESS`; CP03 está `IN_PROGRESS` con integración `PENDING`, y
-  CP04–CP08 siguen `NOT_STARTED`.
+  `IN_PROGRESS`; CP03 está `COMPLETE` mediante PR #10 y CP04–CP08 siguen
+  `NOT_STARTED`.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp02-evidence.md`.
@@ -152,10 +152,12 @@ Fuente canónica:
 ## EV-010 — Distribution Family Framework CP03 implementation
 
 - **Estado:** `accepted`
-- **CP03:** `IN_PROGRESS`
+- **CP03:** `COMPLETE`
 - **Arquitectura:** `FROZEN` mediante `DEC-012`
 - **Implementación auditada:**
   `4f7fa09bc7ab501d21f6d27dada30ade23397588`
+- **Governance head pre-merge final:**
+  `a1e4d61f0026f8407506d039788bb2df2eafa680`
 - **Baseline:** `main@02a65c80c5da10295d6eeef42e691772d0686ca2`
 - **Rama:** `feature/distribution-family-framework-cp03-discrete-core`
 - **Auditoría adversarial pre-merge:** `ADVERSARIAL_PASS`
@@ -178,12 +180,18 @@ Fuente canónica:
   passed / 2 failed; `NO_NEW_FAILURES`. Los dos fallos heredados exactos y el
   entorno de materialización constan en EV-010. La suite completa del
   repositorio no se reejecutó para esta corrección documental.
-- **Integración:** `PENDING`.
+- **Integración:** `COMPLETE` mediante PR #10 en
+  `main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`.
+- **Parents del merge:** `02a65c80c5da10295d6eeef42e691772d0686ca2`,
+  `a1e4d61f0026f8407506d039788bb2df2eafa680`.
+- **Equivalencia de tree:** merge y head integrado =
+  `13002c3ca716a3b2a2aa8914bce078afd623d9ff`.
 - **Demuestra:** implementación del contrato discreto, paridad SciPy,
   endpoints PPF canónicos, RNG explícito, normalización `int`/`int64`, guards
   fail-closed y aislamiento legacy en el SHA auditado.
-- **No demuestra:** integración canónica, finalización de CP03, fitting, GOF,
-  routing, familias discretas adicionales ni autorización de CP04.
+- **No demuestra:** fitting, GOF, routing, familias discretas adicionales ni
+  autorización de CP04. El stage general permanece `IN_PROGRESS` y CP04–CP08
+  siguen `NOT_STARTED`.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp03-evidence.md`.

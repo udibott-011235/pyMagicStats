@@ -24,8 +24,18 @@
 - `INFO-001` queda acotado a una limitación de ejecutabilidad extrema del
   backend SciPy correctamente traducida a `FloatingPointError`; no se añaden
   thresholds matemáticos para `r` o `p`.
-- La integración permanece `PENDING`, CP03 permanece `IN_PROGRESS` y
-  CP04–CP08 permanecen `NOT_STARTED`; no hay autorización de PR o merge.
+- `a1e4d61f0026f8407506d039788bb2df2eafa680` materializa el governance head
+  pre-merge final. PR #10 lo integra mediante merge commit
+  `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649`, con parents
+  `02a65c80c5da10295d6eeef42e691772d0686ca2` y
+  `a1e4d61f0026f8407506d039788bb2df2eafa680`.
+- El merge y el head integrado comparten exactamente el tree
+  `13002c3ca716a3b2a2aa8914bce078afd623d9ff`.
+- CP03 pasa a integración `COMPLETE`, gobernanza `CLOSED` y estado general
+  `COMPLETE`; BR-021 queda `archived`/`fully_contained`/`merged`, se preserva
+  su rama remota y BR-022 registra el snapshot de apertura post-merge.
+- `STAGE-DIST-FAMILIES-001` permanece `IN_PROGRESS`; CP04–CP08 permanecen
+  `NOT_STARTED`.
 
 ## 2026-09-06 — STAGE-DIST-FAMILIES-001 / CP02
 
