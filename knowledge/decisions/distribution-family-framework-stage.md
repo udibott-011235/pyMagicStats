@@ -1,7 +1,7 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP03 — COMPLETE`
+- **Checkpoint actual:** `CP04 — IN_PROGRESS / ARCHITECTURE_FROZEN`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico:** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
@@ -12,6 +12,8 @@
 - **Baseline de CP03:** `origin/main` @ `02a65c80c5da10295d6eeef42e691772d0686ca2`
 - **Rama de CP03:** `feature/distribution-family-framework-cp03-discrete-core`
 - **Rama de cierre post-merge de CP03:** `docs/distribution-family-framework-cp03-post-merge`
+- **Baseline de CP04:** `origin/main` @ `b3f35d4d7b221c457e2e730bfba2b104e1d07144`
+- **Rama de CP04:** `feature/distribution-family-framework-cp04-wave1-fitting`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación:** `implementation-engineering`
@@ -35,7 +37,7 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | CP01 — Family architecture and contracts | `COMPLETE` | Arquitectura aceptada e integrada mediante PR #6 |
 | CP02 — Continuous distribution core | `COMPLETE` | Implementación `e9ef63b…`, `ADVERSARIAL_PASS` e integración mediante PR #8 en `main@aa5723d…` |
 | CP03 — Discrete distribution core | `COMPLETE` | Implementación `4f7fa09…` y PR head `a1e4d61…` con auditorías `ADVERSARIAL_PASS`; integración mediante PR #10 en `main@28b57a2…` |
-| CP04 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
+| CP04 — Wave 1 fitting | `IN_PROGRESS` | Arquitectura `FROZEN` en `DEC-013`; implementación pendiente y gates CP04-A–D requeridos |
 | CP05 | `NOT_STARTED` | Calibración GOF para familias ajustadas; no transferible desde Gate 2 |
 | CP06 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP07 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -62,6 +64,12 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 - Evidencia de implementación y auditoría: [`../evidence/distribution-family-framework-cp03-evidence.md`](../evidence/distribution-family-framework-cp03-evidence.md)
 - Rama de implementación integrada: `BR-021`
 - Rama de cierre post-merge: `BR-022`
+
+## Artefactos de CP04
+
+- Contrato ejecutable congelado: [`distribution-family-framework-cp04-contract.md`](distribution-family-framework-cp04-contract.md)
+- Evidencia de reconnaissance y baseline: [`../evidence/distribution-family-framework-cp04-baseline.md`](../evidence/distribution-family-framework-cp04-baseline.md)
+- Rama de arquitectura/implementación futura: `BR-023`
 
 ## Alcance autorizado
 
@@ -132,8 +140,9 @@ nuevas familias.
 CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
 `main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
 `in_progress`; CP02 y CP03 están `COMPLETE`, la implementación CP03 auditada
-`4f7fa09…` está integrada mediante PR #10 en `main@28b57a2…`, y CP04–CP08
-permanecen `NOT_STARTED` con autorización independiente requerida.
+`4f7fa09…` y su cierre de gobernanza están integrados mediante PR #10 y
+PR #11. CP04 está `IN_PROGRESS` con arquitectura `FROZEN` e implementación
+`NOT_STARTED`; CP05–CP08 permanecen `NOT_STARTED`.
 
 ## Apertura autorizada de CP02
 
@@ -172,8 +181,8 @@ el merge commit `aa5723d2cb7dbaf48e6f9059368b9fdaeeb7926c`, cuyos parents son
 La integración y la gobernanza de CP02 están cerradas; CP02 queda `COMPLETE`.
 El stage general permanece `IN_PROGRESS`; CP03 está `COMPLETE` con
 arquitectura `FROZEN`, implementación auditada en `4f7fa09…`,
-`ADVERSARIAL_PASS` e integración mediante PR #10; CP04–CP08 siguen
-`NOT_STARTED`.
+`ADVERSARIAL_PASS` e integración mediante PR #10; en ese punto CP04–CP08
+seguían `NOT_STARTED`.
 CP02
 no acepta ni implementa fitting, `FitResult`,
 `FittedDistribution`, estimación o incertidumbre de parámetros, GOF,
@@ -190,7 +199,7 @@ La materialización inicial de arquitectura fue exclusivamente de gobernanza y
 no implementó producción ni tests. El trabajo posterior autorizado produjo el
 candidato exacto `4f7fa09bc7ab501d21f6d27dada30ade23397588` sin modificar las
 APIs discretas legacy ni autorizar fitting, GOF, selector/routing, otras
-familias discretas o CP04. CP04–CP08 permanecen `NOT_STARTED`.
+familias discretas o CP04. En ese hito CP04–CP08 permanecían `NOT_STARTED`.
 
 ## Implementación y auditoría adversarial pre-merge de CP03
 
@@ -225,10 +234,28 @@ head integrado son idénticos:
 `13002c3ca716a3b2a2aa8914bce078afd623d9ff`.
 
 La integración y la gobernanza de CP03 están cerradas; CP03 queda `COMPLETE`.
-El stage permanece `IN_PROGRESS` y CP04–CP08 permanecen `NOT_STARTED`.
+PR #11 integró el cierre post-merge mediante
+`b3f35d4d7b221c457e2e730bfba2b104e1d07144`, con parents
+`28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649` y
+`7e38c1c62f69771282398ffd3fac118f866c5d69`. Los trees del merge y del head
+integrado coinciden en `2e363bd357a5ec59c17690bd9e0e3bbb26061d33`.
+El stage permanece `IN_PROGRESS`; CP04 está abierto con arquitectura
+`FROZEN`, y CP05–CP08 permanecen `NOT_STARTED`.
+
+## Apertura y arquitectura congelada de CP04
+
+CP04 se abre en `BR-023` desde el snapshot exacto
+`main@b3f35d4d7b221c457e2e730bfba2b104e1d07144`. `DEC-013` congela el fitting
+Wave 1: fitted/result core inmutable, validación de datos, MLE fixed-`loc=0`
+para Gamma y Exponential, y MLE nativo Negative Binomial para `r>0` real.
+
+Los gates internos son CP04-A (object/input contract), CP04-B (MLE continuo),
+CP04-C (MLE NB generalizado) y CP04-D (auditoría adversarial independiente).
+CP04 no queda completo hasta que los cuatro pasen. Esta materialización es
+solo arquitectura/gobernanza: no implementa producción ni tests, no autoriza
+push, PR o merge, y no inicia CP05–CP08.
 
 ## Siguiente acción
 
-La rama `docs/distribution-family-framework-cp03-post-merge`, registrada como
-`BR-022` desde el snapshot exacto `main@28b57a2…`, materializa este cierre para
-revisión. No hay autorización de PR, merge ni de inicio de CP04 para esa rama.
+Arquitectura debe revisar el candidato documental local de BR-023. La
+implementación CP04 permanece pendiente y requiere autorización separada.

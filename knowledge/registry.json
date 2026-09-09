@@ -270,7 +270,7 @@
       "kind": "decision",
       "title": "Stage opening and checkpoint lifecycle — STAGE-DIST-FAMILIES-001",
       "status": "accepted",
-      "scope": "Distribution Family Framework through CP03 closure; CP01-CP03 complete, stage in progress and CP04-CP08 not started",
+      "scope": "Distribution Family Framework through CP04 architecture freeze; CP01-CP03 complete, CP04 in progress and CP05-CP08 not started",
       "path": "knowledge/decisions/distribution-family-framework-stage.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-contract.md",
@@ -279,7 +279,9 @@
         "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
         "knowledge/decisions/distribution-family-framework-cp03-contract.md",
         "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
-        "knowledge/evidence/distribution-family-framework-cp03-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp03-evidence.md",
+        "knowledge/decisions/distribution-family-framework-cp04-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp04-baseline.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -288,7 +290,7 @@
         "adversarial-statistical-qa"
       ],
       "supersedes": [],
-      "tags": ["distribution-families", "stage", "cp01", "cp02", "cp03", "governance"]
+      "tags": ["distribution-families", "stage", "cp01", "cp02", "cp03", "cp04", "governance"]
     },
     {
       "id": "DEC-010",
@@ -461,6 +463,59 @@
       ],
       "supersedes": [],
       "tags": ["distribution-families", "cp03", "discrete", "negative-binomial", "implementation", "adversarial-pass", "final-pr-head-audit", "fresh-independent-clone", "no-new-knowledge-failures", "arch-cp03-pm-001", "integrated", "pr-10", "scipy-backend-limit"]
+    },
+    {
+      "id": "DEC-013",
+      "kind": "decision",
+      "title": "CP04 Wave 1 fitting executable contract",
+      "status": "accepted",
+      "scope": "Frozen architecture for immutable fitted/result ownership, fixed-loc Gamma and Exponential MLE, and generalized real-r Negative Binomial MLE in STAGE-DIST-FAMILIES-001 / CP04",
+      "path": "knowledge/decisions/distribution-family-framework-cp04-contract.md",
+      "evidence_paths": [
+        "knowledge/evidence/distribution-family-framework-cp04-baseline.md",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/continuous.py",
+        "pyMagicStat/distributions/families/discrete.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py",
+        "tests/test_discrete_distribution_families.py"
+      ],
+      "owner_role": "statistical-software-architecture",
+      "reviewer_roles": [
+        "implementation-engineering",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["distribution-families", "cp04", "fitting", "maximum-likelihood", "gamma", "exponential", "negative-binomial", "real-r", "architecture-frozen"]
+    },
+    {
+      "id": "EV-011",
+      "kind": "evidence",
+      "title": "CP04 Wave 1 fitting architecture baseline",
+      "status": "accepted",
+      "scope": "Clean pre-implementation CP04 baseline at main@b3f35d4d7b221c457e2e730bfba2b104e1d07144, fitting-surface reconnaissance, source authority and 575-test distribution regression",
+      "path": "knowledge/evidence/distribution-family-framework-cp04-baseline.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-cp04-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp03-evidence.md",
+        "pyMagicStat/distributions/__init__.py",
+        "pyMagicStat/distributions/families/__init__.py",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/continuous.py",
+        "pyMagicStat/distributions/families/discrete.py",
+        "tests/test_distribution_family_core.py",
+        "tests/test_continuous_distribution_families.py",
+        "tests/test_discrete_distribution_families.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": ["distribution-families", "cp04", "fitting", "reconnaissance", "baseline", "pre-implementation", "scipy", "negative-binomial-mle"]
     },
     {
       "id": "BR-017",
@@ -649,8 +704,8 @@
       "id": "BR-022",
       "kind": "branch",
       "title": "Branch lifecycle — docs/distribution-family-framework-cp03-post-merge",
-      "status": "under_review",
-      "scope": "Post-merge governance closure for STAGE-DIST-FAMILIES-001 / CP03; CP04 remains not started",
+      "status": "archived",
+      "scope": "Post-merge CP03 governance integrated through PR #11 into main@b3f35d4d7b221c457e2e730bfba2b104e1d07144",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-stage.md",
@@ -662,21 +717,59 @@
         "implementation-engineering"
       ],
       "supersedes": [],
-      "tags": ["branch", "distribution-families", "cp03", "post-merge", "governance", "under-review"],
+      "tags": ["branch", "distribution-families", "cp03", "post-merge", "governance", "archived", "merged", "pr-11"],
       "branch": {
         "name": "docs/distribution-family-framework-cp03-post-merge",
-        "head_sha_at_decision": "28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
-        "observed_at": "2026-09-07",
+        "head_sha_at_decision": "7e38c1c62f69771282398ffd3fac118f866c5d69",
+        "observed_at": "2026-09-08",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 1,
+        "unique_commits": [],
+        "decision_reason": "Product Owner opened the branch from exact main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649 for CP03 post-merge governance. Architecture and adversarial review accepted head 7e38c1c62f69771282398ffd3fac118f866c5d69; PR #11 integrated it through tree-equivalent merge commit b3f35d4d7b221c457e2e730bfba2b104e1d07144.",
+        "merge_base": "7e38c1c62f69771282398ffd3fac118f866c5d69",
+        "parent_branch": "main",
+        "parent_sha": "28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
+        "next_action": "Preserve the archived remote source branch; do not delete it without a separate lifecycle decision.",
+        "merged_via": "PR #11 / merge commit b3f35d4d7b221c457e2e730bfba2b104e1d07144",
+        "pr_number": 11
+      }
+    },
+    {
+      "id": "BR-023",
+      "kind": "branch",
+      "title": "Branch lifecycle — feature/distribution-family-framework-cp04-wave1-fitting",
+      "status": "under_review",
+      "scope": "Architecture and future implementation branch for STAGE-DIST-FAMILIES-001 / CP04 Wave 1 fitting",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-stage.md",
+        "knowledge/decisions/distribution-family-framework-cp04-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp04-baseline.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["branch", "distribution-families", "cp04", "fitting", "architecture-frozen", "under-review"],
+      "branch": {
+        "name": "feature/distribution-family-framework-cp04-wave1-fitting",
+        "head_sha_at_decision": "b3f35d4d7b221c457e2e730bfba2b104e1d07144",
+        "observed_at": "2026-09-08",
         "relation_to_main": "same_head",
         "integration_state": "pending",
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Product Owner authorized a new branch from exact main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649 solely to materialize post-merge CP03 governance. The recorded head_sha_at_decision is the branch-opening snapshot and does not self-reference the later documentation commit.",
-        "merge_base": "28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
+        "decision_reason": "Product Owner authorized one isolated local branch from exact canonical main@b3f35d4d7b221c457e2e730bfba2b104e1d07144 to materialize DEC-013 and EV-011. head_sha_at_decision records only the clean branch-opening snapshot and does not self-reference the later documentation commit.",
+        "merge_base": "b3f35d4d7b221c457e2e730bfba2b104e1d07144",
         "parent_branch": "main",
-        "parent_sha": "28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
-        "next_action": "Await Architecture review of the post-merge CP03 governance closure candidate; no PR, merge or CP04 work is authorized."
+        "parent_sha": "b3f35d4d7b221c457e2e730bfba2b104e1d07144",
+        "next_action": "Await Architecture review of the local CP04 contract; production implementation, push, PR, merge and CP05-CP08 are not authorized."
       }
     },
     {
@@ -692,7 +785,8 @@
         "knowledge/evidence/distribution-family-framework-cp01-evidence.md",
         "knowledge/evidence/distribution-family-framework-cp02-evidence.md",
         "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
-        "knowledge/evidence/distribution-family-framework-cp03-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp03-evidence.md",
+        "knowledge/evidence/distribution-family-framework-cp04-baseline.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": ["statistical-software-architecture", "implementation-engineering"],
@@ -700,16 +794,16 @@
       "tags": ["branch", "canonical", "main"],
       "branch": {
         "name": "main",
-        "head_sha_at_decision": "28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
-        "observed_at": "2026-09-07",
+        "head_sha_at_decision": "b3f35d4d7b221c457e2e730bfba2b104e1d07144",
+        "observed_at": "2026-09-08",
         "relation_to_main": "canonical",
         "integration_state": "not_applicable",
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Rama canónica después de integrar STAGE-DIST-FAMILIES-001 / CP03 mediante PR #10 y merge commit 28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649.",
-        "merge_base": "28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
-        "next_action": "No modificar directamente; CP03 está completo y CP04 requiere autorización independiente."
+        "decision_reason": "Rama canónica después de integrar el cierre post-merge de STAGE-DIST-FAMILIES-001 / CP03 mediante PR #11 y merge commit b3f35d4d7b221c457e2e730bfba2b104e1d07144.",
+        "merge_base": "b3f35d4d7b221c457e2e730bfba2b104e1d07144",
+        "next_action": "No modificar directamente; CP03 está completo y CP04 tiene arquitectura congelada con implementación pendiente."
       }
     },
     {

@@ -1,5 +1,26 @@
 # Historial de la base de conocimiento
 
+## 2026-09-08 — STAGE-DIST-FAMILIES-001 / CP04-A0
+
+- PR #11 integra el cierre post-merge de CP03 mediante
+  `main@b3f35d4d7b221c457e2e730bfba2b104e1d07144`; sus parents son
+  `28b57a2…` y `7e38c1c…`, y el tree integrado coincide exactamente en
+  `2e363bd…`.
+- BR-022 queda `archived` / `fully_contained` / `merged`; su rama remota se
+  preserva. BR-001 avanza al nuevo `main` canónico.
+- Se abre BR-023 desde el snapshot exacto `main@b3f35d4…`, sin
+  autorreferenciar el commit documental posterior.
+- Se materializa `DEC-013`, arquitectura `FROZEN` para CP04 Wave 1 fitting,
+  dividida en gates internos CP04-A–D; implementación `PENDING`.
+- Se registra `EV-011`: identidad limpia, ausencia actual de `fit`,
+  `FitResult` y `FittedDistribution`, entorno, autoridad SciPy/literatura y
+  baseline de 575 tests de distribución.
+- El contrato congela MLE fixed-`loc=0` para Gamma/Exponential y un perfil MLE
+  nativo para Negative Binomial con `r>0` real, clasificación exacta de
+  existencia finita, errores tipados, likelihood completa e inmutabilidad.
+- Esta materialización cambia únicamente ocho rutas `knowledge/**`; no añade
+  producción ni tests, no publica la rama y no inicia CP05–CP08.
+
 ## 2026-09-07 — STAGE-DIST-FAMILIES-001 / CP03
 
 - PR #9 integra el cierre canónico de CP02 en

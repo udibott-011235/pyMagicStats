@@ -204,3 +204,35 @@ Fuente canónica:
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp03-evidence.md`.
+
+## EV-011 — Distribution Family Framework CP04 Wave 1 fitting baseline
+
+- **Estado:** `accepted`
+- **CP04:** `IN_PROGRESS`
+- **Arquitectura:** `FROZEN` mediante `DEC-013`
+- **Implementación:** `NOT_STARTED`
+- **Baseline:** `main@b3f35d4d7b221c457e2e730bfba2b104e1d07144`
+- **Rama:** `feature/distribution-family-framework-cp04-wave1-fitting`
+- **CP03:** `COMPLETE`; cierre post-merge integrado por PR #11 con merge
+  `b3f35d4…` y equivalencia exacta de tree.
+- **Superficie previa:** existen las familias y distribuciones parametrizadas
+  Gamma, Exponential y Negative Binomial; no existen `fit`, `FitResult` ni los
+  conceptos `FittedDistribution`.
+- **Contrato:** MLE fixed-`loc=0`, ownership inmutable sin duplicación,
+  errores tipados, likelihood/AIC/BIC completos y MLE NB generalizado con `r`
+  real positivo.
+- **Clasificación NB:** all-zero no identifica `r`; varianza poblacional menor
+  o igual a la media carece de MLE finito; sobredispersión estricta habilita
+  una raíz de perfil finita única, clasificada mediante aritmética entera
+  exacta.
+- **Baseline validado:** registro PASS; Knowledge Base 7 passed / 2 fallos
+  heredados; superficie de distribución 575 passed / 2 warnings; candidato
+  documental sin nuevos fallos y `git diff --check` PASS.
+- **Demuestra:** identidad, reconnaissance, arquitectura congelada y baseline
+  de regresión antes de implementar CP04.
+- **No demuestra:** implementación, corrección de estimadores, auditoría
+  adversarial, GOF, calibración, selección, routing ni autorización de
+  CP05–CP08.
+
+Fuente canónica:
+`knowledge/evidence/distribution-family-framework-cp04-baseline.md`.

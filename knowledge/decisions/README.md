@@ -17,6 +17,7 @@ Decisiones iniciales indexadas:
 - `DEC-010`: arquitectura y contratos del Distribution Family Framework.
 - `DEC-011`: contrato ejecutable del core continuo para CP02.
 - `DEC-012`: contrato ejecutable congelado del core discreto para CP03.
+- `DEC-013`: contrato ejecutable congelado de fitting Wave 1 para CP04.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
 
