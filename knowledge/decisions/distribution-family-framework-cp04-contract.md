@@ -50,6 +50,23 @@ Every free canonical parameter is estimated. These methods expose no public
 CP04 does not expose user-controlled fixed canonical parameters, method of
 moments, MAP, Bayesian estimation or alternative estimators.
 
+The following additions are public from both
+`pyMagicStat.distributions.families` and `pyMagicStat.distributions`:
+
+```text
+FittedDistribution
+FittedContinuousDistribution
+FittedDiscreteDistribution
+FitResult
+DistributionFitError
+FitIdentifiabilityError
+NoFiniteMLEError
+FitNumericalError
+```
+
+They are not exported from the package root. Existing public exports are not
+removed or renamed.
+
 ## 3. Object model and ownership
 
 The future public concepts are:
@@ -69,6 +86,12 @@ parameterization, support or probability-backend state.
 `FittedDiscreteDistribution` delegates the existing discrete operations and
 preserves the integer `rvs(..., rng=...)` result contract.
 
+`FittedDistribution` delegates the existing read-only properties
+`backend_library`, `backend_distribution` and `backend_version` from its sole
+wrapped `ParameterizedDistribution`. The probability backend is the backend
+used by that fitted distribution; it is distinct from the estimator that
+generated the fitted parameters.
+
 `FitResult` owns fitting-process information only and contains exactly one
 canonical `fitted_distribution`. Its information fields are exactly:
 
@@ -86,8 +109,14 @@ warnings
 metadata
 ```
 
-`backend` and `backend_version` are derived from `fitted_distribution`; they
-are not stored as a second authoritative copy. `fixed_parameters` and
+`FitResult` exposes these read-only derived properties exactly:
+
+```python
+backend = fitted_distribution.backend_distribution
+backend_version = fitted_distribution.backend_version
+```
+
+They are not independent stored state. `fixed_parameters` and
 `estimated_parameters` contain names, never duplicated parameter values:
 
 | Family | Fixed names | Estimated names |
@@ -98,12 +127,41 @@ are not stored as a second authoritative copy. `fixed_parameters` and
 
 `estimation_method` is exactly `"maximum_likelihood"`.
 
+`metadata` contains immutable string provenance that distinguishes the
+estimator from the probability backend. It contains `estimator_id` and
+`solver_id` with these required meanings:
+
+| Family | `estimator_id` | `solver_id` |
+|---|---|---|
+| Gamma | `scipy-gamma-fixed-loc-mle-v1` | `scipy.stats.gamma.fit` |
+| Exponential | `pymagicstats-exponential-closed-form-mle-v1` | `closed_form` |
+| Negative Binomial | `pymagicstats-negative-binomial-profile-mle-v1` | exact identifier of the deterministic bounded root solver actually used by production |
+
+Neither provenance field contains or duplicates canonical fitted parameter
+values. The Negative Binomial `solver_id` must name the actual production
+solver rather than a generic optimizer category, and its acceptance test must
+match the executed solver.
+
 Returned results represent successful finite fits only: `converged` is
 `True`; `log_likelihood`, `aic` and `bic` are finite Python `float` values;
 `warnings` is an immutable tuple of strings; and `metadata` is deeply
 immutable and contains no authoritative parameter copy. Failed fits raise
 typed errors and never return partial results. `NaN` does not encode a
 semantic state.
+
+This reconciles CP04 with the semantic states in `DEC-010`:
+
+- `SUCCESS` returns a `FitResult`; every mandatory metric is applicable,
+  assessed and finite.
+- `NOT_ESTIMATED` is represented structurally by parameter names in
+  `fixed_parameters`, never by `NaN` or a fabricated estimate.
+- `FAILED` is represented by the typed exception hierarchy; no partial
+  `FitResult` is returned.
+- No mandatory CP04 `FitResult` metric may enter `NOT_APPLICABLE` or
+  `NOT_ASSESSED`, so CP04 emits no placeholder for either state. Any future
+  optional metric that can enter one of those states requires a typed
+  sentinel or enum and a new Architecture decision; `None` and `NaN` must not
+  collapse their distinct meanings.
 
 Fitted objects, results and their nested state must preserve immutability under
 normal use, `copy.copy`, `copy.deepcopy` and pickle round trips.
@@ -149,7 +207,11 @@ and `FitResult` must not retain the raw sample.
   `NoFiniteMLEError`.
 - Negative Binomial accepts only non-negative integer-valued observations
   exactly representable as `int64`; fractional or out-of-range observations
-  fail closed.
+  fail closed. In particular, `0`, `-0.0`, `1`, `1.0` and NumPy integer
+  equivalents are accepted. Integer-valued real inputs may canonicalize
+  losslessly to `int64`; `0.5`, booleans, non-finite values and values outside
+  the `int64` range are rejected. Rounding, truncation and wraparound are
+  forbidden.
 
 ## 6. Continuous maximum likelihood
 
@@ -166,17 +228,29 @@ MLE satisfying `scale > 0`.
 
 ### Gamma
 
-`loc` is fixed at zero. The implementation uses
-`scipy.stats.gamma.fit(data, floc=0)` with MLE semantics and strictly validates
-the returned shape, location and scale. Positive constant data has no finite
-Gamma MLE; any zero observation has no finite regular Gamma MLE. A zero,
-infinite, NaN or arbitrarily capped fitted parameter is invalid.
+`loc` is fixed at zero. The implementation invokes exactly:
 
-Backend warnings are captured. They may be recorded only when every final
-postcondition passes; invalid output is never accepted or silently ignored.
+```python
+scipy.stats.gamma.fit(
+    data,
+    floc=0,
+    method="MLE",
+)
+```
+
+Acceptance tests confirm that both `floc` and `method` are passed explicitly.
+The returned shape, location and scale are strictly validated. Positive
+constant data has no finite Gamma MLE; any zero observation has no finite
+regular Gamma MLE. A zero, infinite, NaN or arbitrarily capped fitted
+parameter is invalid.
+
+Warnings are captured and normalized on every fitting path, including Gamma,
+Exponential and Negative Binomial. A warning may be recorded in a successful
+immutable `warnings` tuple only after every fit postcondition passes; invalid
+output is never accepted or silently ignored.
 
 SciPy documents that `rv_continuous.fit` defaults to MLE and that `floc` fixes
-the location parameter: [SciPy `rv_continuous.fit` documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.fit.html).
+the location parameter: [SciPy 1.18.0 `rv_continuous.fit` documentation](https://docs.scipy.org/doc/scipy-1.18.0/reference/generated/scipy.stats.rv_continuous.fit.html).
 
 ## 7. Generalized Negative Binomial MLE
 
@@ -205,10 +279,16 @@ or round `r` to integers, use a stochastic optimizer, expose an internal
 MLE.
 
 This boundary is necessary because SciPy's generic fitting API honors each
-distribution's integrality metadata, and SciPy currently marks `nbinom` shape
-`n` integral even though pyMagicStats' canonical generalized `r` is any
-positive finite real: [SciPy `fit` documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.fit.html),
-[SciPy `nbinom` source](https://github.com/scipy/scipy/blob/main/scipy/stats/_discrete_distns.py).
+distribution's integrality metadata. Evidence-only reconnaissance under SciPy
+1.18.1 observed that private `stats.nbinom._shape_info()` marks shape `n` with
+`integrality=True`, even though pyMagicStats' canonical generalized `r` is any
+positive finite real. Production must not depend on `_shape_info()`, and no
+claim is made for every future SciPy version. The custom estimator is
+authoritative because pyMagicStats itself guarantees real `r`, independently
+of backend fitter metadata. See the
+[SciPy 1.18.0 `fit` documentation](https://docs.scipy.org/doc/scipy-1.18.0/reference/generated/scipy.stats.fit.html)
+and the version-pinned
+[SciPy 1.18.1 `nbinom` source](https://github.com/scipy/scipy/blob/v1.18.1/scipy/stats/_discrete_distns.py).
 
 Samples are classified before numerical solving:
 
@@ -229,11 +309,14 @@ n * sum(x_i**2) - sum(x_i)**2 > n * sum(x_i)
 ```
 
 This is a statistical existence classification, not a floating tolerance.
-The existence and uniqueness condition is supported by Aragón, Eberly and
-Eberly, *Existence and uniqueness of the maximum likelihood estimator for the
-two-parameter negative binomial distribution*, Statistics & Probability
-Letters 15(5), 1992,
-[doi:10.1016/0167-7152(92)90157-Z](https://doi.org/10.1016/0167-7152(92)90157-Z).
+The primary existence/uniqueness authority is Simonsen's 1976 result together
+with its 1980 correction: [Simonsen (1976)](https://www.tandfonline.com/doi/abs/10.1080/03461238.1976.10405618),
+[Simonsen (1980), correction](https://www.tandfonline.com/doi/abs/10.1080/03461238.1980.10408657).
+Aragón, Eberly and Eberly (1992) is retained as historical context only;
+[Wang (1996)](https://doi.org/10.1016/0167-7152(94)00259-2) identified a major
+problem in its proof. Later computational and analytical support includes
+[Bandara, Gill and Mitra (2019)](https://doi.org/10.1016/j.spl.2019.01.009)
+and [Yang et al. (2026)](https://link.springer.com/article/10.1007/s00362-026-01842-x).
 
 Solver tolerances and iteration/evaluation caps are documented computational
 controls only. They never become hidden validity thresholds for `r`, `p` or
@@ -263,9 +346,17 @@ different data/support conditions are automatically comparable.
 The future implementation must test:
 
 - immutable ownership and absence of duplicated authoritative state;
+- delegated read-only fitted-distribution backend properties;
+- exact derived `FitResult.backend` and `FitResult.backend_version`
+  properties, all frozen estimator/solver identifiers, and absence of
+  duplicated parameter state;
+- the additive exports from `pyMagicStat.distributions.families` and
+  `pyMagicStat.distributions`, with no new package-root exports;
 - continuous/discrete interface separation;
 - exact fit-input validation;
+- exact Negative Binomial integer-valued canonicalization and rejection cases;
 - Gamma parity against an independent fixed-`loc` MLE oracle;
+- explicit Gamma backend arguments `floc=0` and `method="MLE"`;
 - the analytical Exponential MLE;
 - generalized real-`r` NB MLE using fixed high-precision reference cases;
 - independent two-dimensional likelihood/oracle cross-checks that do not
@@ -278,6 +369,7 @@ The future implementation must test:
 - strongly overdispersed samples with small `r`;
 - large counts and `int64` boundaries;
 - numerical/backend exception translation and cause preservation;
+- warning capture and normalization on every fitting path;
 - bounded execution;
 - no stochastic sample-recovery assertions that confuse sampling error with
   estimator correctness;

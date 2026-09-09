@@ -80,15 +80,25 @@ PPF and explicit caller-controlled RNG contracts remain those accepted in
 SciPy's continuous fitting contract supports MLE and fixed `loc` through
 `floc`, so the future Gamma implementation can delegate its fixed-location
 numerical MLE and then enforce pyMagicStats postconditions:
-[SciPy `rv_continuous.fit` documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.fit.html).
+[SciPy 1.18.0 `rv_continuous.fit` documentation](https://docs.scipy.org/doc/scipy-1.18.0/reference/generated/scipy.stats.rv_continuous.fit.html).
 
 Generic SciPy discrete fitting is not authoritative for pyMagicStats'
 generalized Negative Binomial fit. SciPy's generic API respects distribution
-integrality metadata, and SciPy marks the `nbinom` shape named `n` as integral;
-CP03 instead froze canonical `r` as any positive finite real. See
-[SciPy `fit` documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.fit.html)
-and the authoritative
-[SciPy `nbinom` implementation](https://github.com/scipy/scipy/blob/main/scipy/stats/_discrete_distns.py).
+integrality metadata. Evidence-only runtime reconnaissance in the recorded
+SciPy 1.18.1 environment observed exactly:
+
+```text
+stats.nbinom._shape_info(): shape n -> integrality=True
+```
+
+This private metadata is reconnaissance evidence only. Production must not
+depend on `_shape_info()`, and this observation makes no claim for every
+future SciPy version. CP03 froze canonical `r` as any positive finite real;
+the custom estimator is therefore authoritative because pyMagicStats itself
+guarantees real `r`, independently of backend fitter metadata. See
+[SciPy 1.18.0 `fit` documentation](https://docs.scipy.org/doc/scipy-1.18.0/reference/generated/scipy.stats.fit.html)
+and the version-pinned
+[SciPy 1.18.1 `nbinom` implementation](https://github.com/scipy/scipy/blob/v1.18.1/scipy/stats/_discrete_distns.py).
 
 For mean `m>0`, `DEC-013` therefore profiles
 `p_hat(r)=r/(r+m)` and solves the deterministic one-dimensional score on
@@ -99,12 +109,41 @@ For integer observations, the classification uses the exact integer identity
 `n*sum(x_i**2)-sum(x_i)**2 > n*sum(x_i)`, without a floating validity
 tolerance.
 
-The existence/uniqueness classification is supported by Aragón, Eberly and
-Eberly, *Existence and uniqueness of the maximum likelihood estimator for the
-two-parameter negative binomial distribution*, Statistics & Probability
-Letters 15(5), 1992,
-[doi:10.1016/0167-7152(92)90157-Z](https://doi.org/10.1016/0167-7152(92)90157-Z).
+The primary existence/uniqueness authority is Simonsen's 1976 result together
+with its 1980 correction: [Simonsen (1976)](https://www.tandfonline.com/doi/abs/10.1080/03461238.1976.10405618),
+[Simonsen (1980), correction](https://www.tandfonline.com/doi/abs/10.1080/03461238.1980.10408657).
+Aragón, Eberly and Eberly (1992) is historical context only because
+[Wang (1996)](https://doi.org/10.1016/0167-7152(94)00259-2) identified a major
+problem in its proof. The result and reliable computation are reinforced by
+[Bandara, Gill and Mitra (2019)](https://doi.org/10.1016/j.spl.2019.01.009)
+and [Yang et al. (2026)](https://link.springer.com/article/10.1007/s00362-026-01842-x).
 No extended quotation is reproduced here.
+
+## Architecture review remediation
+
+Architecture reviewed the original exact candidate
+`f40ed49f3f006eae4f9de03199b2f942ddb4f38c` and returned
+`CHANGES_REQUIRED`. This follow-up records:
+
+```text
+ARCH-CP04-001 = REMEDIATED
+ARCH-CP04-002 = REMEDIATED
+ARCH-CP04-003 = REMEDIATED
+ARCH-CP04-004 = REMEDIATED
+exact-SHA Architecture re-review = PENDING
+```
+
+- `ARCH-CP04-001` removes the unsupported separate adversarial-acceptance
+  claim for PR #11 while retaining only demonstrated integration facts.
+- `ARCH-CP04-002` separates probability-backend delegation from immutable
+  estimator/solver provenance and reconciles the `DEC-010` semantic states.
+- `ARCH-CP04-003` fixes public exports, exact Gamma invocation, discrete input
+  canonicalization and warning handling.
+- `ARCH-CP04-004` corrects source authority and pins SciPy references.
+
+The Negative Binomial mathematical profile score and exact overdispersion
+criterion are unchanged. This remediation remains pending exact-SHA
+Architecture re-review and does not authorize implementation.
 
 ## Validation environment
 
@@ -161,10 +200,11 @@ tests/test_discrete_distribution_families.py
 
 ## Scope audit and nonclaims
 
-This architecture materialization changes only the eight authorized
-`knowledge/**` paths. Production files and test files are unchanged. It does
-not implement fitted objects, fitting errors, estimators, likelihoods,
-information criteria, GOF, calibration, selection or routing.
+The original architecture materialization changed only its eight authorized
+`knowledge/**` paths. This follow-up changes only the six authorized
+architecture-remediation records. Production files and test files are
+unchanged. It does not implement fitted objects, fitting errors, estimators,
+likelihoods, information criteria, GOF, calibration, selection or routing.
 
 ```text
 CP03 = COMPLETE

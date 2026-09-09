@@ -228,6 +228,13 @@ Fuente canónica:
 - **Baseline validado:** registro PASS; Knowledge Base 7 passed / 2 fallos
   heredados; superficie de distribución 575 passed / 2 warnings; candidato
   documental sin nuevos fallos y `git diff --check` PASS.
+- **Revisión de arquitectura:** el candidato exacto original
+  `f40ed49f3f006eae4f9de03199b2f942ddb4f38c` recibió
+  `CHANGES_REQUIRED`; `ARCH-CP04-001`, `ARCH-CP04-002`, `ARCH-CP04-003` y
+  `ARCH-CP04-004` quedan `REMEDIATED`, pendientes de re-revisión sobre el SHA
+  exacto de este follow-up.
+- **Invariantes matemáticos:** el score de perfil Negative Binomial y el
+  criterio exacto de sobredispersión no cambiaron.
 - **Demuestra:** identidad, reconnaissance, arquitectura congelada y baseline
   de regresión antes de implementar CP04.
 - **No demuestra:** implementación, corrección de estimadores, auditoría

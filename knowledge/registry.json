@@ -494,7 +494,7 @@
       "kind": "evidence",
       "title": "CP04 Wave 1 fitting architecture baseline",
       "status": "accepted",
-      "scope": "Clean pre-implementation CP04 baseline at main@b3f35d4d7b221c457e2e730bfba2b104e1d07144, fitting-surface reconnaissance, source authority and 575-test distribution regression",
+      "scope": "Clean pre-implementation CP04 baseline at main@b3f35d4d7b221c457e2e730bfba2b104e1d07144, fitting-surface reconnaissance, corrected source authority, 575-test distribution regression and ARCH-CP04-001..004 remediation pending exact-SHA re-review",
       "path": "knowledge/evidence/distribution-family-framework-cp04-baseline.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-cp04-contract.md",
@@ -515,7 +515,7 @@
         "decision-owner"
       ],
       "supersedes": [],
-      "tags": ["distribution-families", "cp04", "fitting", "reconnaissance", "baseline", "pre-implementation", "scipy", "negative-binomial-mle"]
+      "tags": ["distribution-families", "cp04", "fitting", "reconnaissance", "baseline", "pre-implementation", "scipy", "negative-binomial-mle", "architecture-changes-required", "architecture-remediated", "exact-sha-rereview-pending"]
     },
     {
       "id": "BR-017",
@@ -727,7 +727,7 @@
         "ahead_of_main": 0,
         "behind_main": 1,
         "unique_commits": [],
-        "decision_reason": "Product Owner opened the branch from exact main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649 for CP03 post-merge governance. Architecture and adversarial review accepted head 7e38c1c62f69771282398ffd3fac118f866c5d69; PR #11 integrated it through tree-equivalent merge commit b3f35d4d7b221c457e2e730bfba2b104e1d07144.",
+        "decision_reason": "Product Owner opened the branch from exact main@28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649 for CP03 post-merge governance. PR #11 had exact head 7e38c1c62f69771282398ffd3fac118f866c5d69 and was integrated with Owner authorization through merge commit b3f35d4d7b221c457e2e730bfba2b104e1d07144, whose parents are 28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649 and 7e38c1c62f69771282398ffd3fac118f866c5d69; merge and candidate trees are both 2e363bd357a5ec59c17690bd9e0e3bbb26061d33. The archived fully_contained merged source branch is preserved. No separate adversarial audit of the PR #11 head is claimed.",
         "merge_base": "7e38c1c62f69771282398ffd3fac118f866c5d69",
         "parent_branch": "main",
         "parent_sha": "28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649",
@@ -769,7 +769,7 @@
         "merge_base": "b3f35d4d7b221c457e2e730bfba2b104e1d07144",
         "parent_branch": "main",
         "parent_sha": "b3f35d4d7b221c457e2e730bfba2b104e1d07144",
-        "next_action": "Await Architecture review of the local CP04 contract; production implementation, push, PR, merge and CP05-CP08 are not authorized."
+        "next_action": "Await exact-SHA Architecture re-review of the documentation-only remediation after CHANGES_REQUIRED; production implementation, push, PR, merge and CP05-CP08 are not authorized."
       }
     },
     {

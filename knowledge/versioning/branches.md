@@ -36,7 +36,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-020 | `docs/distribution-family-framework-cp02-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `37bc8de97185794e9ef14b33d4ed00d3da1a660e` | integrada vía PR #9; preservar rama remota |
 | BR-021 | `feature/distribution-family-framework-cp03-discrete-core` | `archived` | `fully_contained` | `merged` | 0/1 | `a1e4d61f0026f8407506d039788bb2df2eafa680` | integrada vía PR #10; preservar rama remota |
 | BR-022 | `docs/distribution-family-framework-cp03-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `7e38c1c62f69771282398ffd3fac118f866c5d69` | integrada vía PR #11; preservar rama remota |
-| BR-023 | `feature/distribution-family-framework-cp04-wave1-fitting` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `b3f35d4d7b221c457e2e730bfba2b104e1d07144` | revisar arquitectura CP04; implementación y publicación no autorizadas |
+| BR-023 | `feature/distribution-family-framework-cp04-wave1-fitting` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `b3f35d4d7b221c457e2e730bfba2b104e1d07144` | re-revisar la remediación exacta tras `CHANGES_REQUIRED`; implementación y publicación no autorizadas |
 
 ### Cronología de BR-017
 
@@ -165,9 +165,10 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
   commits únicos al abrir.
 - `head_sha_at_decision` conserva ese snapshot de apertura y no intenta
   autorreferenciar el commit documental posterior.
-- BR-022 materializó únicamente el cierre post-merge de CP03. Arquitectura y
-  auditoría aceptaron el head exacto
-  `7e38c1c62f69771282398ffd3fac118f866c5d69`.
+- BR-022 materializó únicamente el cierre post-merge de CP03. Su head exacto
+  en PR #11 fue `7e38c1c62f69771282398ffd3fac118f866c5d69` y el Owner autorizó su
+  integración. No se registra una auditoría adversarial separada del head de
+  PR #11 porque no se suministró un artefacto/veredicto exacto para tal claim.
 - PR #11 integró ese head mediante
   `b3f35d4d7b221c457e2e730bfba2b104e1d07144`, con parents exactos
   `28b57a2eaab0706c5b2e2dcdf6a03e5a30a0b649` y
@@ -183,7 +184,11 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
   árbol limpio y cero commits únicos al abrir.
 - `head_sha_at_decision` registra únicamente ese snapshot de apertura; no
   autorreferencia el futuro commit documental.
-- BR-023 materializa `DEC-013` y `EV-011` para revisión arquitectónica. La
+- BR-023 materializó `DEC-013` y `EV-011` en el candidato exacto
+  `f40ed49f3f006eae4f9de03199b2f942ddb4f38c`. Arquitectura devolvió
+  `CHANGES_REQUIRED`; `ARCH-CP04-001` a `ARCH-CP04-004` quedan remediados en
+  un follow-up documental pendiente de re-revisión sobre su SHA exacto. El
+  score de perfil y el criterio de sobredispersión no cambiaron. La
   implementación, el push, PR, merge y CP05–CP08 requieren autorizaciones
   separadas.
 
