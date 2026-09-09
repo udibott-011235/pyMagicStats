@@ -12,6 +12,7 @@ import numpy as np
 from scipy import stats
 
 from pyMagicStat.distributions.families._core import (
+    FitResult,
     ContinuousDistributionFamily,
     DistributionSupport,
     ParameterizedContinuousDistribution,
@@ -117,6 +118,12 @@ class GammaFamily(ContinuousDistributionFamily):
 
     __slots__ = ()
 
+    def fit(self, data: Any) -> FitResult:
+        """Fit the frozen fixed-location maximum-likelihood model."""
+        from ._fitting import fit_gamma
+
+        return fit_gamma(self, data)
+
     @property
     def name(self) -> str:
         return "gamma"
@@ -176,6 +183,12 @@ class ExponentialFamily(ContinuousDistributionFamily):
     """Stateless Exponential family using scale with fixed ``loc=0``."""
 
     __slots__ = ()
+
+    def fit(self, data: Any) -> FitResult:
+        """Fit the frozen fixed-location maximum-likelihood model."""
+        from ._fitting import fit_exponential
+
+        return fit_exponential(self, data)
 
     @property
     def name(self) -> str:

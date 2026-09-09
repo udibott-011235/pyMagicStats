@@ -2,6 +2,14 @@
 
 from pyMagicStat.distributions.distributions import Distribution, NormalDistribution
 from pyMagicStat.distributions.families import (
+    FittedDistribution,
+    FittedContinuousDistribution,
+    FittedDiscreteDistribution,
+    FitResult,
+    DistributionFitError,
+    FitIdentifiabilityError,
+    NoFiniteMLEError,
+    FitNumericalError,
     DiscreteDistributionFamily,
     DistributionSupport,
     ExponentialFamily,
@@ -13,6 +21,14 @@ from pyMagicStat.distributions.families import (
 )
 
 __all__ = [
+    "FittedDistribution",
+    "FittedContinuousDistribution",
+    "FittedDiscreteDistribution",
+    "FitResult",
+    "DistributionFitError",
+    "FitIdentifiabilityError",
+    "NoFiniteMLEError",
+    "FitNumericalError",
     "Distribution",
     "NormalDistribution",
     "GammaFamily",

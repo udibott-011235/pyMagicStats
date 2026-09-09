@@ -12,6 +12,7 @@ import numpy as np
 from scipy import stats
 
 from pyMagicStat.distributions.families._core import (
+    FitResult,
     DiscreteDistributionFamily,
     DistributionSupport,
     ParameterizedDiscreteDistribution,
@@ -104,6 +105,12 @@ class NegativeBinomialFamily(DiscreteDistributionFamily):
     """Stateless Negative Binomial family using ``r,p`` with fixed ``loc=0``."""
 
     __slots__ = ()
+
+    def fit(self, data: Any) -> FitResult:
+        """Fit the frozen fixed-location maximum-likelihood model."""
+        from ._fitting import fit_negative_binomial
+
+        return fit_negative_binomial(self, data)
 
     @property
     def name(self) -> str:
