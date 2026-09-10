@@ -7,14 +7,14 @@ post-merge mediante `BR-018`, apertura CP02 mediante `BR-019` y cierre
 post-merge CP02 mediante `BR-020` materializados: `2026-09-06`; apertura CP03
 y evidencia adversarial pre-merge mediante `BR-021`, y cierre post-merge CP03
 mediante `BR-022`: `2026-09-07`; apertura CP04 Wave 1 fitting mediante
-`BR-023`: `2026-09-08`. Consulte `EV-003`
+`BR-023`: `2026-09-08`; cierre CP04 y apertura `BR-024`: `2026-09-10`. Consulte `EV-003`
 para la evidencia Git reproducible inicial, `EV-005` para la integración de
 Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 `DEC-006` para la autoridad de lifecycle.
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `b3f35d4d7b221c457e2e730bfba2b104e1d07144` | CP03 canónicamente cerrado; no modificar directamente; CP04 arquitectura congelada |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `2b6e1263b8489592030b0838cd3851f193fbfd7f` | CP04 integrado mediante PR #12; revisar cierre BR-024; no modificar directamente |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -36,7 +36,8 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-020 | `docs/distribution-family-framework-cp02-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `37bc8de97185794e9ef14b33d4ed00d3da1a660e` | integrada vía PR #9; preservar rama remota |
 | BR-021 | `feature/distribution-family-framework-cp03-discrete-core` | `archived` | `fully_contained` | `merged` | 0/1 | `a1e4d61f0026f8407506d039788bb2df2eafa680` | integrada vía PR #10; preservar rama remota |
 | BR-022 | `docs/distribution-family-framework-cp03-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `7e38c1c62f69771282398ffd3fac118f866c5d69` | integrada vía PR #11; preservar rama remota |
-| BR-023 | `feature/distribution-family-framework-cp04-wave1-fitting` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `b3f35d4d7b221c457e2e730bfba2b104e1d07144` | re-revisar la remediación exacta tras `CHANGES_REQUIRED`; implementación y publicación no autorizadas |
+| BR-023 | `feature/distribution-family-framework-cp04-wave1-fitting` | `archived` | `fully_contained` | `merged` | 0/1 | `6e92ef20aca375878964321596ba525539433f79` | integrada vía PR #12; preservar rama remota |
+| BR-024 | `docs/distribution-family-framework-cp04-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `2b6e1263b8489592030b0838cd3851f193fbfd7f` | revisión local de Arquitectura; sin push, PR ni merge |
 
 ### Cronología de BR-017
 
@@ -182,12 +183,13 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 - `feature/distribution-family-framework-cp04-wave1-fitting` se abre desde el
   snapshot exacto `main@b3f35d4d7b221c457e2e730bfba2b104e1d07144`, con
   árbol limpio y cero commits únicos al abrir.
-- `head_sha_at_decision` registra únicamente ese snapshot de apertura; no
-  autorreferencia el futuro commit documental.
+- En la apertura, `head_sha_at_decision` registraba ese snapshot sin
+  autorreferenciar el futuro commit documental; el cierre posterior registra
+  el head integrado.
 - BR-023 materializó `DEC-013` y `EV-011` en el candidato exacto
   `f40ed49f3f006eae4f9de03199b2f942ddb4f38c`. Arquitectura devolvió
   `CHANGES_REQUIRED`; `ARCH-CP04-001` a `ARCH-CP04-004` quedan remediados en
-  un follow-up documental pendiente de re-revisión sobre su SHA exacto. El
+  un follow-up documental entonces pendiente de re-revisión sobre su SHA exacto. El
   score de perfil y el criterio de sobredispersión no cambiaron. La
   implementación, el push, PR, merge y CP05–CP08 requieren autorizaciones
   separadas.
@@ -202,3 +204,22 @@ BR-010 placeholder
 
 La relación se codifica únicamente desde el registro nuevo mediante
 `supersedes`; no se duplica con `superseded_by`.
+
+### Cierre de BR-023 y apertura de BR-024 — 2026-09-10
+
+La apertura de BR-023 descrita arriba es histórica. Tras la aceptación de
+arquitectura `9d7a9ea5…` y la remediación CP04-D, el candidato certificado
+`6e92ef20aca375878964321596ba525539433f79` recibió `ADVERSARIAL_PASS`.
+PR #12 lo integró mediante `2b6e1263b8489592030b0838cd3851f193fbfd7f`,
+con primer parent `b3f35d4d7b221c457e2e730bfba2b104e1d07144` y segundo
+parent `6e92ef20aca375878964321596ba525539433f79`. El tree del merge y del
+candidato coincide en `a3c4e308107cc3042ebcb006973b7a6f38fa1b36`.
+BR-023 queda archivada, fully_contained y merged; su ref remota se preserva.
+EV-012 conserva la evidencia. El ruleset `3811593` permanece sin cambios.
+
+BR-024 abre exclusivamente el cierre documental y los tests de gobernanza,
+desde `main@2b6e1263b8489592030b0838cd3851f193fbfd7f`. El head registrado es
+el snapshot de apertura, same_head, ahead/behind 0/0 y parent main en ese SHA;
+no autorreferencia el futuro commit documental. Estado under_review e
+integración pending. CP04 queda COMPLETE y CP05–CP08 NOT_STARTED.
+Las decisiones de las demás ramas, incluido BR-018, se conservan.

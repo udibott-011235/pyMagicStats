@@ -26,6 +26,14 @@ EXPECTED_BRANCH_NAMES = {
     "refactor/inference-capability-routing",
     "refactor/inference-engine",
     "refactor/sampling-robustness-v3",
+    "feature/distribution-family-framework-cp01",
+    "docs/distribution-family-framework-cp01-post-merge",
+    "feature/distribution-family-framework-cp02-continuous-core",
+    "docs/distribution-family-framework-cp02-post-merge",
+    "feature/distribution-family-framework-cp03-discrete-core",
+    "docs/distribution-family-framework-cp03-post-merge",
+    "feature/distribution-family-framework-cp04-wave1-fitting",
+    "docs/distribution-family-framework-cp04-post-merge",
 }
 
 EXPECTED_LIFECYCLE = {
@@ -45,6 +53,14 @@ EXPECTED_LIFECYCLE = {
     "BR-014": ("archived", "fully_contained", "merged"),
     "BR-015": ("archived", "fully_contained", "merged"),
     "BR-016": ("archived", "fully_contained", "merged"),
+    "BR-017": ("archived", "fully_contained", "merged"),
+    "BR-018": ("under_review", "same_head", "pending"),
+    "BR-019": ("archived", "fully_contained", "merged"),
+    "BR-020": ("archived", "fully_contained", "merged"),
+    "BR-021": ("archived", "fully_contained", "merged"),
+    "BR-022": ("archived", "fully_contained", "merged"),
+    "BR-023": ("archived", "fully_contained", "merged"),
+    "BR-024": ("under_review", "same_head", "pending"),
 }
 
 
@@ -81,7 +97,8 @@ def test_registry_has_unique_ids_and_exactly_the_governed_branches():
     branch_names = [record["branch"]["name"] for record in branches]
 
     assert len(ids) == len(set(ids))
-    assert len(branches) == 16
+    assert len(branches) == len(EXPECTED_BRANCH_NAMES)
+    assert {record["id"] for record in branches} == set(EXPECTED_LIFECYCLE)
     assert len(branch_names) == len(set(branch_names))
     assert set(branch_names) == EXPECTED_BRANCH_NAMES
     assert all("branch" not in record for record in registry["records"] if record["kind"] != "branch")
@@ -112,7 +129,25 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert registry["canonical_branch"] == "main"
     assert main["status"] == "accepted"
     assert main["branch"]["relation_to_main"] == "canonical"
-    assert main["branch"]["head_sha_at_decision"] == "f1725ebdfebcb667c053420e4cb4c1e35048f9e0"
+    assert main["branch"]["head_sha_at_decision"] == "2b6e1263b8489592030b0838cd3851f193fbfd7f"
+    evidence_path = "knowledge/evidence/distribution-family-framework-cp04-evidence.md"
+    assert _record(registry, "EV-012")["status"] == "accepted"
+    assert _record(registry, "EV-012")["path"] == evidence_path
+    for record_id in ("DEC-009", "DEC-013", "BR-001"):
+        assert evidence_path in _record(registry, record_id)["evidence_paths"]
+    cp04 = _record(registry, "BR-023")["branch"]
+    assert cp04["head_sha_at_decision"] == "6e92ef20aca375878964321596ba525539433f79"
+    assert cp04["pr_number"] == 12
+    assert cp04["merged_via"] == "PR #12 / merge commit 2b6e1263b8489592030b0838cd3851f193fbfd7f"
+    assert (cp04["ahead_of_main"], cp04["behind_main"]) == (0, 1)
+    closure = _record(registry, "BR-024")["branch"]
+    assert closure["parent_branch"] == "main"
+    assert closure["parent_sha"] == main["branch"]["head_sha_at_decision"]
+    assert closure["head_sha_at_decision"] == closure["parent_sha"]
+    assert closure["merge_base"] == closure["parent_sha"]
+    assert (closure["ahead_of_main"], closure["behind_main"]) == (0, 0)
+    assert closure["unique_commits"] == []
+    assert "merged_via" not in closure
     assert knowledge["status"] == "archived"
     assert knowledge["branch"]["integration_state"] == "merged"
     assert knowledge["branch"]["merged_via"] == "PR #1"

@@ -1,5 +1,18 @@
 # Historial de la base de conocimiento
 
+## 2026-09-10 — CP04 post-merge governance
+
+- CP04 implementación e integración COMPLETE, gobernanza CLOSED y overall COMPLETE
+  tras PR #12 en `2b6e1263b8489592030b0838cd3851f193fbfd7f`.
+- EV-012 registra el candidato certificado, remediación CP04-D, ADVERSARIAL_PASS,
+  bundle, rehearsal, integración y limitaciones de validación. EV-011 conserva
+  sus observaciones pre-implementación; DEC-013 permanece congelado.
+- BR-001 refleja el baseline post-PR-12; BR-023 queda archived / fully_contained /
+  merged con rama fuente preservada; BR-024 registra su snapshot de apertura.
+- Se reparan las dos expectativas obsoletas de Knowledge: inventario BR-001–024
+  y SHA canónico. Se mantienen los nueve tests y el lifecycle autorizado de BR-018.
+- Stage IN_PROGRESS; CP05–CP08 NOT_STARTED. Sin cambios de producción.
+
 ## 2026-09-08 — STAGE-DIST-FAMILIES-001 / CP04-A0
 
 - PR #11 integra el cierre post-merge de CP03 mediante
