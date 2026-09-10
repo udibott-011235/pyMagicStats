@@ -587,7 +587,239 @@ class ParameterizedDiscreteDistribution(ParameterizedDistribution):
         )
 
 
+class DistributionFitError(Exception):
+    """A valid sample could not produce a validated fitted distribution."""
+
+
+class FitIdentifiabilityError(DistributionFitError):
+    """The sample does not identify the canonical parameters."""
+
+
+class NoFiniteMLEError(DistributionFitError):
+    """The sample has no finite maximum-likelihood estimate."""
+
+
+class FitNumericalError(DistributionFitError):
+    """An eligible fit could not be computed or validated numerically."""
+
+
+@dataclass(frozen=True, slots=True)
+class FittedDistribution:
+    """Fitting marker around one authoritative parameterized distribution."""
+
+    parameterized_distribution: ParameterizedDistribution
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.parameterized_distribution, ParameterizedDistribution):
+            raise TypeError("a fitted distribution requires a parameterized distribution")
+
+    @property
+    def family(self):
+        return self.parameterized_distribution.family
+
+    @property
+    def parameters(self):
+        return self.parameterized_distribution.parameters
+
+    @property
+    def name(self):
+        return self.parameterized_distribution.name
+
+    @property
+    def kind(self):
+        return self.parameterized_distribution.kind
+
+    @property
+    def support(self):
+        return self.parameterized_distribution.support
+
+    @property
+    def parameterization(self):
+        return self.parameterized_distribution.parameterization
+
+    @property
+    def parameter_specs(self):
+        return self.parameterized_distribution.parameter_specs
+
+    @property
+    def fixed_parameters(self):
+        return self.parameterized_distribution.fixed_parameters
+
+    @property
+    def backend_library(self):
+        return self.parameterized_distribution.backend_library
+
+    @property
+    def backend_distribution(self):
+        return self.parameterized_distribution.backend_distribution
+
+    @property
+    def backend_version(self):
+        return self.parameterized_distribution.backend_version
+
+    def cdf(self, x):
+        return self.parameterized_distribution.cdf(x)
+
+    def logcdf(self, x):
+        return self.parameterized_distribution.logcdf(x)
+
+    def sf(self, x):
+        return self.parameterized_distribution.sf(x)
+
+    def logsf(self, x):
+        return self.parameterized_distribution.logsf(x)
+
+    def ppf(self, q):
+        return self.parameterized_distribution.ppf(q)
+
+    def rvs(self, size=None, *, rng):
+        return self.parameterized_distribution.rvs(size, rng=rng)
+
+
+@dataclass(frozen=True, slots=True)
+class FittedContinuousDistribution(FittedDistribution):
+    """Fitted continuous probability operations, with no discrete methods."""
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.parameterized_distribution, ParameterizedContinuousDistribution):
+            raise TypeError("a continuous fit requires a continuous parameterization")
+
+    def pdf(self, x):
+        return self.parameterized_distribution.pdf(x)
+
+    def logpdf(self, x):
+        return self.parameterized_distribution.logpdf(x)
+
+
+@dataclass(frozen=True, slots=True)
+class FittedDiscreteDistribution(FittedDistribution):
+    """Fitted discrete operations, including unchanged integer sampling."""
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.parameterized_distribution, ParameterizedDiscreteDistribution):
+            raise TypeError("a discrete fit requires a discrete parameterization")
+
+    def pmf(self, x):
+        return self.parameterized_distribution.pmf(x)
+
+    def logpmf(self, x):
+        return self.parameterized_distribution.logpmf(x)
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class _FitMetadata(Mapping[str, str]):
+    """Tuple-backed immutable string mapping, including across pickle/copy."""
+
+    _items: tuple[tuple[str, str], ...]
+
+    def __init__(self, source: Mapping[str, str]):
+        if not isinstance(source, Mapping):
+            raise TypeError("metadata must be a string mapping")
+        items = tuple(source.items())
+        if any(type(k) is not str or type(v) is not str for k, v in items):
+            raise TypeError("metadata keys and values must be strings")
+        object.__setattr__(self, "_items", items)
+
+    def __iter__(self):
+        return (key for key, _ in self._items)
+
+    def __len__(self):
+        return len(self._items)
+
+    def __getitem__(self, key):
+        for name, value in self._items:
+            if name == key:
+                return value
+        raise KeyError(key)
+
+
+@dataclass(frozen=True, slots=True)
+class FitResult:
+    """Validated successful fitting information; no raw sample is retained."""
+
+    fitted_distribution: FittedDistribution
+    estimation_method: str
+    fixed_parameters: tuple[str, ...]
+    estimated_parameters: tuple[str, ...]
+    n_observations: int
+    log_likelihood: float
+    aic: float
+    bic: float
+    converged: bool
+    warnings: tuple[str, ...]
+    metadata: Mapping[str, str]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.fitted_distribution, FittedDistribution):
+            raise TypeError("fitted_distribution must be a FittedDistribution")
+        if self.estimation_method != "maximum_likelihood" or self.converged is not True:
+            raise ValueError("FitResult represents a successful maximum-likelihood fit")
+        if type(self.n_observations) is not int or self.n_observations <= 0:
+            raise ValueError("n_observations must be a positive Python int")
+        for name in ("fixed_parameters", "estimated_parameters", "warnings"):
+            value = getattr(self, name)
+            if type(value) is not tuple or any(type(item) is not str for item in value):
+                raise TypeError(f"{name} must be a tuple of strings")
+        for name in ("log_likelihood", "aic", "bic"):
+            value = getattr(self, name)
+            if type(value) is not float or not math.isfinite(value):
+                raise ValueError(f"{name} must be a finite Python float")
+        # Import descriptors only when constructing a result, after the family
+        # modules have finished importing this shared core. Match concrete
+        # types rather than user-overridable family names or backend strings.
+        from .continuous import ExponentialFamily, GammaFamily
+        from .discrete import NegativeBinomialFamily
+
+        contracts = {
+            GammaFamily: (
+                FittedContinuousDistribution, ("shape", "scale"),
+                "scipy-gamma-fixed-loc-mle-v1", "scipy.stats.gamma.fit",
+            ),
+            ExponentialFamily: (
+                FittedContinuousDistribution, ("scale",),
+                "pymagicstats-exponential-closed-form-mle-v1", "closed_form",
+            ),
+            NegativeBinomialFamily: (
+                FittedDiscreteDistribution, ("r", "p"),
+                "pymagicstats-negative-binomial-profile-mle-v1", "scipy.optimize.brentq",
+            ),
+        }
+        contract = contracts.get(type(self.fitted_distribution.family))
+        if contract is None:
+            raise TypeError("FitResult requires a supported concrete fitting family")
+        wrapper, estimated, estimator, solver = contract
+        if type(self.fitted_distribution) is not wrapper:
+            raise TypeError("fitted_distribution must use the family's concrete fitted wrapper")
+        if self.fixed_parameters != ("loc",) or self.estimated_parameters != estimated:
+            raise ValueError("fixed and estimated parameter names must match the frozen family contract")
+        metadata = _FitMetadata(self.metadata)
+        if dict(metadata) != {"estimator_id": estimator, "solver_id": solver}:
+            raise ValueError("metadata must contain exactly the frozen family provenance")
+        k = len(estimated)
+        if self.aic != 2*k - 2*self.log_likelihood:
+            raise ValueError("aic is inconsistent with the fitted log-likelihood and parameter count")
+        if self.bic != k*math.log(self.n_observations) - 2*self.log_likelihood:
+            raise ValueError("bic is inconsistent with the fitted log-likelihood, sample size and parameter count")
+        object.__setattr__(self, "metadata", metadata)
+
+    @property
+    def backend(self) -> str:
+        return self.fitted_distribution.backend_distribution
+
+    @property
+    def backend_version(self) -> str:
+        return self.fitted_distribution.backend_version
+
+
 __all__ = [
+    "FittedDistribution",
+    "FittedContinuousDistribution",
+    "FittedDiscreteDistribution",
+    "FitResult",
+    "DistributionFitError",
+    "FitIdentifiabilityError",
+    "NoFiniteMLEError",
+    "FitNumericalError",
     "ContinuousDistributionFamily",
     "DiscreteDistributionFamily",
     "DistributionFamily",

@@ -1,6 +1,14 @@
 """Public probability-family contracts."""
 
 from pyMagicStat.distributions.families._core import (
+    FittedDistribution,
+    FittedContinuousDistribution,
+    FittedDiscreteDistribution,
+    FitResult,
+    DistributionFitError,
+    FitIdentifiabilityError,
+    NoFiniteMLEError,
+    FitNumericalError,
     ContinuousDistributionFamily,
     DiscreteDistributionFamily,
     DistributionFamily,
@@ -22,6 +30,14 @@ from pyMagicStat.distributions.families.discrete import (
 )
 
 __all__ = [
+    "FittedDistribution",
+    "FittedContinuousDistribution",
+    "FittedDiscreteDistribution",
+    "FitResult",
+    "DistributionFitError",
+    "FitIdentifiabilityError",
+    "NoFiniteMLEError",
+    "FitNumericalError",
     "ContinuousDistributionFamily",
     "DiscreteDistributionFamily",
     "DistributionFamily",
