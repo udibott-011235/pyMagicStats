@@ -243,3 +243,17 @@ Fuente canónica:
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp04-baseline.md`.
+
+## EV-012 — CP04 Wave 1 fitting: implementación, adversarial e integración
+
+- **Estado:** accepted; cierre materializado 2026-09-10.
+- **Evidencia:** [distribution-family-framework-cp04-evidence.md](distribution-family-framework-cp04-evidence.md).
+- Contrato congelado DEC-013; implementación certificada `6e92ef20…`,
+  CP04-A/B/C PASS, CP04-D ACCEPTED y `ADVERSARIAL_PASS`.
+- PR #12 integrado en `main@2b6e1263b8489592030b0838cd3851f193fbfd7f`;
+  source branch preservada y ruleset 3811593 sin cambios.
+- CP04_IMPLEMENTATION=COMPLETE; CP04_INTEGRATION=COMPLETE;
+  CP04_GOVERNANCE=CLOSED; CP04_OVERALL=COMPLETE.
+- Stage IN_PROGRESS; CP05–CP08 NOT_STARTED.
+- EV-011 y los checkpoints anteriores conservan observaciones históricas;
+  este registro documenta el estado actual de CP04 y no reescribe ese baseline.
