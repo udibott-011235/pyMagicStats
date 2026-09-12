@@ -7,14 +7,16 @@ post-merge mediante `BR-018`, apertura CP02 mediante `BR-019` y cierre
 post-merge CP02 mediante `BR-020` materializados: `2026-09-06`; apertura CP03
 y evidencia adversarial pre-merge mediante `BR-021`, y cierre post-merge CP03
 mediante `BR-022`: `2026-09-07`; apertura CP04 Wave 1 fitting mediante
-`BR-023`: `2026-09-08`; cierre CP04 y apertura `BR-024`: `2026-09-10`. Consulte `EV-003`
+`BR-023`: `2026-09-08`; cierre CP04 y apertura `BR-024`: `2026-09-10`;
+cierre canónico de CP04 y apertura CP05-A mediante `BR-025`: `2026-09-12`.
+Consulte `EV-003`
 para la evidencia Git reproducible inicial, `EV-005` para la integración de
 Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 `DEC-006` para la autoridad de lifecycle.
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `2b6e1263b8489592030b0838cd3851f193fbfd7f` | CP04 integrado mediante PR #12; revisar cierre BR-024; no modificar directamente |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `6409717ebdfdd34d41d41c36983dda82de935e6b` | CP04 cerrado canónicamente mediante PR #13; revisar CP05-A en BR-025; no modificar directamente |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -37,7 +39,8 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-021 | `feature/distribution-family-framework-cp03-discrete-core` | `archived` | `fully_contained` | `merged` | 0/1 | `a1e4d61f0026f8407506d039788bb2df2eafa680` | integrada vía PR #10; preservar rama remota |
 | BR-022 | `docs/distribution-family-framework-cp03-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `7e38c1c62f69771282398ffd3fac118f866c5d69` | integrada vía PR #11; preservar rama remota |
 | BR-023 | `feature/distribution-family-framework-cp04-wave1-fitting` | `archived` | `fully_contained` | `merged` | 0/1 | `6e92ef20aca375878964321596ba525539433f79` | integrada vía PR #12; preservar rama remota |
-| BR-024 | `docs/distribution-family-framework-cp04-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `2b6e1263b8489592030b0838cd3851f193fbfd7f` | revisión local de Arquitectura; sin push, PR ni merge |
+| BR-024 | `docs/distribution-family-framework-cp04-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `9da985d1770ac2ec6bb542e2233d6e882e56d1c2` | integrada vía PR #13; preservar rama remota |
+| BR-025 | `feature/distribution-family-framework-cp05-gof-calibration` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `6409717ebdfdd34d41d41c36983dda82de935e6b` | revisión local de DEC-014/EV-013; sin producción, calibración, push, PR ni merge |
 
 ### Cronología de BR-017
 
@@ -223,3 +226,28 @@ el snapshot de apertura, same_head, ahead/behind 0/0 y parent main en ese SHA;
 no autorreferencia el futuro commit documental. Estado under_review e
 integración pending. CP04 queda COMPLETE y CP05–CP08 NOT_STARTED.
 Las decisiones de las demás ramas, incluido BR-018, se conservan.
+
+### Cierre de BR-024 y apertura de BR-025 — 2026-09-12
+
+El candidato de gobernanza `9da985d1770ac2ec6bb542e2233d6e882e56d1c2`
+fue integrado mediante PR #13 en el merge commit
+`6409717ebdfdd34d41d41c36983dda82de935e6b`, cuyo primer parent es
+`2b6e1263b8489592030b0838cd3851f193fbfd7f`, segundo parent es
+`9da985d1770ac2ec6bb542e2233d6e882e56d1c2` y tree es
+`5df9177b4e8a1c112d169208ee7e37bb75ee2588`. El Owner certificó tree esperado,
+firma GitHub verificada, cero commits extra y preservación de las ramas fuente.
+BR-024 queda `archived`, `fully_contained` y `merged`.
+
+BR-025 se abre localmente desde el `main@6409717…` exacto, con árbol limpio y
+cero commits únicos. `head_sha_at_decision` conserva ese snapshot de apertura
+y no autorreferencia el futuro commit documental. Su único alcance es
+materializar `DEC-014`, `EV-013`, proyecciones de gobernanza y tests de
+Knowledge Base para CP05-A. Estado `under_review`, integración `pending`;
+sin producción, harness, calibración, push, PR, merge o autorización CP05-B–D.
+
+La materialización vigente de BR-025 corresponde a Cortex / Implementación.
+El diseño procede de ChatGPT / Arquitectura en `17bf066…`, descartado para
+merge por ROLE_DRIFT pese a su diseño usable según Antigravity. La rama nueva
+parte directamente del baseline y no incorpora el commit no canónico.
+Siguiente acción: auditoría independiente de Antigravity del nuevo SHA exacto,
+interpretación posterior de ChatGPT y decisión separada del Project Owner.
