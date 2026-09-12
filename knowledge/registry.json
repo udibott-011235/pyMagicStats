@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-10",
+  "last_updated": "2026-09-12",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -270,7 +270,7 @@
       "kind": "decision",
       "title": "Stage opening and checkpoint lifecycle — STAGE-DIST-FAMILIES-001",
       "status": "accepted",
-      "scope": "Distribution Family Framework through CP04 completion; CP01-CP04 complete, with CP04 implementation and integration complete and governance closed; stage in progress and CP05-CP08 not started",
+      "scope": "Distribution Family Framework through CP04 canonical closure and CP05-A architecture/preregistration opening; CP01-CP04 complete, CP05-A in progress, CP05-B-D and CP06-CP08 not started",
       "path": "knowledge/decisions/distribution-family-framework-stage.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-contract.md",
@@ -282,7 +282,9 @@
         "knowledge/evidence/distribution-family-framework-cp03-evidence.md",
         "knowledge/decisions/distribution-family-framework-cp04-contract.md",
         "knowledge/evidence/distribution-family-framework-cp04-baseline.md",
-        "knowledge/evidence/distribution-family-framework-cp04-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp04-evidence.md",
+        "knowledge/decisions/distribution-family-framework-cp05-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp05-preregistration.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -298,6 +300,7 @@
         "cp02",
         "cp03",
         "cp04",
+        "cp05-a",
         "governance"
       ]
     },
@@ -567,6 +570,73 @@
         "integration",
         "post-merge",
         "governance"
+      ]
+    },
+    {
+      "id": "DEC-014",
+      "kind": "decision",
+      "title": "CP05 fitted-family GOF calibration contract and preregistration",
+      "status": "under_review",
+      "scope": "Proposed CP05 architecture for Wave 1 fitted-family GOF, statistical risk, reproducible resampling, exploratory selection and sealed confirmatory holdout",
+      "path": "knowledge/decisions/distribution-family-framework-cp05-contract.md",
+      "evidence_paths": [
+        "knowledge/evidence/distribution-family-framework-cp05-preregistration.md",
+        "knowledge/decisions/distribution-family-framework-contract.md",
+        "knowledge/decisions/distribution-family-framework-cp04-contract.md",
+        "pyMagicStat/distributions/families/_fitting.py",
+        "tests/test_continuous_distribution_fitting.py",
+        "tests/test_discrete_distribution_fitting.py"
+      ],
+      "owner_role": "statistical-software-architecture",
+      "reviewer_roles": [
+        "implementation-engineering",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "distribution-families",
+        "cp05-a",
+        "gof",
+        "parametric-bootstrap",
+        "preregistration",
+        "wilson",
+        "sealed-holdout",
+        "architecture-under-review"
+      ]
+    },
+    {
+      "id": "EV-013",
+      "kind": "evidence",
+      "title": "CP05-A GOF architecture baseline and preregistration",
+      "status": "under_review",
+      "scope": "Cortex clean CP05-A documentary rematerialization from main@6409717ebdfdd34d41d41c36983dda82de935e6b; ChatGPT architecture draft 17bf06639ad84a18c26865b46cdecf26dc3ab9ed deemed technically usable by Antigravity but rejected for merge due to ROLE_DRIFT; draft excluded from candidate genealogy; no calibration",
+      "path": "knowledge/evidence/distribution-family-framework-cp05-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-cp05-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp04-evidence.md",
+        "pyMagicStat/distributions/families/_core.py",
+        "pyMagicStat/distributions/families/_fitting.py",
+        "pyMagicStat/distributions/families/continuous.py",
+        "pyMagicStat/distributions/families/discrete.py",
+        "tests/test_continuous_distribution_fitting.py",
+        "tests/test_discrete_distribution_fitting.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "distribution-families",
+        "cp05-a",
+        "gof",
+        "baseline",
+        "preregistration",
+        "pre-implementation",
+        "no-calibration-run"
       ]
     },
     {
@@ -840,8 +910,8 @@
       "id": "BR-024",
       "kind": "branch",
       "title": "Branch lifecycle — docs/distribution-family-framework-cp04-post-merge",
-      "status": "under_review",
-      "scope": "CP04 documentation and governance-test closure from the exact post-PR-12 baseline",
+      "status": "archived",
+      "scope": "CP04 post-merge governance integrated through PR #13 into main@6409717ebdfdd34d41d41c36983dda82de935e6b",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-stage.md",
@@ -860,22 +930,69 @@
         "cp04",
         "post-merge",
         "governance",
-        "under-review"
+        "archived",
+        "merged",
+        "pr-13"
       ],
       "branch": {
         "name": "docs/distribution-family-framework-cp04-post-merge",
-        "head_sha_at_decision": "2b6e1263b8489592030b0838cd3851f193fbfd7f",
-        "observed_at": "2026-09-10",
+        "head_sha_at_decision": "9da985d1770ac2ec6bb542e2233d6e882e56d1c2",
+        "observed_at": "2026-09-12",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 1,
+        "unique_commits": [],
+        "decision_reason": "Owner certified PR #13 merge commit 6409717ebdfdd34d41d41c36983dda82de935e6b with first parent 2b6e1263b8489592030b0838cd3851f193fbfd7f, second parent 9da985d1770ac2ec6bb542e2233d6e882e56d1c2, expected tree 5df9177b4e8a1c112d169208ee7e37bb75ee2588, verified GitHub signature, no extra commits and preserved source branches.",
+        "merge_base": "9da985d1770ac2ec6bb542e2233d6e882e56d1c2",
+        "parent_branch": "main",
+        "parent_sha": "2b6e1263b8489592030b0838cd3851f193fbfd7f",
+        "next_action": "Preserve archived remote source branch; review CP05-A locally on BR-025.",
+        "merged_via": "PR #13 / merge commit 6409717ebdfdd34d41d41c36983dda82de935e6b",
+        "pr_number": 13
+      }
+    },
+    {
+      "id": "BR-025",
+      "kind": "branch",
+      "title": "Branch lifecycle — feature/distribution-family-framework-cp05-gof-calibration",
+      "status": "under_review",
+      "scope": "Local CP05-A architecture, risk and preregistration materialization from the exact post-PR-13 baseline",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-stage.md",
+        "knowledge/decisions/distribution-family-framework-cp05-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp05-preregistration.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "branch",
+        "distribution-families",
+        "cp05-a",
+        "gof",
+        "preregistration",
+        "under-review"
+      ],
+      "branch": {
+        "name": "feature/distribution-family-framework-cp05-gof-calibration",
+        "head_sha_at_decision": "6409717ebdfdd34d41d41c36983dda82de935e6b",
+        "observed_at": "2026-09-12",
         "relation_to_main": "same_head",
         "integration_state": "pending",
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Owner authorized isolated local post-merge governance materialization. This is the clean opening snapshot, not a self-reference to the future documentation commit.",
-        "merge_base": "2b6e1263b8489592030b0838cd3851f193fbfd7f",
+        "decision_reason": "Owner authorized Cortex clean CP05-A rematerialization from exact main@6409717ebdfdd34d41d41c36983dda82de935e6b; ChatGPT draft 17bf06639ad84a18c26865b46cdecf26dc3ab9ed is documentary input only, rejected for merge due to ROLE_DRIFT and excluded from genealogy. This records the clean opening snapshot and does not self-reference the future candidate commit.",
+        "merge_base": "6409717ebdfdd34d41d41c36983dda82de935e6b",
         "parent_branch": "main",
-        "parent_sha": "2b6e1263b8489592030b0838cd3851f193fbfd7f",
-        "next_action": "Architecture review of the local governance candidate and complete-history bundle; no push, PR, merge or CP05-CP08."
+        "parent_sha": "6409717ebdfdd34d41d41c36983dda82de935e6b",
+        "next_action": "Independent Antigravity audit of the new exact SHA, then ChatGPT interpretation and separate Project Owner decision; no production, calibration, push, PR, merge or CP05-B-D."
       }
     },
     {
@@ -893,7 +1010,8 @@
         "knowledge/evidence/distribution-family-framework-cp03-baseline.md",
         "knowledge/evidence/distribution-family-framework-cp03-evidence.md",
         "knowledge/evidence/distribution-family-framework-cp04-baseline.md",
-        "knowledge/evidence/distribution-family-framework-cp04-evidence.md"
+        "knowledge/evidence/distribution-family-framework-cp04-evidence.md",
+        "knowledge/evidence/distribution-family-framework-cp05-preregistration.md"
       ],
       "owner_role": "decision-owner",
       "reviewer_roles": [
@@ -908,16 +1026,16 @@
       ],
       "branch": {
         "name": "main",
-        "head_sha_at_decision": "2b6e1263b8489592030b0838cd3851f193fbfd7f",
-        "observed_at": "2026-09-10",
+        "head_sha_at_decision": "6409717ebdfdd34d41d41c36983dda82de935e6b",
+        "observed_at": "2026-09-12",
         "relation_to_main": "canonical",
         "integration_state": "not_applicable",
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Canonical main after authorized PR #12 merge of the accepted CP04 implementation; merge tree equals the certified candidate and rehearsal tree.",
-        "merge_base": "2b6e1263b8489592030b0838cd3851f193fbfd7f",
-        "next_action": "Preserve canonical main; review CP04 post-merge governance on BR-024. CP05-CP08 not started."
+        "decision_reason": "Canonical main after Owner-certified PR #13 merge of CP04 post-merge governance; merge commit has the expected parents and tree, verified GitHub signature, no extra commits and preserved source branches.",
+        "merge_base": "6409717ebdfdd34d41d41c36983dda82de935e6b",
+        "next_action": "Preserve canonical main; review CP05-A architecture and preregistration locally on BR-025."
       }
     },
     {

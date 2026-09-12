@@ -257,3 +257,31 @@ Fuente canónica:
 - Stage IN_PROGRESS; CP05–CP08 NOT_STARTED.
 - EV-011 y los checkpoints anteriores conservan observaciones históricas;
   este registro documenta el estado actual de CP04 y no reescribe ese baseline.
+
+## EV-013 — CP05-A GOF architecture baseline and preregistration
+
+- **Estado:** `under_review`; materializado 2026-09-12.
+- **Evidencia:** [distribution-family-framework-cp05-preregistration.md](distribution-family-framework-cp05-preregistration.md).
+- **Baseline:** `main@6409717ebdfdd34d41d41c36983dda82de935e6b`.
+- **Rama local:** `feature/distribution-family-framework-cp05-gof-calibration`.
+- PR #13 cerró canónicamente CP04 mediante merge commit `6409717…`; ambos
+  parents, tree, firma y ramas fuente están certificados.
+- `DEC-014` propone el contrato de null simple/compuesto, refit paramétrico,
+  candidatos AD/CVM, comparadores, semillas por unidad, contabilidad de fallos,
+  matrices de desarrollo/holdout y selección previa al unblinding.
+- **Riesgo primario:** `alpha=0.05`; una celda sólo es aceptable si su límite
+  superior Wilson 95% de error tipo I es `<=0.065`.
+- **Negative Binomial:** error tipo I condicional al MLE CP04 finito;
+  aplicabilidad e ineligibilidad se reportan por separado.
+- **Demuestra:** identidad de apertura, superficie CP04 presente y
+  prerregistración documental lista para revisión exact-SHA.
+- **No demuestra:** software GOF, harness, calibración, potencia, rendimiento,
+  holdout, auditoría o idoneidad de producción.
+- CP05-A `IN_PROGRESS`; CP05-B–D y CP06–08 `NOT_STARTED`.
+
+- **Procedencia:** diseño ChatGPT/Arquitectura en el borrador no canónico
+  `17bf06639ad84a18c26865b46cdecf26dc3ab9ed`; Antigravity: diseño usable,
+  SHA rechazado para merge por ROLE_DRIFT. Cortex rematerializa documentación,
+  registro y tests desde el baseline; el borrador queda fuera de la genealogía.
+- **Siguiente acción:** auditoría independiente de Antigravity sobre el nuevo
+  SHA exacto, interpretación posterior de ChatGPT y decisión separada del Owner.

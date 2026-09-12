@@ -1,5 +1,27 @@
 # Historial de la base de conocimiento
 
+## 2026-09-12 — CP04 canonical closure and CP05-A preregistration
+
+- PR #13 integra el cierre post-merge de CP04 en
+  `main@6409717ebdfdd34d41d41c36983dda82de935e6b`; CP04 queda `COMPLETE` y
+  gobernanza `CLOSED`.
+- BR-024 queda archivada, completamente contenida e integrada mediante PR #13;
+  las ramas fuente de implementación y gobernanza permanecen preservadas.
+- Cortex rematerializa BR-025 limpiamente desde el baseline exacto, sin publicación.
+  El diseño de ChatGPT en `17bf066…` fue considerado usable por Antigravity,
+  pero su SHA fue rechazado por ROLE_DRIFT y queda fuera de la genealogía.
+- DEC-014 §4 aclara la cola superior AD discreta y su factor n completo;
+  las demás fórmulas y criterios permanecen sin cambios.
+- `DEC-014` propone el contrato y la prerregistración GOF de Gamma,
+  Exponential y Negative Binomial ajustadas; `EV-013` registra identidad,
+  riesgo y no-afirmaciones.
+- Se fija `alpha=0.05` y el gate cell-wise Wilson 95% superior `<=0.065`, con
+  null simple/compuesto separados, refit por réplica, semillas independientes
+  del orden y holdout sellado.
+- CP05-A está `IN_PROGRESS`; CP05-B–D y CP06–08 permanecen `NOT_STARTED`.
+  No hay cambios de producción, harness ni calibración, y no se autoriza push,
+  PR o merge.
+
 ## 2026-09-10 — CP04 post-merge governance
 
 - CP04 implementación e integración COMPLETE, gobernanza CLOSED y overall COMPLETE

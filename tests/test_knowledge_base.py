@@ -34,6 +34,7 @@ EXPECTED_BRANCH_NAMES = {
     "docs/distribution-family-framework-cp03-post-merge",
     "feature/distribution-family-framework-cp04-wave1-fitting",
     "docs/distribution-family-framework-cp04-post-merge",
+    "feature/distribution-family-framework-cp05-gof-calibration",
 }
 
 EXPECTED_LIFECYCLE = {
@@ -60,7 +61,8 @@ EXPECTED_LIFECYCLE = {
     "BR-021": ("archived", "fully_contained", "merged"),
     "BR-022": ("archived", "fully_contained", "merged"),
     "BR-023": ("archived", "fully_contained", "merged"),
-    "BR-024": ("under_review", "same_head", "pending"),
+    "BR-024": ("archived", "fully_contained", "merged"),
+    "BR-025": ("under_review", "same_head", "pending"),
 }
 
 
@@ -129,7 +131,7 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert registry["canonical_branch"] == "main"
     assert main["status"] == "accepted"
     assert main["branch"]["relation_to_main"] == "canonical"
-    assert main["branch"]["head_sha_at_decision"] == "2b6e1263b8489592030b0838cd3851f193fbfd7f"
+    assert main["branch"]["head_sha_at_decision"] == "6409717ebdfdd34d41d41c36983dda82de935e6b"
     evidence_path = "knowledge/evidence/distribution-family-framework-cp04-evidence.md"
     assert _record(registry, "EV-012")["status"] == "accepted"
     assert _record(registry, "EV-012")["path"] == evidence_path
@@ -142,12 +144,48 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert (cp04["ahead_of_main"], cp04["behind_main"]) == (0, 1)
     closure = _record(registry, "BR-024")["branch"]
     assert closure["parent_branch"] == "main"
-    assert closure["parent_sha"] == main["branch"]["head_sha_at_decision"]
-    assert closure["head_sha_at_decision"] == closure["parent_sha"]
-    assert closure["merge_base"] == closure["parent_sha"]
-    assert (closure["ahead_of_main"], closure["behind_main"]) == (0, 0)
+    assert closure["parent_sha"] == "2b6e1263b8489592030b0838cd3851f193fbfd7f"
+    assert closure["head_sha_at_decision"] == "9da985d1770ac2ec6bb542e2233d6e882e56d1c2"
+    assert closure["merge_base"] == closure["head_sha_at_decision"]
+    assert (closure["ahead_of_main"], closure["behind_main"]) == (0, 1)
     assert closure["unique_commits"] == []
-    assert "merged_via" not in closure
+    assert closure["pr_number"] == 13
+    assert closure["merged_via"] == "PR #13 / merge commit 6409717ebdfdd34d41d41c36983dda82de935e6b"
+    cp05 = _record(registry, "BR-025")["branch"]
+    assert cp05["parent_branch"] == "main"
+    assert cp05["parent_sha"] == main["branch"]["head_sha_at_decision"]
+    assert cp05["head_sha_at_decision"] == cp05["parent_sha"]
+    assert cp05["merge_base"] == cp05["parent_sha"]
+    assert (cp05["ahead_of_main"], cp05["behind_main"]) == (0, 0)
+    assert cp05["unique_commits"] == []
+    assert "merged_via" not in cp05
+    assert _record(registry, "DEC-014")["status"] == "under_review"
+    assert _record(registry, "EV-013")["status"] == "under_review"
+    assert _record(registry, "DEC-014")["path"] == (
+        "knowledge/decisions/distribution-family-framework-cp05-contract.md"
+    )
+    assert _record(registry, "EV-013")["path"] == (
+        "knowledge/evidence/distribution-family-framework-cp05-preregistration.md"
+    )
+    decision = _record(registry, "DEC-014")
+    evidence = _record(registry, "EV-013")
+    assert decision["owner_role"] == "statistical-software-architecture"
+    assert evidence["owner_role"] == "implementation-engineering"
+    assert "adversarial-statistical-qa" in decision["reviewer_roles"]
+    assert "adversarial-statistical-qa" in evidence["reviewer_roles"]
+    assert "ROLE_DRIFT" in evidence["scope"]
+    assert "17bf06639ad84a18c26865b46cdecf26dc3ab9ed" in evidence["scope"]
+    assert "draft excluded from candidate genealogy" in evidence["scope"]
+    assert "Independent Antigravity audit" in cp05["next_action"]
+    assert "then ChatGPT interpretation" in cp05["next_action"]
+    assert "separate Project Owner decision" in cp05["next_action"]
+    evidence_text = (ROOT / evidence["path"]).read_text(encoding="utf-8")
+    assert "noncanonical_draft_in_genealogy = false" in evidence_text
+    assert "TECHNICAL_DESIGN_DISPOSITION=USABLE" in evidence_text
+    assert "VERDICT=FAIL_DO_NOT_MERGE" in evidence_text
+    assert "CP05-A = IN_PROGRESS" in evidence_text
+    for checkpoint in ("CP05-B", "CP05-C", "CP05-D"):
+        assert f"{checkpoint} = NOT_STARTED" in evidence_text
     assert knowledge["status"] == "archived"
     assert knowledge["branch"]["integration_state"] == "merged"
     assert knowledge["branch"]["merged_via"] == "PR #1"
