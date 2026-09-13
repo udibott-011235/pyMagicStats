@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import sys
 
+import numpy as np
 import pandas as pd
 
 from experiments.proportion_ci_calibration.gh_common import (
@@ -68,6 +69,29 @@ def _positive(value: str) -> int:
     if parsed < 1:
         raise argparse.ArgumentTypeError("must be positive")
     return parsed
+
+
+def _count_hp_gate_failures(results: pd.DataFrame) -> int:
+    """Count failures only after validating governing gates as booleans."""
+
+    required = {"hp_governs", "hp_mc_gate_pass"}
+    missing = required - set(results.columns)
+    if missing:
+        raise ValueError(f"G results lack HP gate columns: {sorted(missing)}")
+    failures = 0
+    for position, (governs, gate) in enumerate(
+        zip(results["hp_governs"].tolist(), results["hp_mc_gate_pass"].tolist())
+    ):
+        if not isinstance(governs, (bool, np.bool_)):
+            raise ValueError(f"hp_governs row {position} is not an explicit boolean")
+        if not bool(governs):
+            continue
+        if not isinstance(gate, (bool, np.bool_)):
+            raise ValueError(
+                f"HP-governing row {position} lacks an explicit boolean MC gate"
+            )
+        failures += int(not bool(gate))
+    return failures
 
 
 def _verify_e_evidence(path: Path, metadata_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
@@ -292,6 +316,7 @@ def g_run(args: argparse.Namespace, command: list[str]) -> None:
         master_seed=args.master_seed,
         workers=args.workers,
     )
+    hp_gate_failures = _count_hp_gate_failures(results)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     mc_path = args.output_dir / G_MC_NAME
     atomic_parquet(results, mc_path)
@@ -310,9 +335,7 @@ def g_run(args: argparse.Namespace, command: list[str]) -> None:
             "total_cells": len(results),
             "total_draws": TOTAL_DRAWS,
             "float64_gate_failures": int((~results["float64_mc_gate_pass"]).sum()),
-            "hp_gate_failures": int(
-                (results["hp_governs"] & ~results["hp_mc_gate_pass"].fillna(True)).sum()
-            ),
+            "hp_gate_failures": hp_gate_failures,
         },
     )
     metadata.update(

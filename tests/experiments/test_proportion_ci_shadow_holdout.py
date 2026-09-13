@@ -581,6 +581,124 @@ def test_mc_gate_uses_five_se_or_point001():
     assert result["mc_gate_pass"] is True
 
 
+def test_hp_gate_accounting_counts_only_explicit_governing_boolean_failures():
+    passing = pd.DataFrame(
+        {
+            "hp_governs": [True, True, False],
+            "hp_mc_gate_pass": pd.Series([True, True, None], dtype=object),
+        }
+    )
+    failing = pd.DataFrame(
+        {
+            "hp_governs": [True, True, False],
+            "hp_mc_gate_pass": pd.Series([True, False, None], dtype=object),
+        }
+    )
+    assert gh._count_hp_gate_failures(passing) == 0
+    assert gh._count_hp_gate_failures(failing) == 1
+
+
+@pytest.mark.parametrize(
+    "invalid_gate",
+    [
+        pytest.param(None, id="none"),
+        pytest.param(np.nan, id="nan"),
+        pytest.param(1, id="integer-one"),
+        pytest.param(1.0, id="float-one"),
+        pytest.param("True", id="string-true"),
+    ],
+)
+def test_hp_gate_accounting_rejects_nonboolean_governing_values(invalid_gate):
+    results = pd.DataFrame(
+        {
+            "hp_governs": [True],
+            "hp_mc_gate_pass": pd.Series([invalid_gate], dtype=object),
+        }
+    )
+    with pytest.raises(ValueError, match="explicit boolean MC gate"):
+        gh._count_hp_gate_failures(results)
+
+
+def test_old_hp_gate_expression_reproduces_object_dtype_inversion_defect():
+    results = pd.DataFrame(
+        {
+            "hp_governs": [True, True, False],
+            "hp_mc_gate_pass": pd.Series([True, True, None], dtype=object),
+        }
+    )
+    filled = results["hp_mc_gate_pass"].fillna(True)
+    assert filled.dtype == object
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        assert (~filled).tolist() == [-2, -2, -2]
+        assert int((results["hp_governs"] & ~filled).sum()) == 2
+    assert gh._count_hp_gate_failures(results) == 0
+
+
+def _invoke_fixture_g_run(tmp_path, monkeypatch, results: pd.DataFrame) -> Path:
+    selection_path = tmp_path / "selection.parquet"
+    selection_metadata_path = tmp_path / "selection-metadata.json"
+    selection_path.write_bytes(b"fixture selection")
+    selection_metadata_path.write_text("{}", encoding="utf-8")
+    selection_metadata = {
+        "runtime_head": "fixture-runtime",
+        "selection_artifact_sha256": "1" * 64,
+        "canonical_selection_sha256": "2" * 64,
+    }
+    monkeypatch.setattr(gh, "verify_frozen_sources", lambda: {})
+    monkeypatch.setattr(
+        gh,
+        "_verify_g_selection_artifact",
+        lambda *args: (pd.DataFrame(), selection_metadata),
+    )
+    monkeypatch.setattr(gh, "simulate_shadow_cells", lambda *args, **kwargs: results)
+    monkeypatch.setattr(
+        gh,
+        "metadata_base",
+        lambda **kwargs: {"output_counts": kwargs["output_counts"]},
+    )
+    output_dir = tmp_path / "out"
+    arguments = __import__("argparse").Namespace(
+        selection=selection_path,
+        selection_metadata=selection_metadata_path,
+        master_seed="FIXTURE_ONLY:ACCOUNTING-v1",
+        workers=1,
+        output_dir=output_dir,
+    )
+    gh.g_run(arguments, ["fixture-g-run"])
+    return output_dir
+
+
+def test_g_run_metadata_records_zero_for_observed_all_true_hp_gates(
+    tmp_path, monkeypatch
+):
+    results = pd.DataFrame(
+        {
+            "hp_governs": [True, True, False],
+            "hp_mc_gate_pass": pd.Series([True, True, None], dtype=object),
+            "float64_mc_gate_pass": [True, True, True],
+        }
+    )
+    output_dir = _invoke_fixture_g_run(tmp_path, monkeypatch, results)
+    metadata = json.loads((output_dir / gh.G_METADATA_NAME).read_text(encoding="utf-8"))
+    assert metadata["output_counts"]["hp_gate_failures"] == 0
+
+
+def test_g_run_fails_before_writing_metadata_for_invalid_governing_hp_gate(
+    tmp_path, monkeypatch
+):
+    results = pd.DataFrame(
+        {
+            "hp_governs": [True],
+            "hp_mc_gate_pass": pd.Series([None], dtype=object),
+            "float64_mc_gate_pass": [True],
+        }
+    )
+    with pytest.raises(ValueError, match="explicit boolean MC gate"):
+        _invoke_fixture_g_run(tmp_path, monkeypatch, results)
+    assert not (tmp_path / "out" / gh.G_METADATA_NAME).exists()
+
+
 def test_shadow_rng_is_invariant_to_worker_count_and_input_order():
     cells = pd.DataFrame(
         [
@@ -949,11 +1067,11 @@ def test_h_wald_maj01_empty_region_is_statistical_evidence_not_implementation_fa
     assert failure is None
 
 
-def test_gh_v3_schema_family_invalidates_pre_remediation_artifacts():
+def test_only_g_mc_schema_advances_for_metadata_accounting_remediation():
     assert GH_EXPERIMENT_VERSION == "proportion-ci-cp06-gh-v3"
     assert GH_SCHEMA_VERSION == "cp06-gh-schema-v3"
     assert G_SELECTION_SCHEMA_VERSION == "cp06-g-selection-schema-v3"
-    assert G_MC_SCHEMA_VERSION == "cp06-g-mc-schema-v3"
+    assert G_MC_SCHEMA_VERSION == "cp06-g-mc-schema-v4"
     assert H_DESIGN_SCHEMA_VERSION == "cp06-h-design-schema-v3"
     assert gh_common.H_EVALUATION_SCHEMA_VERSION == "cp06-h-evaluation-schema-v3"
 

@@ -31,7 +31,7 @@ CP04_DOCUMENT_SHA = "63eaaed6842e2f82473bfa857524645123f95218"
 GH_EXPERIMENT_VERSION = "proportion-ci-cp06-gh-v3"
 GH_SCHEMA_VERSION = "cp06-gh-schema-v3"
 G_SELECTION_SCHEMA_VERSION = "cp06-g-selection-schema-v3"
-G_MC_SCHEMA_VERSION = "cp06-g-mc-schema-v3"
+G_MC_SCHEMA_VERSION = "cp06-g-mc-schema-v4"
 H_DESIGN_SCHEMA_VERSION = "cp06-h-design-schema-v3"
 H_EVALUATION_SCHEMA_VERSION = "cp06-h-evaluation-schema-v3"
 
