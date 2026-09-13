@@ -31,6 +31,10 @@ class AcceptanceLocalizationError(RuntimeError):
     """Raised when independent localization cannot be validated."""
 
 
+class NumericalCoverageError(RuntimeError):
+    """Raised when a binomial probability is not a valid float64 result."""
+
+
 @dataclass(frozen=True)
 class AcceptanceLocalization:
     first_x: int
@@ -267,11 +271,22 @@ def stable_binomial_coverage(n: int, p: float, first: int, last: int) -> float:
         return 1.0 if first <= n <= last else 0.0
     mean = n * p
     if last < mean:
-        value = stats.binom.cdf(last, n, p) - stats.binom.cdf(first - 1, n, p)
+        raw_value = stats.binom.cdf(last, n, p) - stats.binom.cdf(first - 1, n, p)
     elif first > mean:
-        value = stats.binom.sf(first - 1, n, p) - stats.binom.sf(last, n, p)
+        raw_value = stats.binom.sf(first - 1, n, p) - stats.binom.sf(last, n, p)
     else:
-        value = 1.0 - stats.binom.cdf(first - 1, n, p) - stats.binom.sf(last, n, p)
+        raw_value = 1.0 - stats.binom.cdf(first - 1, n, p) - stats.binom.sf(last, n, p)
+    value = float(raw_value)
+    rounding_tolerance = 32.0 * np.finfo(np.float64).eps
+    if not math.isfinite(value):
+        raise NumericalCoverageError(
+            f"binomial coverage is not finite for n={n}, p={p}, range=[{first},{last}]"
+        )
+    if value < -rounding_tolerance or value > 1.0 + rounding_tolerance:
+        raise NumericalCoverageError(
+            f"binomial coverage {value!r} lies outside [0,1] beyond "
+            f"rounding tolerance {rounding_tolerance!r}"
+        )
     return float(min(1.0, max(0.0, value)))
 
 

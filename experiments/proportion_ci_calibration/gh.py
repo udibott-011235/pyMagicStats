@@ -14,13 +14,19 @@ from experiments.proportion_ci_calibration.gh_common import (
     G_SELECTION_SCHEMA_VERSION,
     H_DESIGN_SCHEMA_VERSION,
     H_EVALUATION_SCHEMA_VERSION,
+    CP04_DOCUMENT_SHA,
+    GH_EXPERIMENT_VERSION,
+    GH_SCHEMA_VERSION,
+    PRODUCTION_CANDIDATE_SHA,
     SOURCE_CF_HARNESS_SHA,
     atomic_json,
     atomic_parquet,
     canonical_cell_id,
     metadata_base,
-    metadata_content_hash,
+    runtime_head,
+    seal_metadata,
     sha256_file,
+    verify_metadata_content,
     verify_frozen_sources,
 )
 from experiments.proportion_ci_calibration.holdout import (
@@ -37,13 +43,16 @@ from experiments.proportion_ci_calibration.shadow_mc import (
     CRITICAL_CELLS,
     RNG_ALGORITHM,
     TOTAL_DRAWS,
+    attach_cf_float64_authority,
     build_g_selection,
+    canonical_selection_hash,
     simulate_shadow_cells,
     validate_g_selection,
 )
 
 
 G_SELECTION_NAME = "proportion_ci_cp06_g_selection.parquet"
+G_SELECTION_METADATA_NAME = "proportion_ci_cp06_g_selection_metadata.json"
 G_MC_NAME = "proportion_ci_cp06_g_mc_shadow.parquet"
 G_METADATA_NAME = "proportion_ci_cp06_g_metadata.json"
 H_DESIGN_NAME = "proportion_ci_cp06_h_design.parquet"
@@ -63,10 +72,17 @@ def _positive(value: str) -> int:
 
 def _verify_e_evidence(path: Path, metadata_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    if metadata.get("candidate_sha") != "fb3ecc6252e8c631596b7b975e683360dcde4ae4":
-        raise ValueError("E evidence does not target the frozen production candidate")
-    if metadata.get("harness_schema_version") != "cp06-harness-schema-v4":
-        raise ValueError("E evidence was not produced by the frozen C-F schema")
+    expected_metadata = {
+        "candidate_sha": PRODUCTION_CANDIDATE_SHA,
+        "cp04_document_sha": CP04_DOCUMENT_SHA,
+        "experiment_version": "proportion-ci-cp06-v3",
+        "harness_schema_version": "cp06-harness-schema-v4",
+        "shard_schema_version": "cp06-shard-schema-v4",
+        "checkpoint": "E",
+    }
+    for key, expected_value in expected_metadata.items():
+        if metadata.get(key) != expected_value:
+            raise ValueError(f"E metadata mismatch for {key}")
     expected = metadata.get("hashes", {}).get(path.name)
     if expected is None or sha256_file(path) != expected:
         raise ValueError("E adversarial minima hash does not match its metadata")
@@ -75,57 +91,184 @@ def _verify_e_evidence(path: Path, metadata_path: Path) -> tuple[pd.DataFrame, d
 
 def _attach_f_audit(
     selection: pd.DataFrame,
-    path: Path | None,
-    metadata_path: Path | None,
+    path: Path,
+    metadata_path: Path,
 ) -> pd.DataFrame:
-    if path is None and metadata_path is None:
-        return selection
-    if path is None or metadata_path is None:
-        raise ValueError("--f-audit and --f-metadata must be supplied together")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    if metadata.get("candidate_sha") != "fb3ecc6252e8c631596b7b975e683360dcde4ae4":
-        raise ValueError("F evidence does not target the frozen production candidate")
-    if metadata.get("harness_schema_version") != "cp06-harness-schema-v4":
-        raise ValueError("F evidence was not produced by the frozen C-F schema")
+    expected_metadata = {
+        "candidate_sha": PRODUCTION_CANDIDATE_SHA,
+        "cp04_document_sha": CP04_DOCUMENT_SHA,
+        "experiment_version": "proportion-ci-cp06-v3",
+        "harness_schema_version": "cp06-harness-schema-v4",
+        "source_shard_schema_version": "cp06-shard-schema-v4",
+        "checkpoint": "F",
+        "source_checkpoints": ["C", "D", "E"],
+    }
+    for key, expected_value in expected_metadata.items():
+        if metadata.get(key) != expected_value:
+            raise ValueError(
+                f"F metadata mismatch for {key}: expected {expected_value!r}, "
+                f"got {metadata.get(key)!r}"
+            )
+    if int(metadata.get("digits", 0)) < 80:
+        raise ValueError("F metadata records fewer than 80 digits")
     expected = metadata.get("hashes", {}).get(path.name)
     if expected is None or sha256_file(path) != expected:
         raise ValueError("F audit hash does not match its metadata")
     audit = pd.read_parquet(path).copy()
-    needed = {"method", "n", "alpha", "p", "coverage_hp_float", "resolved"}
+    if int(metadata.get("queue_rows", -1)) != len(audit) or int(
+        metadata.get("audit_rows", -1)
+    ) != len(audit):
+        raise ValueError("F queue/audit row counts do not match the audit artifact")
+    if (
+        "resolved" not in audit
+        or not pd.api.types.is_bool_dtype(audit["resolved"].dtype)
+        or not bool(audit["resolved"].fillna(False).all())
+    ):
+        raise ValueError("F audit contains unresolved rows")
+    needed = {
+        "audit_kind",
+        "method",
+        "n",
+        "alpha",
+        "p",
+        "coverage_hp_float",
+        "resolved",
+        "classification",
+        "acceptance_changed",
+        "acceptance_runs_float64",
+        "acceptance_runs_hp",
+    }
     missing = needed - set(audit.columns)
     if missing:
         raise ValueError(f"F audit is missing columns: {sorted(missing)}")
+    audit = audit.loc[audit["audit_kind"] == "coverage"].copy()
     audit["canonical_cell_id"] = [
         canonical_cell_id(method, n, alpha, p)
         for method, n, alpha, p in zip(
             audit["method"], audit["n"], audit["alpha"], audit["p"]
         )
     ]
-    governing = audit[
-        ["canonical_cell_id", "coverage_hp_float", "resolved", "classification"]
-    ].drop_duplicates("canonical_cell_id", keep="last")
-    return selection.merge(governing, on="canonical_cell_id", how="left")
+    if audit["canonical_cell_id"].duplicated().any():
+        raise ValueError("F contains duplicate coverage evidence for a canonical cell")
+    columns = [
+        "canonical_cell_id",
+        "coverage_hp_float",
+        "resolved",
+        "classification",
+        "acceptance_changed",
+        "acceptance_runs_float64",
+        "acceptance_runs_hp",
+    ]
+    result = selection.merge(audit[columns], on="canonical_cell_id", how="left")
+    validate_g_selection(result, require_f=True)
+    return result
+
+
+def _verify_g_selection_artifact(
+    selection_path: Path,
+    metadata_path: Path,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    verify_metadata_content(metadata)
+    expected = {
+        "selection_schema_version": G_SELECTION_SCHEMA_VERSION,
+        "experiment_version": GH_EXPERIMENT_VERSION,
+        "schema_version": GH_SCHEMA_VERSION,
+        "mc_schema_version": G_MC_SCHEMA_VERSION,
+        "cf_harness_schema_version": "cp06-harness-schema-v4",
+        "cf_shard_schema_version": "cp06-shard-schema-v4",
+        "source_cf_harness_sha": SOURCE_CF_HARNESS_SHA,
+        "production_candidate_sha": PRODUCTION_CANDIDATE_SHA,
+        "cp04_document_sha": CP04_DOCUMENT_SHA,
+        "critical_cells": CRITICAL_CELLS,
+        "broad_cells": BROAD_CELLS,
+        "implied_draws": TOTAL_DRAWS,
+    }
+    for key, expected_value in expected.items():
+        if metadata.get(key) != expected_value:
+            raise ValueError(f"G selection metadata mismatch for {key}")
+    if metadata.get("runtime_head") != runtime_head():
+        raise ValueError("G runtime HEAD differs from selection runtime HEAD")
+    if sha256_file(selection_path) != metadata.get("selection_artifact_sha256"):
+        raise ValueError("G selection artifact SHA-256 does not match metadata")
+    selection = pd.read_parquet(selection_path)
+    if canonical_selection_hash(selection) != metadata.get(
+        "canonical_selection_sha256"
+    ):
+        raise ValueError("G canonical selection SHA-256 does not match metadata")
+    validate_g_selection(selection, require_authority=True, require_f=True)
+    for field in (
+        "e_artifact_sha256",
+        "e_metadata_sha256",
+        "f_audit_sha256",
+        "f_metadata_sha256",
+    ):
+        value = metadata.get(field)
+        if not isinstance(value, str) or len(value) != 64:
+            raise ValueError(f"G selection metadata lacks valid {field}")
+    return selection, metadata
 
 
 def g_select(args: argparse.Namespace, command: list[str]) -> None:
     integrity = verify_frozen_sources()
     minima, e_metadata = _verify_e_evidence(args.e_minima, args.e_metadata)
+    selection = attach_cf_float64_authority(build_g_selection(minima))
     selection = _attach_f_audit(
-        build_g_selection(minima), args.f_audit, args.f_metadata
+        selection, args.f_audit, args.f_metadata
     )
-    validate_g_selection(selection)
+    validate_g_selection(selection, require_authority=True, require_f=True)
     selection["source_cf_harness_sha"] = SOURCE_CF_HARNESS_SHA
     selection["source_e_artifact_sha256"] = sha256_file(args.e_minima)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     path = args.output_dir / G_SELECTION_NAME
+    metadata_path = args.output_dir / G_SELECTION_METADATA_NAME
     atomic_parquet(selection, path)
+    metadata = metadata_base(
+        command=command,
+        workers=1,
+        master_seed=None,
+        output_counts={
+            "critical_cells": CRITICAL_CELLS,
+            "broad_cells": BROAD_CELLS,
+            "selected_cells": len(selection),
+            "implied_draws": TOTAL_DRAWS,
+        },
+    )
+    metadata.update(
+        {
+            "checkpoint": "G-select",
+            "selection_schema_version": G_SELECTION_SCHEMA_VERSION,
+            "mc_schema_version": G_MC_SCHEMA_VERSION,
+            "cf_harness_schema_version": "cp06-harness-schema-v4",
+            "cf_shard_schema_version": "cp06-shard-schema-v4",
+            "selection_artifact_sha256": sha256_file(path),
+            "canonical_selection_sha256": canonical_selection_hash(selection),
+            "e_artifact_sha256": sha256_file(args.e_minima),
+            "e_metadata_sha256": sha256_file(args.e_metadata),
+            "f_audit_sha256": sha256_file(args.f_audit),
+            "f_metadata_sha256": sha256_file(args.f_metadata),
+            "critical_cells": CRITICAL_CELLS,
+            "broad_cells": BROAD_CELLS,
+            "implied_draws": TOTAL_DRAWS,
+            "source_e_checkpoint_spec_sha256": e_metadata.get(
+                "checkpoint_spec_sha256"
+            ),
+        }
+    )
+    metadata = seal_metadata(metadata)
+    atomic_json(metadata, metadata_path)
     print(
         json.dumps(
             {
                 **integrity,
                 "selection_schema_version": G_SELECTION_SCHEMA_VERSION,
                 "selection_path": str(path),
-                "selection_sha256": sha256_file(path),
+                "selection_metadata_path": str(metadata_path),
+                "selection_sha256": metadata["selection_artifact_sha256"],
+                "canonical_selection_sha256": metadata[
+                    "canonical_selection_sha256"
+                ],
                 "critical_cells": CRITICAL_CELLS,
                 "broad_cells": BROAD_CELLS,
                 "implied_draws": TOTAL_DRAWS,
@@ -140,21 +283,20 @@ def g_select(args: argparse.Namespace, command: list[str]) -> None:
 
 def g_run(args: argparse.Namespace, command: list[str]) -> None:
     verify_frozen_sources()
-    selection = pd.read_parquet(args.selection)
-    validate_g_selection(selection)
+    selection, selection_metadata = _verify_g_selection_artifact(
+        args.selection, args.selection_metadata
+    )
     results = simulate_shadow_cells(
         selection,
         master_seed=args.master_seed,
         workers=args.workers,
     )
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    selection_output = args.output_dir / G_SELECTION_NAME
-    if args.selection.resolve() != selection_output.resolve():
-        atomic_parquet(selection, selection_output)
     mc_path = args.output_dir / G_MC_NAME
     atomic_parquet(results, mc_path)
     hashes = {
-        G_SELECTION_NAME: sha256_file(selection_output),
+        args.selection.name: sha256_file(args.selection),
+        args.selection_metadata.name: sha256_file(args.selection_metadata),
         G_MC_NAME: sha256_file(mc_path),
     }
     metadata = metadata_base(
@@ -179,10 +321,17 @@ def g_run(args: argparse.Namespace, command: list[str]) -> None:
             "mc_schema_version": G_MC_SCHEMA_VERSION,
             "rng_algorithm": RNG_ALGORITHM,
             "implied_draws": TOTAL_DRAWS,
+            "selection_runtime_head": selection_metadata["runtime_head"],
+            "selection_artifact_sha256": selection_metadata[
+                "selection_artifact_sha256"
+            ],
+            "canonical_selection_sha256": selection_metadata[
+                "canonical_selection_sha256"
+            ],
             "artifact_sha256": hashes,
         }
     )
-    metadata["metadata_content_sha256"] = metadata_content_hash(metadata)
+    metadata = seal_metadata(metadata)
     atomic_json(metadata, args.output_dir / G_METADATA_NAME)
 
 
@@ -209,7 +358,7 @@ def h_generate(args: argparse.Namespace, command: list[str]) -> None:
             "canonical_design_sha256": canonical_design_hash(design),
         }
     )
-    metadata["metadata_content_sha256"] = metadata_content_hash(metadata)
+    metadata = seal_metadata(metadata)
     atomic_json(metadata, args.output_dir / H_DESIGN_METADATA_NAME)
 
 
@@ -255,7 +404,7 @@ def h_evaluate(args: argparse.Namespace, command: list[str]) -> None:
             "artifact_sha256": hashes,
         }
     )
-    metadata["metadata_content_sha256"] = metadata_content_hash(metadata)
+    metadata = seal_metadata(metadata)
     atomic_json(metadata, args.output_dir / H_METADATA_NAME)
 
 
@@ -322,13 +471,14 @@ def main(argv: list[str] | None = None) -> int:
     select = subparsers.add_parser("g-select")
     select.add_argument("--e-minima", type=Path, required=True)
     select.add_argument("--e-metadata", type=Path, required=True)
-    select.add_argument("--f-audit", type=Path)
-    select.add_argument("--f-metadata", type=Path)
+    select.add_argument("--f-audit", type=Path, required=True)
+    select.add_argument("--f-metadata", type=Path, required=True)
     select.add_argument("--output-dir", type=Path, required=True)
     select.set_defaults(handler=g_select)
 
     run = subparsers.add_parser("g-run")
     run.add_argument("--selection", type=Path, required=True)
+    run.add_argument("--selection-metadata", type=Path, required=True)
     run.add_argument("--master-seed", required=True)
     run.add_argument("--workers", type=_positive, default=1)
     run.add_argument("--output-dir", type=Path, required=True)

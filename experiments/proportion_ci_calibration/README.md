@@ -86,7 +86,7 @@ invariant, and worst-case summaries are persisted incrementally as Parquet.
 The additive G/H implementation is source-bound to C-F commit
 `c87c6126135e300958e13d088aaef0643b28d645`. Every command fails closed if
 `harness.py`, `run.py`, or `high_precision.py` differs byte-for-byte from that
-commit, or if any production path differs from candidate
+commit, if any G/H executable source is dirty, or if any production path differs from candidate
 `fb3ecc6252e8c631596b7b975e683360dcde4ae4`.
 
 After checkpoint E (and F where triggered) has been completed on Quantum,
@@ -107,6 +107,7 @@ embedded in code or documentation:
 ```text
 env -u PYTHONPATH python -m experiments.proportion_ci_calibration.gh g-run \
   --selection experiments/results/proportion_ci_cp06_g_selection.parquet \
+  --selection-metadata experiments/results/proportion_ci_cp06_g_selection_metadata.json \
   --master-seed '<PROJECT_OWNER_SECRET>' --workers 8 \
   --output-dir experiments/results
 ```
@@ -114,6 +115,11 @@ env -u PYTHONPATH python -m experiments.proportion_ci_calibration.gh g-run \
 G uses `Generator(PCG64DXSM)` with a separate 128-bit SHA-256-derived seed per
 canonical cell. There is no user-adjustable draw batch. The 128 million
 critical plus 128 million broad draws are never part of local validation.
+The sealed selection records frozen C-F float64 coverage for every cell and
+resolved F evidence for every selected critical Wilson cell. G counts the
+independent float64 and HP acceptance sets separately over the same draws and
+compares each Monte Carlo estimate only with its corresponding deterministic
+authority.
 
 ## CP06-H confirmatory holdout
 

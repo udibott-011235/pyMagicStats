@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from concurrent.futures import ProcessPoolExecutor
+import hashlib
 import json
 import math
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -20,10 +20,15 @@ from experiments.proportion_ci_calibration.acceptance import (
     stable_binomial_coverage,
 )
 from experiments.proportion_ci_calibration.gh_common import (
+    CP04_DOCUMENT_SHA,
     H_DESIGN_SCHEMA_VERSION,
+    PRODUCTION_CANDIDATE_SHA,
+    SOURCE_CF_HARNESS_SHA,
     canonical_cell_id,
+    runtime_head,
     sha256_file,
     stable_digest,
+    verify_metadata_content,
     verify_frozen_sources,
 )
 from experiments.proportion_ci_calibration.harness import ALPHAS, undercoverage_tier
@@ -255,6 +260,7 @@ def generate_holdout_design(master_seed: str) -> pd.DataFrame:
     frame = pd.DataFrame(rows)
     if len(frame) != H_TOTAL_CELLS or frame["canonical_cell_id"].duplicated().any():
         raise AssertionError("production holdout must contain 10,000 unique method cells")
+    validate_holdout_design(frame, require_production=True)
     return frame
 
 
@@ -282,35 +288,104 @@ def generate_fixture_holdout_design(master_seed: str) -> pd.DataFrame:
     frame = pd.DataFrame(rows)
     if frame["canonical_cell_id"].duplicated().any():
         raise AssertionError("fixture holdout contains duplicates")
+    validate_holdout_design(frame, require_production=False)
     return frame
 
 
 def canonical_design_hash(frame: pd.DataFrame) -> str:
-    required = {"canonical_cell_id", "method", "n", "alpha", "p_hex"}
+    required = {"canonical_cell_id", "method", "n", "alpha", "p", "p_hex"}
     missing = required - set(frame.columns)
     if missing:
         raise ValueError(f"design missing identity columns: {sorted(missing)}")
     values = frame.sort_values("canonical_cell_id", kind="mergesort")
-    digest = __import__("hashlib").sha256()
+    digest = hashlib.sha256()
     for row in values.itertuples(index=False):
-        identity = canonical_cell_id(row.method, int(row.n), float(row.alpha), float.fromhex(row.p_hex))
+        p = float(row.p)
+        if row.p_hex != p.hex():
+            raise ValueError(f"design p_hex mismatch: {row.canonical_cell_id}")
+        identity = canonical_cell_id(row.method, int(row.n), float(row.alpha), p)
         if identity != row.canonical_cell_id:
             raise ValueError(f"design identity mismatch: {row.canonical_cell_id}")
         digest.update((identity + "\n").encode("utf-8"))
     return digest.hexdigest()
 
 
-def verify_design_artifact(design_path: Path, metadata_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
+def _expected_n_band(n: int) -> str:
+    if 1 <= n <= 5_000:
+        return "n_1_5000"
+    if 5_001 <= n <= 100_000:
+        return "n_5001_100000"
+    if 100_001 <= n <= 1_000_000:
+        return "n_100001_1000000"
+    raise ValueError(f"holdout n={n} is outside the preregistered domain")
+
+
+def validate_holdout_design(frame: pd.DataFrame, *, require_production: bool = True) -> None:
+    canonical_design_hash(frame)
+    if frame["canonical_cell_id"].duplicated().any():
+        raise ValueError("holdout design contains duplicate canonical cells")
+    if not np.isfinite(frame["p"].to_numpy(dtype=np.float64)).all() or not bool(
+        frame["p"].between(0.0, 1.0, inclusive="both").all()
+    ):
+        raise ValueError("holdout design contains invalid probabilities")
+    if not require_production:
+        return
+    if len(frame) != H_TOTAL_CELLS:
+        raise ValueError("production holdout must contain exactly 10,000 cells")
+    method_counts = frame["method"].value_counts().to_dict()
+    if method_counts != {method: H_CELLS_PER_METHOD for method in H_METHODS}:
+        raise ValueError("holdout method quotas do not match the preregistration")
+    expected_alphas = set(float(alpha) for alpha in ALPHAS)
+    for method in H_METHODS:
+        selected = frame.loc[frame["method"] == method]
+        if selected["n_band"].value_counts().to_dict() != H_N_QUOTAS:
+            raise ValueError(f"holdout n quotas are invalid for {method}")
+        actual_bands = selected["n"].astype(int).map(_expected_n_band)
+        if not np.array_equal(actual_bands.to_numpy(), selected["n_band"].to_numpy()):
+            raise ValueError(f"holdout n-band labels are invalid for {method}")
+        if selected["p_family"].value_counts().to_dict() != H_P_QUOTAS:
+            raise ValueError(f"holdout p-family quotas are invalid for {method}")
+        alpha_counts = selected["alpha"].astype(float).value_counts().to_dict()
+        if set(alpha_counts) != expected_alphas or sorted(alpha_counts.values()) != [
+            357,
+            357,
+            357,
+            357,
+            357,
+            357,
+            358,
+        ]:
+            raise ValueError(f"holdout alpha quotas are invalid for {method}")
+
+
+def verify_design_artifact(
+    design_path: Path,
+    metadata_path: Path,
+    *,
+    require_production: bool = True,
+) -> tuple[pd.DataFrame, dict[str, object]]:
     metadata = json.loads(Path(metadata_path).read_text(encoding="utf-8"))
+    verify_metadata_content(metadata)
     if metadata.get("design_schema_version") != H_DESIGN_SCHEMA_VERSION:
         raise ValueError("holdout design schema is incompatible")
+    identities = {
+        "runtime_head": runtime_head(),
+        "source_cf_harness_sha": SOURCE_CF_HARNESS_SHA,
+        "production_candidate_sha": PRODUCTION_CANDIDATE_SHA,
+        "cp04_document_sha": CP04_DOCUMENT_SHA,
+    }
+    for key, expected in identities.items():
+        if metadata.get(key) != expected:
+            raise ValueError(f"holdout design metadata mismatch for {key}")
     artifact_hash = sha256_file(Path(design_path))
     if artifact_hash != metadata.get("design_artifact_sha256"):
         raise ValueError("holdout design artifact SHA-256 does not match metadata")
     frame = pd.read_parquet(design_path)
+    validate_holdout_design(frame, require_production=require_production)
     if canonical_design_hash(frame) != metadata.get("canonical_design_sha256"):
         raise ValueError("holdout canonical design SHA-256 does not match metadata")
-    if len(frame) != int(metadata.get("cell_count", -1)):
+    expected_count = H_TOTAL_CELLS if require_production else len(frame)
+    if int(metadata.get("cell_count", -1)) != expected_count or len(frame) != expected_count:
         raise ValueError("holdout design row count does not match metadata")
     return frame, metadata
 

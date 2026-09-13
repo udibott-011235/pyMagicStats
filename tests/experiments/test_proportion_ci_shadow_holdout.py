@@ -10,8 +10,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from experiments.proportion_ci_calibration import gh_common
+from experiments.proportion_ci_calibration import acceptance, gh, gh_common
 from experiments.proportion_ci_calibration.acceptance import (
+    AcceptanceLocalization,
+    NumericalCoverageError,
     high_precision_recheck,
     interval_for_cell,
     localize_acceptance,
@@ -19,8 +21,17 @@ from experiments.proportion_ci_calibration.acceptance import (
 )
 from experiments.proportion_ci_calibration.gh_common import (
     H_DESIGN_SCHEMA_VERSION,
+    CP04_DOCUMENT_SHA,
+    G_MC_SCHEMA_VERSION,
+    G_SELECTION_SCHEMA_VERSION,
+    GH_EXPERIMENT_VERSION,
+    GH_SCHEMA_VERSION,
+    PRODUCTION_CANDIDATE_SHA,
+    SOURCE_CF_HARNESS_SHA,
     SourceIntegrityError,
     canonical_cell_id,
+    runtime_head,
+    seal_metadata,
     sha256_file,
     verify_frozen_sources,
 )
@@ -37,6 +48,7 @@ from experiments.proportion_ci_calibration.holdout import (
     generate_fixture_holdout_design,
     log_uniform_integer,
     production_holdout_quota_plan,
+    validate_holdout_design,
     verify_design_artifact,
 )
 from experiments.proportion_ci_calibration.harness import ALPHAS, PRODUCTION_METHODS
@@ -49,7 +61,10 @@ from experiments.proportion_ci_calibration.shadow_mc import (
     CRITICAL_REPS,
     N_STRATA,
     TOTAL_DRAWS,
+    DeterministicMappingError,
+    attach_cf_float64_authority,
     build_g_selection,
+    canonical_selection_hash,
     cell_seed_128,
     mc_gate,
     simulate_shadow_cells,
@@ -99,6 +114,167 @@ def _brute_coverage(method: str, n: int, alpha: float, p: float) -> tuple[float,
     return float(np.sum(probabilities)), selected
 
 
+def _selection_with_authority(*, include_f: bool = True) -> pd.DataFrame:
+    selection = build_g_selection(_e_minima_fixture())
+    lookup = {
+        canonical_cell_id(row.method, row.n, row.alpha, row.p): float(row.coverage)
+        for row in selection.itertuples(index=False)
+        if row.selection_kind == "critical"
+    }
+
+    def frozen_value(method, n, alpha, p):
+        identity = canonical_cell_id(method, n, alpha, p)
+        return lookup.get(identity, 0.875)
+
+    result = attach_cf_float64_authority(
+        selection,
+        cf_provider=frozen_value,
+        independent_provider=frozen_value,
+    )
+    if not include_f:
+        return result
+    for column in (
+        "coverage_hp_float",
+        "resolved",
+        "classification",
+        "acceptance_changed",
+        "acceptance_runs_float64",
+        "acceptance_runs_hp",
+    ):
+        result[column] = None
+    wilson = (result["selection_kind"] == "critical") & (
+        result["method"] == "wilson"
+    )
+    result.loc[wilson, "coverage_hp_float"] = result.loc[
+        wilson, "coverage_cf_float64"
+    ]
+    result.loc[wilson, "resolved"] = True
+    result.loc[wilson, "classification"] = "confirmed_no_shortfall_at_audited_cell"
+    result.loc[wilson, "acceptance_changed"] = False
+    result.loc[wilson, "acceptance_runs_float64"] = result.loc[
+        wilson, "acceptance_runs"
+    ]
+    result.loc[wilson, "acceptance_runs_hp"] = result.loc[
+        wilson, "acceptance_runs"
+    ]
+    validate_g_selection(result, require_authority=True, require_f=True)
+    return result
+
+
+def _write_selection_artifact(
+    tmp_path: Path,
+    selection: pd.DataFrame,
+) -> tuple[Path, Path, dict[str, object]]:
+    selection_path = tmp_path / gh.G_SELECTION_NAME
+    selection.to_parquet(selection_path, index=False)
+    metadata = {
+        "runtime_head": runtime_head(),
+        "selection_schema_version": G_SELECTION_SCHEMA_VERSION,
+        "experiment_version": GH_EXPERIMENT_VERSION,
+        "schema_version": GH_SCHEMA_VERSION,
+        "mc_schema_version": G_MC_SCHEMA_VERSION,
+        "cf_harness_schema_version": "cp06-harness-schema-v4",
+        "cf_shard_schema_version": "cp06-shard-schema-v4",
+        "source_cf_harness_sha": SOURCE_CF_HARNESS_SHA,
+        "production_candidate_sha": PRODUCTION_CANDIDATE_SHA,
+        "cp04_document_sha": CP04_DOCUMENT_SHA,
+        "critical_cells": CRITICAL_CELLS,
+        "broad_cells": BROAD_CELLS,
+        "implied_draws": TOTAL_DRAWS,
+        "selection_artifact_sha256": sha256_file(selection_path),
+        "canonical_selection_sha256": canonical_selection_hash(selection),
+        "e_artifact_sha256": "1" * 64,
+        "e_metadata_sha256": "2" * 64,
+        "f_audit_sha256": "3" * 64,
+        "f_metadata_sha256": "4" * 64,
+    }
+    metadata = seal_metadata(metadata)
+    metadata_path = tmp_path / gh.G_SELECTION_METADATA_NAME
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+    return selection_path, metadata_path, metadata
+
+
+def _write_f_audit(
+    tmp_path: Path,
+    selection: pd.DataFrame,
+    *,
+    omit_last: bool = False,
+    unresolved: bool = False,
+    metadata_updates: dict[str, object] | None = None,
+) -> tuple[Path, Path, pd.DataFrame]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    rows = []
+    wilson = selection.loc[
+        (selection["selection_kind"] == "critical")
+        & (selection["method"] == "wilson")
+    ]
+    if omit_last:
+        wilson = wilson.iloc[:-1]
+    for source in wilson.itertuples(index=False):
+        localization = localize_acceptance(
+            str(source.method), int(source.n), float(source.alpha), float(source.p)
+        )
+        runs = json.dumps(localization.runs, separators=(",", ":"))
+        rows.append(
+            {
+                "audit_kind": "coverage",
+                "method": source.method,
+                "n": int(source.n),
+                "alpha": float(source.alpha),
+                "p": float(source.p),
+                "coverage_hp_float": float(source.coverage_cf_float64),
+                "resolved": not unresolved,
+                "classification": "confirmed_no_shortfall_at_audited_cell",
+                "acceptance_changed": False,
+                "acceptance_runs_float64": runs,
+                "acceptance_runs_hp": runs,
+            }
+        )
+    audit = pd.DataFrame(rows)
+    audit_path = tmp_path / "proportion_ci_cp06_f_high_precision_audit.parquet"
+    audit.to_parquet(audit_path, index=False)
+    metadata = {
+        "candidate_sha": PRODUCTION_CANDIDATE_SHA,
+        "cp04_document_sha": CP04_DOCUMENT_SHA,
+        "experiment_version": "proportion-ci-cp06-v3",
+        "harness_schema_version": "cp06-harness-schema-v4",
+        "source_shard_schema_version": "cp06-shard-schema-v4",
+        "checkpoint": "F",
+        "source_checkpoints": ["C", "D", "E"],
+        "digits": 80,
+        "queue_rows": len(audit),
+        "audit_rows": len(audit),
+        "hashes": {audit_path.name: sha256_file(audit_path)},
+    }
+    metadata.update(metadata_updates or {})
+    metadata_path = tmp_path / "proportion_ci_cp06_f_metadata.json"
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+    return audit_path, metadata_path, audit
+
+
+def _write_design_artifact(
+    tmp_path: Path,
+    design: pd.DataFrame,
+) -> tuple[Path, Path, dict[str, object]]:
+    design_path = tmp_path / "design.parquet"
+    design.to_parquet(design_path, index=False)
+    metadata = {
+        "runtime_head": runtime_head(),
+        "source_cf_harness_sha": SOURCE_CF_HARNESS_SHA,
+        "production_candidate_sha": PRODUCTION_CANDIDATE_SHA,
+        "cp04_document_sha": CP04_DOCUMENT_SHA,
+        "design_schema_version": H_DESIGN_SCHEMA_VERSION,
+        "design_artifact_sha256": sha256_file(design_path),
+        "canonical_design_sha256": canonical_design_hash(design),
+        "cell_count": len(design),
+        "master_seed": FIXTURE_H_SEED,
+    }
+    metadata = seal_metadata(metadata)
+    metadata_path = tmp_path / "metadata.json"
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+    return design_path, metadata_path, metadata
+
+
 def test_source_integrity_is_bound_to_exact_cf_commit_and_production_candidate():
     result = verify_frozen_sources()
     assert result["source_cf_harness_sha"] == gh_common.SOURCE_CF_HARNESS_SHA
@@ -132,6 +308,21 @@ def test_source_integrity_fails_closed_on_head_blob_mismatch(monkeypatch):
 
     monkeypatch.setattr(gh_common, "_git", mismatched)
     with pytest.raises(SourceIntegrityError, match="frozen C-F source mismatch"):
+        verify_frozen_sources()
+
+
+def test_source_integrity_rejects_dirty_gh_executable_source(monkeypatch):
+    original = gh_common._git
+
+    def dirty(repo_root, *arguments, **kwargs):
+        if arguments[:3] == ("status", "--porcelain", "--") and any(
+            str(path).endswith("shadow_mc.py") for path in arguments[3:]
+        ):
+            return " M experiments/proportion_ci_calibration/shadow_mc.py"
+        return original(repo_root, *arguments, **kwargs)
+
+    monkeypatch.setattr(gh_common, "_git", dirty)
+    with pytest.raises(SourceIntegrityError, match="executable sources are dirty"):
         verify_frozen_sources()
 
 
@@ -175,11 +366,183 @@ def test_g_repetition_constants_imply_exact_preregistered_total():
 
 
 def test_per_cell_seed_is_stable_128_bit_and_cell_specific():
-    one = cell_seed_128(FIXTURE_G_SEED, canonical_cell_id("wilson", 3, 0.05, 0.1))
+    identity = canonical_cell_id("wilson", 3, 0.05, 0.1)
+    one = cell_seed_128(FIXTURE_G_SEED, identity)
     two = cell_seed_128(FIXTURE_G_SEED, canonical_cell_id("wilson", 3, 0.05, 0.2))
-    assert one == cell_seed_128(FIXTURE_G_SEED, canonical_cell_id("wilson", 3, 0.05, 0.1))
+    expected = int.from_bytes(
+        hashlib.sha256(
+            f"CP06-G-MC-v1|{FIXTURE_G_SEED}|{identity}".encode("utf-8")
+        ).digest()[:16],
+        byteorder="big",
+        signed=False,
+    )
+    assert one == expected == cell_seed_128(FIXTURE_G_SEED, identity)
     assert 0 <= one < 2**128
     assert one != two
+
+
+def test_g_select_cli_requires_both_f_inputs():
+    with pytest.raises(SystemExit):
+        gh.main(
+            [
+                "g-select",
+                "--e-minima",
+                "e.parquet",
+                "--e-metadata",
+                "e.json",
+                "--output-dir",
+                "out",
+            ]
+        )
+
+
+def test_g_authority_uses_frozen_cf_for_broad_and_retains_e_for_critical():
+    selection = build_g_selection(_e_minima_fixture())
+    selection.loc[selection["selection_kind"] == "critical", "coverage"] = 0.91
+    attached = attach_cf_float64_authority(
+        selection,
+        cf_provider=lambda *args: 0.91,
+        independent_provider=lambda *args: 0.91,
+    )
+    broad = attached["selection_kind"] == "broad"
+    critical = ~broad
+    assert (attached.loc[broad, "coverage_cf_float64"] == 0.91).all()
+    assert attached.loc[broad, "coverage_e_float64"].isna().all()
+    assert (attached.loc[critical, "coverage_e_float64"] == 0.91).all()
+    assert attached["cf_vs_independent_consistent"].all()
+    assert attached.loc[critical, "e_vs_cf_consistent"].all()
+
+
+def test_g_wrong_independent_localization_is_explicitly_blocking():
+    selection = build_g_selection(_e_minima_fixture())
+    selection.loc[selection["selection_kind"] == "critical", "coverage"] = 0.91
+    with pytest.raises(DeterministicMappingError, match="blocking deterministic mapping"):
+        attach_cf_float64_authority(
+            selection,
+            cf_provider=lambda *args: 0.91,
+            independent_provider=lambda *args: 0.81,
+        )
+
+
+def test_g_critical_e_disagreement_is_explicitly_blocking():
+    selection = build_g_selection(_e_minima_fixture())
+    with pytest.raises(DeterministicMappingError, match="blocking deterministic mapping"):
+        attach_cf_float64_authority(
+            selection,
+            cf_provider=lambda *args: 0.91,
+            independent_provider=lambda *args: 0.91,
+        )
+
+
+def test_f_metadata_and_all_selected_critical_wilson_evidence_are_required(tmp_path):
+    selection = _selection_with_authority(include_f=False)
+    audit_path, metadata_path, audit = _write_f_audit(tmp_path, selection)
+    attached = gh._attach_f_audit(selection, audit_path, metadata_path)
+    selected = attached.loc[
+        (attached["selection_kind"] == "critical")
+        & (attached["method"] == "wilson")
+    ]
+    assert len(selected) == len(audit)
+    assert selected["coverage_hp_float"].notna().all()
+    assert selected["resolved"].astype(bool).all()
+
+    _, wrong_metadata, _ = _write_f_audit(
+        tmp_path,
+        selection,
+        metadata_updates={"candidate_sha": "0" * 40},
+    )
+    with pytest.raises(ValueError, match="F metadata mismatch for candidate_sha"):
+        gh._attach_f_audit(selection, audit_path, wrong_metadata)
+
+
+def test_unresolved_or_incomplete_f_audit_is_rejected(tmp_path):
+    selection = _selection_with_authority(include_f=False)
+    unresolved_path, unresolved_metadata, _ = _write_f_audit(
+        tmp_path / "unresolved", selection, unresolved=True
+    )
+    with pytest.raises(ValueError, match="unresolved rows"):
+        gh._attach_f_audit(selection, unresolved_path, unresolved_metadata)
+
+    incomplete_path, incomplete_metadata, _ = _write_f_audit(
+        tmp_path / "incomplete", selection, omit_last=True
+    )
+    with pytest.raises(ValueError, match="every selected critical Wilson cell"):
+        gh._attach_f_audit(selection, incomplete_path, incomplete_metadata)
+
+
+def test_float64_and_hp_mc_use_distinct_acceptance_runs_on_same_draws(monkeypatch):
+    localization = AcceptanceLocalization(
+        first_x=0,
+        last_x=0,
+        acceptance_kind="contiguous_integer_range",
+        localization_method="synthetic",
+        boundary_validation="synthetic",
+    )
+    monkeypatch.setattr(shadow_mc, "localize_acceptance", lambda *args: localization)
+    identity = canonical_cell_id("wilson", 1, 0.05, 0.25)
+    selection = pd.DataFrame(
+        [
+            {
+                "method": "wilson",
+                "n": 1,
+                "alpha": 0.05,
+                "p": 0.25,
+                "selection_kind": "critical",
+                "canonical_cell_id": identity,
+                "coverage_cf_float64": 0.75,
+                "coverage_independent_localization": 0.75,
+                "coverage_hp_float": 0.25,
+                "resolved": True,
+                "classification": "float64_boundary_artifact",
+                "acceptance_changed": True,
+                "acceptance_runs_float64": "[[0,0]]",
+                "acceptance_runs_hp": "[[1,1]]",
+            }
+        ]
+    )
+    result = simulate_shadow_cells(
+        selection,
+        master_seed=FIXTURE_G_SEED,
+        workers=1,
+        fixture_reps=20_000,
+        verify_source=False,
+    ).iloc[0]
+    assert result["covered_float64"] + result["covered_hp"] == result["reps"]
+    assert result["coverage_mc_float64"] != result["coverage_mc_hp"]
+    assert result["float64_mc_gate_pass"]
+    assert result["hp_mc_gate_pass"]
+
+
+def test_g_selection_tampering_canonical_tampering_and_runtime_mismatch_are_rejected(
+    tmp_path, monkeypatch
+):
+    selection = _selection_with_authority()
+    selection_path, metadata_path, metadata = _write_selection_artifact(
+        tmp_path, selection
+    )
+    loaded, _ = gh._verify_g_selection_artifact(selection_path, metadata_path)
+    assert len(loaded) == len(selection)
+
+    tampered = selection.copy()
+    tampered.loc[tampered.index[0], "p"] = np.nextafter(
+        float(tampered.loc[tampered.index[0], "p"]), 1.0
+    )
+    with pytest.raises(ValueError, match="canonical-cell tampering"):
+        validate_g_selection(tampered)
+
+    artifact_tampered = selection.copy()
+    artifact_tampered.loc[artifact_tampered.index[0], "probe_count"] = 999
+    artifact_tampered.to_parquet(selection_path, index=False)
+    with pytest.raises(ValueError, match="artifact SHA-256"):
+        gh._verify_g_selection_artifact(selection_path, metadata_path)
+
+    selection.to_parquet(selection_path, index=False)
+    runtime_mismatch = dict(metadata)
+    runtime_mismatch["runtime_head"] = "f" * 40
+    runtime_mismatch = seal_metadata(runtime_mismatch)
+    metadata_path.write_text(json.dumps(runtime_mismatch), encoding="utf-8")
+    with pytest.raises(ValueError, match="runtime HEAD"):
+        gh._verify_g_selection_artifact(selection_path, metadata_path)
 
 
 def test_mc_gate_uses_five_se_or_point001():
@@ -262,6 +625,10 @@ def test_synthetic_fixture_proves_exact_h_output_quotas(monkeypatch):
             357,
             358,
         ]
+    altered = design.copy()
+    altered.loc[altered.index[0], "n_band"] = "n_5001_100000"
+    with pytest.raises(ValueError, match="n quotas|n-band labels"):
+        validate_holdout_design(altered)
 
 
 @pytest.mark.parametrize("lower,upper", [(1, 5_000), (5_001, 100_000), (100_001, 1_000_000)])
@@ -320,23 +687,40 @@ def test_fixture_design_is_unique_balanced_and_clearly_nonproduction():
 
 def test_design_artifact_hash_is_verified_before_evaluation(tmp_path):
     design = generate_fixture_holdout_design(FIXTURE_H_SEED)
-    design_path = tmp_path / "design.parquet"
-    design.to_parquet(design_path, index=False)
-    metadata = {
-        "design_schema_version": H_DESIGN_SCHEMA_VERSION,
-        "design_artifact_sha256": sha256_file(design_path),
-        "canonical_design_sha256": canonical_design_hash(design),
-        "cell_count": len(design),
-        "master_seed": FIXTURE_H_SEED,
-    }
-    metadata_path = tmp_path / "metadata.json"
-    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
-    loaded, _ = verify_design_artifact(design_path, metadata_path)
+    design_path, metadata_path, metadata = _write_design_artifact(tmp_path, design)
+    loaded, _ = verify_design_artifact(
+        design_path, metadata_path, require_production=False
+    )
     assert len(loaded) == len(design)
     metadata["design_artifact_sha256"] = "0" * 64
+    metadata = seal_metadata(metadata)
     metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
     with pytest.raises(ValueError, match="artifact SHA-256"):
-        verify_design_artifact(design_path, metadata_path)
+        verify_design_artifact(
+            design_path, metadata_path, require_production=False
+        )
+
+
+def test_h_design_metadata_content_and_runtime_mismatch_are_rejected(tmp_path):
+    design = generate_fixture_holdout_design(FIXTURE_H_SEED)
+    design_path, metadata_path, metadata = _write_design_artifact(tmp_path, design)
+
+    content_tampered = dict(metadata)
+    content_tampered["cell_count"] = len(design) + 1
+    metadata_path.write_text(json.dumps(content_tampered), encoding="utf-8")
+    with pytest.raises(ValueError, match="metadata content SHA-256"):
+        verify_design_artifact(
+            design_path, metadata_path, require_production=False
+        )
+
+    runtime_tampered = dict(metadata)
+    runtime_tampered["runtime_head"] = "e" * 40
+    runtime_tampered = seal_metadata(runtime_tampered)
+    metadata_path.write_text(json.dumps(runtime_tampered), encoding="utf-8")
+    with pytest.raises(ValueError, match="runtime_head"):
+        verify_design_artifact(
+            design_path, metadata_path, require_production=False
+        )
 
 
 @pytest.mark.parametrize("n", [1, 3, 27, 1_000_000])
@@ -412,6 +796,48 @@ def test_cp_shortfall_escalates_to_hp_and_unresolved_is_blocking(monkeypatch):
     assert evaluated["summary"].iloc[0]["hp_governs"]
     assert not evaluated["summary"].iloc[0]["resolved"]
     assert evaluated["failures"].iloc[0]["blocking"]
+
+
+@pytest.mark.parametrize("bad_value", [math.nan, math.inf, -math.inf])
+def test_nonfinite_raw_binomial_coverage_fails_closed(monkeypatch, bad_value):
+    def bad_cdf(k, *args, **kwargs):
+        return 0.0 if float(k) < 0 else bad_value
+
+    monkeypatch.setattr(acceptance.stats.binom, "cdf", bad_cdf)
+    with pytest.raises(NumericalCoverageError, match="not finite"):
+        stable_binomial_coverage(10, 0.5, 0, 2)
+
+
+def test_out_of_range_raw_binomial_coverage_fails_closed(monkeypatch):
+    monkeypatch.setattr(
+        acceptance.stats.binom,
+        "cdf",
+        lambda k, *args, **kwargs: 0.0 if float(k) < 0 else 1.01,
+    )
+    with pytest.raises(NumericalCoverageError, match=r"outside \[0,1\]"):
+        stable_binomial_coverage(10, 0.5, 0, 2)
+
+
+def test_numerical_coverage_error_becomes_blocking_h_finding(monkeypatch):
+    identity = canonical_cell_id("wilson", 10, 0.05, 0.5)
+    row = {
+        "method": "wilson",
+        "n": 10,
+        "alpha": 0.05,
+        "p": 0.5,
+        "p_family": "uniform",
+        "canonical_cell_id": identity,
+    }
+    monkeypatch.setattr(
+        holdout,
+        "stable_binomial_coverage",
+        lambda *args: (_ for _ in ()).throw(NumericalCoverageError("synthetic NaN")),
+    )
+    summary, audit, failure = holdout._evaluate_one(row)
+    assert audit is None
+    assert summary["resolved"] is False
+    assert failure["blocking"] is True
+    assert "NumericalCoverageError" in failure["details"]
 
 
 def test_high_precision_boundary_recheck_is_resolved_for_canonical_wilson_boundaries():

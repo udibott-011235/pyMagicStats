@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from concurrent.futures import ProcessPoolExecutor
+import hashlib
+import json
 import math
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -24,8 +25,12 @@ from experiments.proportion_ci_calibration.harness import (
     ALPHAS,
     EVENT_LAMBDAS,
     FIXED_ANCHORS,
+    DEFAULT_ENDPOINT_CACHE_ROOT,
+    EndpointGridCache,
     PRODUCTION_METHODS,
     STRESS_N,
+    evaluate_coverage,
+    production_interval_grid,
 )
 
 
@@ -38,6 +43,10 @@ TOTAL_DRAWS = CRITICAL_CELLS * CRITICAL_REPS + BROAD_CELLS * BROAD_REPS
 RNG_ALGORITHM = "numpy.random.Generator(PCG64DXSM)"
 RNG_DERIVATION_LABEL = "CP06-G-MC-v1"
 _INTERNAL_DRAW_CHUNK = 250_000
+
+
+class DeterministicMappingError(RuntimeError):
+    """Raised when C-F and independent G/H mappings disagree."""
 
 N_STRATA = (
     ("1-5", 1, 5),
@@ -241,7 +250,167 @@ def build_g_selection(e_minima: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-def validate_g_selection(selection: pd.DataFrame) -> None:
+def numerical_tolerance(n: int) -> float:
+    return 1e-12 if int(n) <= 5_000 else 1e-10
+
+
+def recompute_canonical_ids(selection: pd.DataFrame) -> pd.Series:
+    required = {"method", "n", "alpha", "p", "canonical_cell_id"}
+    missing = required - set(selection.columns)
+    if missing:
+        raise ValueError(f"G selection is missing identity columns: {sorted(missing)}")
+    reconstructed = pd.Series(
+        [
+            canonical_cell_id(method, n, alpha, p)
+            for method, n, alpha, p in zip(
+                selection["method"],
+                selection["n"],
+                selection["alpha"],
+                selection["p"],
+            )
+        ],
+        index=selection.index,
+        dtype=object,
+    )
+    mismatched = reconstructed != selection["canonical_cell_id"].astype(str)
+    if bool(mismatched.any()):
+        raise ValueError(
+            "G selection canonical-cell tampering detected: "
+            f"{selection.loc[mismatched, 'canonical_cell_id'].tolist()[:3]}"
+        )
+    return reconstructed
+
+
+def canonical_selection_hash(selection: pd.DataFrame) -> str:
+    identities = recompute_canonical_ids(selection)
+    digest = hashlib.sha256()
+    for identity in sorted(identities.tolist()):
+        digest.update((identity + "\n").encode("utf-8"))
+    return digest.hexdigest()
+
+
+def _cf_coverage_values(
+    selection: pd.DataFrame,
+    *,
+    endpoint_cache: EndpointGridCache,
+) -> np.ndarray:
+    values = np.empty(len(selection), dtype=np.float64)
+    indexed = selection.reset_index(drop=True)
+    for (method, n, alpha), group in indexed.groupby(
+        ["method", "n", "alpha"], sort=True
+    ):
+        n = int(n)
+        alpha = float(alpha)
+        method = str(method)
+        grid = endpoint_cache.get_or_create(
+            n,
+            alpha,
+            method,
+            lambda n=n, alpha=alpha, method=method: production_interval_grid(
+                n, alpha, method
+            ),
+        )
+        evaluation = evaluate_coverage(
+            n,
+            group["p"].to_numpy(dtype=np.float64),
+            grid.lower,
+            grid.upper,
+        )
+        values[group.index.to_numpy()] = evaluation.coverage
+    return values
+
+
+def attach_cf_float64_authority(
+    selection: pd.DataFrame,
+    *,
+    endpoint_cache: EndpointGridCache | None = None,
+    cf_provider=None,
+    independent_provider=None,
+    fail_on_inconsistency: bool = True,
+) -> pd.DataFrame:
+    """Attach frozen C-F truth and the independent MC-side reconstruction."""
+
+    result = selection.reset_index(drop=True).copy()
+    recompute_canonical_ids(result)
+    if cf_provider is None:
+        cache = endpoint_cache or EndpointGridCache(DEFAULT_ENDPOINT_CACHE_ROOT)
+        cf_values = _cf_coverage_values(result, endpoint_cache=cache)
+    else:
+        cf_values = np.asarray(
+            [
+                cf_provider(str(row.method), int(row.n), float(row.alpha), float(row.p))
+                for row in result.itertuples(index=False)
+            ],
+            dtype=np.float64,
+        )
+    if not np.all(np.isfinite(cf_values)):
+        raise DeterministicMappingError("C-F produced non-finite deterministic coverage")
+
+    independent_values: list[float] = []
+    for row in result.itertuples(index=False):
+        if independent_provider is None:
+            localized = localize_acceptance(
+                str(row.method), int(row.n), float(row.alpha), float(row.p)
+            )
+            value = stable_binomial_coverage(
+                int(row.n), float(row.p), localized.first_x, localized.last_x
+            )
+        else:
+            value = independent_provider(
+                str(row.method), int(row.n), float(row.alpha), float(row.p)
+            )
+        independent_values.append(float(value))
+    independent = np.asarray(independent_values, dtype=np.float64)
+    if not np.all(np.isfinite(independent)):
+        raise DeterministicMappingError(
+            "independent G/H localization produced non-finite coverage"
+        )
+
+    result["coverage_cf_float64"] = cf_values
+    result["coverage_independent_localization"] = independent
+    result["cf_vs_independent_difference"] = np.abs(cf_values - independent)
+    tolerances = result["n"].map(numerical_tolerance).to_numpy(dtype=np.float64)
+    result["cf_vs_independent_consistent"] = (
+        result["cf_vs_independent_difference"].to_numpy() <= tolerances
+    )
+    critical = result["selection_kind"] == "critical"
+    e_values = pd.to_numeric(result.get("coverage"), errors="coerce")
+    result["coverage_e_float64"] = np.where(critical, e_values, np.nan)
+    result["e_vs_cf_difference"] = np.where(
+        critical, np.abs(e_values - cf_values), np.nan
+    )
+    result["e_vs_cf_consistent"] = np.where(
+        critical, result["e_vs_cf_difference"] <= tolerances, True
+    )
+    inconsistent = ~result["cf_vs_independent_consistent"] | ~result[
+        "e_vs_cf_consistent"
+    ].astype(bool)
+    if fail_on_inconsistency and bool(inconsistent.any()):
+        rows = result.loc[
+            inconsistent,
+            [
+                "canonical_cell_id",
+                "coverage_cf_float64",
+                "coverage_independent_localization",
+                "cf_vs_independent_difference",
+                "coverage_e_float64",
+                "e_vs_cf_difference",
+            ],
+        ]
+        raise DeterministicMappingError(
+            "blocking deterministic mapping inconsistency: "
+            + rows.head(10).to_json(orient="records")
+        )
+    return result
+
+
+def validate_g_selection(
+    selection: pd.DataFrame,
+    *,
+    require_authority: bool = False,
+    require_f: bool = False,
+) -> None:
+    recompute_canonical_ids(selection)
     counts = selection["selection_kind"].value_counts().to_dict()
     if counts != {"broad": BROAD_CELLS, "critical": CRITICAL_CELLS}:
         raise ValueError(f"invalid G selection counts: {counts}")
@@ -265,18 +434,73 @@ def validate_g_selection(selection: pd.DataFrame) -> None:
             raise ValueError(f"critical selection does not cover every alpha for {method}")
         if set(critical["n_stratum"]) != {row[0] for row in N_STRATA}:
             raise ValueError(f"critical selection does not cover every n stratum for {method}")
+    if require_authority:
+        required = {
+            "coverage_cf_float64",
+            "coverage_independent_localization",
+            "cf_vs_independent_difference",
+            "cf_vs_independent_consistent",
+            "coverage_e_float64",
+            "e_vs_cf_difference",
+            "e_vs_cf_consistent",
+        }
+        missing = required - set(selection.columns)
+        if missing:
+            raise ValueError(f"G selection lacks C-F authority fields: {sorted(missing)}")
+        if not bool(selection["cf_vs_independent_consistent"].astype(bool).all()):
+            raise DeterministicMappingError("G selection contains a blocking C-F mapping mismatch")
+        critical = selection["selection_kind"] == "critical"
+        if not bool(selection.loc[critical, "e_vs_cf_consistent"].astype(bool).all()):
+            raise DeterministicMappingError("critical E and reconstructed C-F coverage disagree")
+    if require_f:
+        required = {
+            "coverage_hp_float",
+            "resolved",
+            "classification",
+            "acceptance_changed",
+            "acceptance_runs_float64",
+            "acceptance_runs_hp",
+        }
+        missing = required - set(selection.columns)
+        if missing:
+            raise ValueError(f"G selection lacks F evidence fields: {sorted(missing)}")
+        wilson_critical = (selection["selection_kind"] == "critical") & (
+            selection["method"] == "wilson"
+        )
+        evidence = selection.loc[wilson_critical]
+        required_values = [
+            "coverage_hp_float",
+            "classification",
+            "acceptance_changed",
+            "acceptance_runs_float64",
+            "acceptance_runs_hp",
+        ]
+        if evidence[required_values].isna().any().any() or not bool(
+            evidence["resolved"].fillna(False).astype(bool).all()
+        ):
+            raise ValueError(
+                "every selected critical Wilson cell requires resolved F coverage evidence"
+            )
+        for row in evidence.itertuples(index=False):
+            if not isinstance(row.resolved, (bool, np.bool_)) or not bool(row.resolved):
+                raise ValueError("resolved F coverage must carry an explicit true boolean")
+            if not isinstance(row.acceptance_changed, (bool, np.bool_)):
+                raise ValueError("F acceptance_changed must be boolean")
+            if not isinstance(row.classification, str) or not row.classification:
+                raise ValueError("F classification must be a non-empty string")
+            float_runs = _parse_runs(
+                row.acceptance_runs_float64, "acceptance_runs_float64"
+            )
+            hp_runs = _parse_runs(row.acceptance_runs_hp, "acceptance_runs_hp")
+            if bool(row.acceptance_changed) != (float_runs != hp_runs):
+                raise ValueError("F acceptance_changed disagrees with the recorded runs")
 
 
 def cell_seed_128(master_seed: str, canonical_id: str) -> int:
     if not isinstance(master_seed, str) or not master_seed:
         raise ValueError("a non-empty production master seed is required at runtime")
-    digest = np.frombuffer(
-        __import__("hashlib").sha256(
-            (RNG_DERIVATION_LABEL + master_seed + canonical_id).encode("utf-8")
-        ).digest()[:16],
-        dtype="<u8",
-    )
-    return int(digest[0]) | (int(digest[1]) << 64)
+    digest = stable_digest(RNG_DERIVATION_LABEL, master_seed, canonical_id)[:16]
+    return int.from_bytes(digest, byteorder="big", signed=False)
 
 
 def mc_gate(exact: float, mc: float, reps: int) -> dict[str, float | bool]:
@@ -289,6 +513,25 @@ def mc_gate(exact: float, mc: float, reps: int) -> dict[str, float | bool]:
         "mc_absolute_difference": difference,
         "mc_gate_pass": bool(difference <= tolerance),
     }
+
+
+def _parse_runs(value: object, field: str) -> list[tuple[int, int]]:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"missing {field}")
+    try:
+        runs = [tuple(int(endpoint) for endpoint in item) for item in json.loads(value)]
+    except (TypeError, ValueError, json.JSONDecodeError) as error:
+        raise ValueError(f"invalid {field}") from error
+    if any(len(run) != 2 or run[0] > run[1] for run in runs):
+        raise ValueError(f"invalid {field}")
+    return runs
+
+
+def _count_runs(draws: np.ndarray, runs: list[tuple[int, int]]) -> int:
+    selected = np.zeros(draws.shape, dtype=bool)
+    for first, last in runs:
+        selected |= (draws >= first) & (draws <= last)
+    return int(np.count_nonzero(selected))
 
 
 def _simulate_one(arguments: tuple[dict[str, object], str, int | None]) -> dict[str, object]:
@@ -305,26 +548,51 @@ def _simulate_one(arguments: tuple[dict[str, object], str, int | None]) -> dict[
     localized_coverage = stable_binomial_coverage(
         n, p, localization.first_x, localization.last_x
     )
-    evidence_coverage = row.get("coverage")
-    deterministic = (
-        localized_coverage
-        if evidence_coverage is None or pd.isna(evidence_coverage)
-        else float(evidence_coverage)
-    )
+    deterministic = float(row["coverage_cf_float64"])
+    tolerance = numerical_tolerance(n)
+    if abs(localized_coverage - float(row["coverage_independent_localization"])) > tolerance:
+        raise DeterministicMappingError(
+            f"runtime independent mapping changed for {identity}"
+        )
+    if abs(deterministic - localized_coverage) > tolerance:
+        raise DeterministicMappingError(
+            f"blocking C-F versus independent mapping mismatch for {identity}"
+        )
+
+    float_runs = localization.runs
+    hp_value = row.get("coverage_hp_float")
+    hp_resolved = row.get("resolved")
+    hp_governs = hp_value is not None and not pd.isna(hp_value)
+    hp_runs: list[tuple[int, int]] = []
+    if hp_governs:
+        if hp_resolved is not True and hp_resolved != np.bool_(True):
+            raise ValueError(f"unresolved F evidence for selected cell {identity}")
+        hp_runs = _parse_runs(row.get("acceptance_runs_hp"), "acceptance_runs_hp")
+        recorded_float_runs = _parse_runs(
+            row.get("acceptance_runs_float64"), "acceptance_runs_float64"
+        )
+        if recorded_float_runs != float_runs:
+            raise DeterministicMappingError(
+                f"F float64 acceptance differs from GH independent mapping for {identity}"
+            )
+        acceptance_changed = bool(row.get("acceptance_changed"))
+        if acceptance_changed != (recorded_float_runs != hp_runs):
+            raise ValueError(f"F acceptance_changed is inconsistent for {identity}")
+
     rng = np.random.Generator(np.random.PCG64DXSM(cell_seed_128(master_seed, identity)))
-    covered = 0
+    covered_float64 = 0
+    covered_hp = 0
     remaining = reps
     while remaining:
         draw_count = min(_INTERNAL_DRAW_CHUNK, remaining)
         draws = rng.binomial(n, p, size=draw_count)
-        covered += int(
-            np.count_nonzero(
-                (draws >= localization.first_x) & (draws <= localization.last_x)
-            )
-        )
+        covered_float64 += _count_runs(draws, float_runs)
+        if hp_governs:
+            covered_hp += _count_runs(draws, hp_runs)
         remaining -= draw_count
-    mc = covered / reps
-    float_gate = mc_gate(deterministic, mc, reps)
+    mc_float64 = covered_float64 / reps
+    mc_hp = covered_hp / reps if hp_governs else math.nan
+    float_gate = mc_gate(deterministic, mc_float64, reps)
     output = {
         "canonical_cell_id": identity,
         "method": method,
@@ -333,17 +601,14 @@ def _simulate_one(arguments: tuple[dict[str, object], str, int | None]) -> dict[
         "p": p,
         "selection_kind": row["selection_kind"],
         "reps": reps,
-        "covered": covered,
-        "coverage_mc": mc,
-        "coverage_deterministic_float64": deterministic,
+        "covered": covered_float64,
+        "covered_float64": covered_float64,
+        "coverage_mc": mc_float64,
+        "coverage_mc_float64": mc_float64,
+        "coverage_cf_float64": deterministic,
         "coverage_independent_localization": localized_coverage,
-        "cf_e_coverage_available": evidence_coverage is not None
-        and not pd.isna(evidence_coverage),
-        "cf_e_vs_independent_difference": (
-            abs(deterministic - localized_coverage)
-            if evidence_coverage is not None and not pd.isna(evidence_coverage)
-            else math.nan
-        ),
+        "cf_vs_independent_difference": abs(deterministic - localized_coverage),
+        "cf_vs_independent_consistent": True,
         "first_x": localization.first_x,
         "last_x": localization.last_x,
         "acceptance_kind": localization.acceptance_kind,
@@ -352,23 +617,23 @@ def _simulate_one(arguments: tuple[dict[str, object], str, int | None]) -> dict[
         "rng_algorithm": RNG_ALGORITHM,
         "rng_derivation": RNG_DERIVATION_LABEL,
         **{f"float64_{key}": value for key, value in float_gate.items()},
-        "hp_governs": False,
-        "hp_resolved": None,
-        "coverage_hp": math.nan,
+        "acceptance_runs_float64": json.dumps(float_runs, separators=(",", ":")),
+        "hp_governs": hp_governs,
+        "hp_resolved": bool(hp_resolved) if hp_governs else None,
+        "coverage_hp": float(hp_value) if hp_governs else math.nan,
+        "covered_hp": covered_hp if hp_governs else None,
+        "coverage_mc_hp": mc_hp,
+        "acceptance_runs_hp": (
+            json.dumps(hp_runs, separators=(",", ":")) if hp_governs else None
+        ),
+        "acceptance_changed": bool(row.get("acceptance_changed")) if hp_governs else None,
         "hp_mc_gate_pass": None,
     }
-    hp_value = row.get("coverage_hp_float")
-    hp_resolved = row.get("resolved")
-    if hp_value is not None and not pd.isna(hp_value):
-        if hp_resolved is not True and hp_resolved != np.bool_(True):
-            raise ValueError(f"unresolved F evidence for selected cell {identity}")
+    if hp_governs:
         hp = float(hp_value)
-        hp_gate = mc_gate(hp, mc, reps)
+        hp_gate = mc_gate(hp, mc_hp, reps)
         output.update(
             {
-                "hp_governs": True,
-                "hp_resolved": True,
-                "coverage_hp": hp,
                 **{f"hp_{key}": value for key, value in hp_gate.items()},
             }
         )
@@ -388,9 +653,21 @@ def simulate_shadow_cells(
     if verify_source:
         verify_frozen_sources()
     if fixture_reps is None:
-        validate_g_selection(selection)
+        validate_g_selection(selection, require_authority=True, require_f=True)
     elif fixture_reps < 1:
         raise ValueError("fixture_reps must be positive")
+    elif "coverage_cf_float64" not in selection.columns:
+        def fixture_coverage(method: str, n: int, alpha: float, p: float) -> float:
+            localized = localize_acceptance(method, n, alpha, p)
+            return stable_binomial_coverage(
+                n, p, localized.first_x, localized.last_x
+            )
+
+        selection = attach_cf_float64_authority(
+            selection,
+            cf_provider=fixture_coverage,
+            fail_on_inconsistency=True,
+        )
     records = selection.sort_values("canonical_cell_id", kind="mergesort").to_dict("records")
     arguments = [(row, master_seed, fixture_reps) for row in records]
     if workers == 1:

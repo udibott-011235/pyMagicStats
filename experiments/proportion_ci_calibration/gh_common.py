@@ -13,8 +13,6 @@ import os
 from pathlib import Path
 import platform
 import subprocess
-import sys
-import tempfile
 from typing import Iterable
 
 import mpmath
@@ -30,17 +28,24 @@ SOURCE_CF_HARNESS_SHA = "c87c6126135e300958e13d088aaef0643b28d645"
 PRODUCTION_CANDIDATE_SHA = "fb3ecc6252e8c631596b7b975e683360dcde4ae4"
 CP04_DOCUMENT_SHA = "63eaaed6842e2f82473bfa857524645123f95218"
 
-GH_EXPERIMENT_VERSION = "proportion-ci-cp06-gh-v1"
-GH_SCHEMA_VERSION = "cp06-gh-schema-v1"
-G_SELECTION_SCHEMA_VERSION = "cp06-g-selection-schema-v1"
-G_MC_SCHEMA_VERSION = "cp06-g-mc-schema-v1"
-H_DESIGN_SCHEMA_VERSION = "cp06-h-design-schema-v1"
-H_EVALUATION_SCHEMA_VERSION = "cp06-h-evaluation-schema-v1"
+GH_EXPERIMENT_VERSION = "proportion-ci-cp06-gh-v2"
+GH_SCHEMA_VERSION = "cp06-gh-schema-v2"
+G_SELECTION_SCHEMA_VERSION = "cp06-g-selection-schema-v2"
+G_MC_SCHEMA_VERSION = "cp06-g-mc-schema-v2"
+H_DESIGN_SCHEMA_VERSION = "cp06-h-design-schema-v2"
+H_EVALUATION_SCHEMA_VERSION = "cp06-h-evaluation-schema-v2"
 
 SOURCE_FILES = (
     "experiments/proportion_ci_calibration/harness.py",
     "experiments/proportion_ci_calibration/run.py",
     "experiments/proportion_ci_calibration/high_precision.py",
+)
+GH_EXECUTABLE_FILES = (
+    "experiments/proportion_ci_calibration/acceptance.py",
+    "experiments/proportion_ci_calibration/gh.py",
+    "experiments/proportion_ci_calibration/gh_common.py",
+    "experiments/proportion_ci_calibration/holdout.py",
+    "experiments/proportion_ci_calibration/shadow_mc.py",
 )
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -129,12 +134,27 @@ def verify_frozen_sources(repo_root: Path = REPOSITORY_ROOT) -> dict[str, object
         raise SourceIntegrityError(
             "production paths differ from the frozen production candidate"
         )
+    dirty_gh = str(
+        _git(repo_root, "status", "--porcelain", "--", *GH_EXECUTABLE_FILES)
+    )
+    if dirty_gh:
+        raise SourceIntegrityError(
+            "G/H executable sources are dirty; commit and regenerate phase artifacts"
+        )
+    runtime_hashes: dict[str, str] = {}
+    for path in GH_EXECUTABLE_FILES:
+        head_blob = str(_git(repo_root, "rev-parse", f"HEAD:{path}"))
+        worktree_blob = str(_git(repo_root, "hash-object", "--", path))
+        if head_blob != worktree_blob:
+            raise SourceIntegrityError(f"G/H executable source mismatch for {path}")
+        runtime_hashes[path] = head_blob
     return {
         "runtime_head": head,
         "source_cf_harness_sha": SOURCE_CF_HARNESS_SHA,
         "production_candidate_sha": PRODUCTION_CANDIDATE_SHA,
         "cp04_document_sha": CP04_DOCUMENT_SHA,
         "source_blob_sha1": source_hashes,
+        "runtime_executable_blob_sha1": runtime_hashes,
         "production_unchanged": True,
     }
 
@@ -225,3 +245,18 @@ def metadata_base(
 def metadata_content_hash(payload: dict[str, object]) -> str:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def seal_metadata(payload: dict[str, object]) -> dict[str, object]:
+    sealed = dict(payload)
+    sealed.pop("metadata_content_sha256", None)
+    sealed["metadata_content_sha256"] = metadata_content_hash(sealed)
+    return sealed
+
+
+def verify_metadata_content(payload: dict[str, object]) -> None:
+    claimed = payload.get("metadata_content_sha256")
+    unsealed = dict(payload)
+    unsealed.pop("metadata_content_sha256", None)
+    if not isinstance(claimed, str) or claimed != metadata_content_hash(unsealed):
+        raise ValueError("metadata content SHA-256 does not match")
