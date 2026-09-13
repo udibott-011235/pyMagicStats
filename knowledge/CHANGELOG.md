@@ -1,5 +1,18 @@
 # Historial de la base de conocimiento
 
+## 2026-09-13 — CP05-A post-merge governance closure
+
+- PR #14 integró el candidato auditado `2caf234…` en `main@3d9db61…`,
+  con padres y tree certificados; rama fuente preservada.
+- DEC-014/EV-013 accepted y CP05-A COMPLETE / GOVERNANCE CLOSED son estados
+  proyectados al integrar BR-026. CP05 overall y stage IN_PROGRESS;
+  CP05-B–D y CP06–08 NOT_STARTED.
+- EV-013 registra auditorías PASS, GOV_001–004 y STAT_001 CLOSED, genealogía,
+  firma reportada por GitHub, ausencia de CI y evento procedural de bypass.
+- BR-025 archivada e integrada; BR-001 actualizado; BR-026 abre en el baseline
+  exacto sin autorreferencia. Tests de Knowledge conservan invariantes previas.
+- Sin cambios matemáticos, producción, harness, calibración o secreto holdout.
+
 ## 2026-09-12 — CP04 canonical closure and CP05-A preregistration
 
 - PR #13 integra el cierre post-merge de CP04 en

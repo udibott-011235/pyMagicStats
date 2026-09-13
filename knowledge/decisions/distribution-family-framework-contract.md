@@ -404,10 +404,10 @@ The following questions remain deliberately unresolved:
 3. Finite-sample estimator behavior.
 4. Parameter uncertainty.
 5. Exact family-specific fitted-family GOF calibration, including EDF, CvM, AD
-   and bootstrap methodology. `DEC-014` proposes its resolution for the three
-   Wave 1 families in CP05; it remains unresolved outside that scope and until
-   independent exact-SHA Antigravity audit, subsequent ChatGPT interpretation
-   and a separate Project Owner decision.
+   and bootstrap methodology. `DEC-014` supplies the accepted documentary
+   CP05-A design for the three Wave 1 families, integrated through PR #14.
+   CP05-B–D remain NOT_STARTED; executable and empirical validation remain
+   unresolved, as does calibration outside that scope.
 6. Optimization convergence policy.
 7. Boundary estimates.
 8. Discrete-family estimation rules.

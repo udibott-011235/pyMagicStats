@@ -1,9 +1,9 @@
 # DEC-014 — CP05 fitted-family GOF calibration contract and preregistration
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP05-A — IN_PROGRESS`
-- **Estado del registro:** `under_review`
-- **Estado de arquitectura:** `PROPOSED`
+- **Checkpoint:** `CP05-A — COMPLETE`
+- **Estado del registro:** `accepted`
+- **Estado de arquitectura:** `ACCEPTED`
 - **Estado de implementación:** `NOT_STARTED`
 - **Fecha:** 2026-09-12
 - **Baseline:** `main` @ `6409717ebdfdd34d41d41c36983dda82de935e6b`
@@ -17,6 +17,18 @@
 - **Extiende:** `DEC-010`, `DEC-013`
 - **Supersedes:** ninguno
 
+## Post-merge governance projection — 2026-09-13
+
+The statuses above project the state effective on integration of this closure.
+PR #14 already integrated the audited documentary candidate `2caf234cf1bfa8c66dd0317986803ff443ca3194`
+through `main@3d9db61cf7414ce7fe3d94819b5f9e005fff527f`.
+EV-013 records independent bundle/publication audits and integration evidence.
+CP05-A architecture is accepted, integration complete and governance closed
+under this projection. CP05 overall remains IN_PROGRESS; CP05-B–D remain
+NOT_STARTED. No executable GOF, numerical precision, RNG invariance,
+performance, empirical error control, power or production validity is certified.
+The mathematical contract below is unchanged.
+
 ## 1. Purpose and checkpoint split
 
 CP05 defines how goodness-of-fit (GOF) is assessed for the three Wave 1
@@ -29,7 +41,7 @@ CP05 is divided into four independently authorized checkpoints:
 
 | Checkpoint | State at this decision | Required result |
 |---|---|---|
-| `CP05-A` | `IN_PROGRESS` | Reviewed architecture, statistical-risk contract and preregistration |
+| `CP05-A` | `COMPLETE` | Reviewed architecture, statistical-risk contract and preregistration |
 | `CP05-B` | `NOT_STARTED` | Reproducible research harness and independent software oracles |
 | `CP05-C` | `NOT_STARTED` | Exploratory calibration, power characterization and performance evaluation |
 | `CP05-D` | `NOT_STARTED` | Sealed confirmatory holdout and independent adversarial audit |

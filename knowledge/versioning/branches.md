@@ -16,7 +16,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `6409717ebdfdd34d41d41c36983dda82de935e6b` | CP04 cerrado canónicamente mediante PR #13; revisar CP05-A en BR-025; no modificar directamente |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `3d9db61cf7414ce7fe3d94819b5f9e005fff527f` | CP05-A integrado vía PR #14; revisar cierre BR-026 |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -40,7 +40,8 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-022 | `docs/distribution-family-framework-cp03-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `7e38c1c62f69771282398ffd3fac118f866c5d69` | integrada vía PR #11; preservar rama remota |
 | BR-023 | `feature/distribution-family-framework-cp04-wave1-fitting` | `archived` | `fully_contained` | `merged` | 0/1 | `6e92ef20aca375878964321596ba525539433f79` | integrada vía PR #12; preservar rama remota |
 | BR-024 | `docs/distribution-family-framework-cp04-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `9da985d1770ac2ec6bb542e2233d6e882e56d1c2` | integrada vía PR #13; preservar rama remota |
-| BR-025 | `feature/distribution-family-framework-cp05-gof-calibration` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `6409717ebdfdd34d41d41c36983dda82de935e6b` | revisión local de DEC-014/EV-013; sin producción, calibración, push, PR ni merge |
+| BR-025 | `feature/distribution-family-framework-cp05-gof-calibration` | `archived` | `fully_contained` | `merged` | 0/1 | `2caf234cf1bfa8c66dd0317986803ff443ca3194` | integrada vía PR #14; preservar rama fuente |
+| BR-026 | `docs/distribution-family-framework-cp05-a-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `3d9db61cf7414ce7fe3d94819b5f9e005fff527f` | auditoría independiente del cierre; sin CP05-B ni publicación |
 
 ### Cronología de BR-017
 
@@ -251,3 +252,19 @@ merge por ROLE_DRIFT pese a su diseño usable según Antigravity. La rama nueva
 parte directamente del baseline y no incorpora el commit no canónico.
 Siguiente acción: auditoría independiente de Antigravity del nuevo SHA exacto,
 interpretación posterior de ChatGPT y decisión separada del Project Owner.
+
+### Integración de BR-025 y apertura de BR-026 — 2026-09-13
+
+La apertura de BR-025 narrada arriba es histórica. PR #14 integró el head
+`2caf234cf1bfa8c66dd0317986803ff443ca3194` mediante `3d9db61cf7414ce7fe3d94819b5f9e005fff527f`;
+primer parent `6409717ebdfdd34d41d41c36983dda82de935e6b`, segundo parent el head auditado, tree
+`0375d8ea1260fa9825ad7ff904e76736611b8563`. BR-025 queda archived /
+fully_contained / merged, ahead 0 y behind 1. Su rama fuente se preserva.
+
+BR-026 abre desde el merge exacto con árbol limpio; head, parent_sha y
+merge_base registran `3d9db61cf7414ce7fe3d94819b5f9e005fff527f`, parent_branch main,
+same_head/pending y ahead/behind 0/0. No autorreferencia el futuro commit.
+Proyecta el cierre de CP05-A al integrarse y permanece under_review.
+Siguiente acción: auditoría independiente de Antigravity del SHA exacto del
+cierre, interpretación de ChatGPT y decisión separada del Project Owner.
+No CP05-B, push, PR ni merge. Los demás lifecycle, incluido BR-018, se conservan.

@@ -35,6 +35,7 @@ EXPECTED_BRANCH_NAMES = {
     "feature/distribution-family-framework-cp04-wave1-fitting",
     "docs/distribution-family-framework-cp04-post-merge",
     "feature/distribution-family-framework-cp05-gof-calibration",
+    "docs/distribution-family-framework-cp05-a-post-merge",
 }
 
 EXPECTED_LIFECYCLE = {
@@ -62,7 +63,8 @@ EXPECTED_LIFECYCLE = {
     "BR-022": ("archived", "fully_contained", "merged"),
     "BR-023": ("archived", "fully_contained", "merged"),
     "BR-024": ("archived", "fully_contained", "merged"),
-    "BR-025": ("under_review", "same_head", "pending"),
+    "BR-025": ("archived", "fully_contained", "merged"),
+    "BR-026": ("under_review", "same_head", "pending"),
 }
 
 
@@ -131,7 +133,9 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert registry["canonical_branch"] == "main"
     assert main["status"] == "accepted"
     assert main["branch"]["relation_to_main"] == "canonical"
-    assert main["branch"]["head_sha_at_decision"] == "6409717ebdfdd34d41d41c36983dda82de935e6b"
+    assert main["branch"]["head_sha_at_decision"] == "3d9db61cf7414ce7fe3d94819b5f9e005fff527f"
+    assert main["branch"]["merge_base"] == main["branch"]["head_sha_at_decision"]
+    assert (main["branch"]["ahead_of_main"], main["branch"]["behind_main"]) == (0, 0)
     evidence_path = "knowledge/evidence/distribution-family-framework-cp04-evidence.md"
     assert _record(registry, "EV-012")["status"] == "accepted"
     assert _record(registry, "EV-012")["path"] == evidence_path
@@ -153,14 +157,24 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert closure["merged_via"] == "PR #13 / merge commit 6409717ebdfdd34d41d41c36983dda82de935e6b"
     cp05 = _record(registry, "BR-025")["branch"]
     assert cp05["parent_branch"] == "main"
-    assert cp05["parent_sha"] == main["branch"]["head_sha_at_decision"]
-    assert cp05["head_sha_at_decision"] == cp05["parent_sha"]
-    assert cp05["merge_base"] == cp05["parent_sha"]
-    assert (cp05["ahead_of_main"], cp05["behind_main"]) == (0, 0)
+    assert cp05["parent_sha"] == "6409717ebdfdd34d41d41c36983dda82de935e6b"
+    assert cp05["head_sha_at_decision"] == "2caf234cf1bfa8c66dd0317986803ff443ca3194"
+    assert cp05["merge_base"] == cp05["head_sha_at_decision"]
+    assert (cp05["ahead_of_main"], cp05["behind_main"]) == (0, 1)
     assert cp05["unique_commits"] == []
-    assert "merged_via" not in cp05
-    assert _record(registry, "DEC-014")["status"] == "under_review"
-    assert _record(registry, "EV-013")["status"] == "under_review"
+    assert cp05["pr_number"] == 14
+    assert cp05["merged_via"] == "PR #14 / merge commit 3d9db61cf7414ce7fe3d94819b5f9e005fff527f"
+    cp05_closure = _record(registry, "BR-026")["branch"]
+    assert cp05_closure["parent_branch"] == "main"
+    assert cp05_closure["parent_sha"] == main["branch"]["head_sha_at_decision"]
+    assert cp05_closure["head_sha_at_decision"] == cp05_closure["parent_sha"]
+    assert cp05_closure["merge_base"] == cp05_closure["parent_sha"]
+    assert (cp05_closure["ahead_of_main"], cp05_closure["behind_main"]) == (0, 0)
+    assert cp05_closure["unique_commits"] == []
+    assert "merged_via" not in cp05_closure
+    assert "pr_number" not in cp05_closure
+    assert _record(registry, "DEC-014")["status"] == "accepted"
+    assert _record(registry, "EV-013")["status"] == "accepted"
     assert _record(registry, "DEC-014")["path"] == (
         "knowledge/decisions/distribution-family-framework-cp05-contract.md"
     )
@@ -176,9 +190,9 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert "ROLE_DRIFT" in evidence["scope"]
     assert "17bf06639ad84a18c26865b46cdecf26dc3ab9ed" in evidence["scope"]
     assert "draft excluded from candidate genealogy" in evidence["scope"]
-    assert "Independent Antigravity audit" in cp05["next_action"]
-    assert "then ChatGPT interpretation" in cp05["next_action"]
-    assert "separate Project Owner decision" in cp05["next_action"]
+    assert "Independent Antigravity audit" in cp05_closure["next_action"]
+    assert "then ChatGPT interpretation" in cp05_closure["next_action"]
+    assert "separate Project Owner decision" in cp05_closure["next_action"]
     evidence_text = (ROOT / evidence["path"]).read_text(encoding="utf-8")
     assert "noncanonical_draft_in_genealogy = false" in evidence_text
     assert "TECHNICAL_DESIGN_DISPOSITION=USABLE" in evidence_text
@@ -186,6 +200,15 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert "CP05-A = IN_PROGRESS" in evidence_text
     for checkpoint in ("CP05-B", "CP05-C", "CP05-D"):
         assert f"{checkpoint} = NOT_STARTED" in evidence_text
+    projected = evidence_text.split("### Projected state and next role", 1)[1]
+    for state in (
+        "DEC_014=ACCEPTED", "EV_013=ACCEPTED",
+        "CP05_A_ARCHITECTURE=ACCEPTED", "CP05_A_INTEGRATION=COMPLETE",
+        "CP05_A_GOVERNANCE=CLOSED", "CP05_A_OVERALL=COMPLETE",
+        "CP05_OVERALL=IN_PROGRESS", "CP05_B=NOT_STARTED",
+        "CP05_C=NOT_STARTED", "CP05_D=NOT_STARTED", "CP06_CP08=NOT_STARTED",
+    ):
+        assert state in projected
     assert knowledge["status"] == "archived"
     assert knowledge["branch"]["integration_state"] == "merged"
     assert knowledge["branch"]["merged_via"] == "PR #1"
