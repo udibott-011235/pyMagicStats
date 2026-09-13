@@ -1,16 +1,16 @@
 # EV-013 — CP05-A GOF architecture baseline and preregistration
 
-- **Estado:** `under_review`
+- **Estado:** `accepted` (proyección efectiva al integrar este cierre)
 - **Fecha:** 2026-09-12
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP05-A — IN_PROGRESS`
+- **Checkpoint:** `CP05-A — COMPLETE` (proyección post-merge)
 - **Repositorio:** `udibott-011235/pyMagicStats`
 - **Baseline:** `main` @ `6409717ebdfdd34d41d41c36983dda82de935e6b`
 - **Rama:** `feature/distribution-family-framework-cp05-gof-calibration`
-- **Contrato propuesto:** `DEC-014`
+- **Contrato aceptado:** `DEC-014`
 - **Rol de materialización:** `implementation-engineering`
 
-## Claim
+## Claim de apertura (histórico)
 
 This record fixes the clean CP05-A opening baseline and preserves the
 preregistered GOF design proposed by ChatGPT/Architecture in DEC-014 for
@@ -153,7 +153,7 @@ separate denominators and intervals.
 | `R-CP05-009` | Infeasible nested-bootstrap cost | Measured CP05-C performance gate; no reduced matrix | Open for CP05-C |
 | `R-CP05-010` | Family selection or identity overclaim | Separate assessment layer and wording boundary | Controlled by architecture |
 
-## Current phase status and nonclaims
+## Phase status at rematerialization (historical)
 
 ```text
 CP04_IMPLEMENTATION = COMPLETE
@@ -172,7 +172,7 @@ CP05-A changes documentation, registry projections and Knowledge Base tests
 only. It does not add or modify production modules, GOF routines, simulation
 runners or calibration results. No calibration command was executed.
 
-## Validation record
+## Rematerialization validation record (historical)
 
 Cortex ran the baseline registry validator and Knowledge Base suite in the new
 clone before edits: PASS and 9 passed. Final documentary validation commands are
@@ -191,7 +191,7 @@ full suite = NOT_RUN (documentation-only scope)
 These checks validate governance consistency only. They cannot establish
 statistical calibration or software correctness for a future harness.
 
-## Authorization boundary
+## Rematerialization authorization boundary (historical)
 
 The current authorization permits a local CP05-A architecture candidate only.
 It does not authorize production, calibration, push, PR, merge or CP05-B–D.
@@ -199,3 +199,101 @@ Antigravity must independently audit the new exact candidate SHA first,
 followed by ChatGPT interpretation and a separate Project Owner decision.
 Any commit change requires a new exact-SHA audit. DEC-014 and EV-013 remain
 under_review; CP05-A remains IN_PROGRESS.
+
+## CP05-A post-merge closure — 2026-09-13
+
+This section projects the governance state effective when the local BR-026
+closure is integrated. It preserves the historical opening, rejected-draft
+verdict and unexecuted risk register above.
+
+### Accepted candidate and independent audits
+
+The audited candidate is `2caf234cf1bfa8c66dd0317986803ff443ca3194`,
+parent `6409717ebdfdd34d41d41c36983dda82de935e6b`, tree
+`0375d8ea1260fa9825ad7ff904e76736611b8563`. Its transfer artifacts were:
+
+- bundle SHA-256: `7c3e8282b2e8af04347ee9efb70fdbe653ed202af6c465f401fdd96194821d5e`;
+- identity-manifest SHA-256: `ab373827ec63de6aabbadea560b7eea9ff37eac20492d19b2a2ff18e03028f82`.
+
+The Owner supplied Antigravity's independent bundle audit: IDENTITY_CHECK,
+BUNDLE_INTEGRITY, FSCK_FULL_STRICT, GENEALOGY_CHECK, SCOPE_CHECK and
+EVIDENCE_REPRODUCTION PASS; PRODUCTION_DIFF EMPTY; GOV_001–004 CLOSED;
+STAT_001 CLOSED; TECHNICAL_DESIGN_DISPOSITION USABLE;
+GOVERNANCE_DISPOSITION COMPLIANT; VERDICT PASS.
+The independent remote publication audit of PR #14 also passed, followed by
+Architecture PASS and separate Owner merge authorization.
+These findings concern the documentary CP05-A candidate only. The new closure
+SHA requires its own independent review.
+
+The rejected noncanonical draft
+`17bf06639ad84a18c26865b46cdecf26dc3ab9ed` remains excluded from the
+candidate and merge genealogy. ROLE_DRIFT history is preserved, not relabeled
+as a successful original materialization.
+
+### PR #14 integration evidence
+
+```text
+PR_NUMBER=14
+PR_STATE=CLOSED
+PR_MERGED=YES
+MERGE_METHOD=merge commit
+MERGE_SHA=3d9db61cf7414ce7fe3d94819b5f9e005fff527f
+FIRST_PARENT=6409717ebdfdd34d41d41c36983dda82de935e6b
+SECOND_PARENT=2caf234cf1bfa8c66dd0317986803ff443ca3194
+MERGE_TREE=0375d8ea1260fa9825ad7ff904e76736611b8563
+CANDIDATE_TREE_MATCH=PASS
+SOURCE_BRANCH_PRESERVED=YES
+EXTRA_COMMITS=NONE
+```
+
+The remote reads and fresh clone confirmed the merge parents and tree.
+The merge includes a PGP signature. GitHub's Git commit API reports
+`verification.verified=true`; this is GitHub's verification report, not a
+claim that Cortex independently performed local cryptographic verification.
+
+Remote CI returned zero commit statuses and zero check runs for the candidate.
+`CI_STATUSES=NONE_REPORTED` is compensated only by independently reproduced
+registry validation, nine Knowledge Base tests and diff/scope checks within
+this documentary scope. No executable GOF, numerical accuracy, RNG invariance,
+runtime viability, type-I calibration, power or production validity follows.
+
+### Disclosed publication event
+
+The authorized ordinary non-forced branch-creation push automatically reported:
+
+```text
+Bypassed rule violations for refs/heads/feature/distribution-family-framework-cp05-gof-calibration:
+
+- Cannot create ref due to creations being restricted.
+```
+
+No ruleset was changed and no manual bypass was requested. Main remained
+unchanged during publication. The Project Owner accepted preserving this
+procedural event. Future branch-creation ruleset alignment remains separate
+governance debt and does not alter the audited candidate.
+
+### Projected state and next role
+
+```text
+DEC_014=ACCEPTED
+EV_013=ACCEPTED
+CP05_A_ARCHITECTURE=ACCEPTED
+CP05_A_INTEGRATION=COMPLETE
+CP05_A_GOVERNANCE=CLOSED
+CP05_A_OVERALL=COMPLETE
+CP05_OVERALL=IN_PROGRESS
+CP05_B=NOT_STARTED
+CP05_C=NOT_STARTED
+CP05_D=NOT_STARTED
+CP06_CP08=NOT_STARTED
+```
+
+BR-025 is archived / fully_contained / merged with its source ref preserved.
+BR-001 records main at the PR #14 merge. BR-026 remains under_review /
+same_head / pending at its clean opening snapshot, without self-reference.
+
+The CP05-D holdout commitment remains PENDING_OWNER before CP05-C.
+No holdout secret was created or inspected. The only current authorization is
+one local documentary closure commit; no push, PR, merge or CP05-B–D.
+Next: independent Antigravity audit of the exact closure SHA, then ChatGPT
+interpretation and a separate Project Owner decision.

@@ -260,13 +260,13 @@ Fuente canónica:
 
 ## EV-013 — CP05-A GOF architecture baseline and preregistration
 
-- **Estado:** `under_review`; materializado 2026-09-12.
+- **Estado:** `accepted` bajo la proyección post-merge de BR-026; apertura histórica 2026-09-12.
 - **Evidencia:** [distribution-family-framework-cp05-preregistration.md](distribution-family-framework-cp05-preregistration.md).
 - **Baseline:** `main@6409717ebdfdd34d41d41c36983dda82de935e6b`.
-- **Rama local:** `feature/distribution-family-framework-cp05-gof-calibration`.
+- **Rama fuente integrada:** `feature/distribution-family-framework-cp05-gof-calibration`.
 - PR #13 cerró canónicamente CP04 mediante merge commit `6409717…`; ambos
   parents, tree, firma y ramas fuente están certificados.
-- `DEC-014` propone el contrato de null simple/compuesto, refit paramétrico,
+- `DEC-014` fija el contrato aceptado de null simple/compuesto, refit paramétrico,
   candidatos AD/CVM, comparadores, semillas por unidad, contabilidad de fallos,
   matrices de desarrollo/holdout y selección previa al unblinding.
 - **Riesgo primario:** `alpha=0.05`; una celda sólo es aceptable si su límite
@@ -274,14 +274,24 @@ Fuente canónica:
 - **Negative Binomial:** error tipo I condicional al MLE CP04 finito;
   aplicabilidad e ineligibilidad se reportan por separado.
 - **Demuestra:** identidad de apertura, superficie CP04 presente y
-  prerregistración documental lista para revisión exact-SHA.
+  prerregistración documental auditada e integrada mediante PR #14.
 - **No demuestra:** software GOF, harness, calibración, potencia, rendimiento,
-  holdout, auditoría o idoneidad de producción.
-- CP05-A `IN_PROGRESS`; CP05-B–D y CP06–08 `NOT_STARTED`.
+  holdout, auditoría de software GOF o idoneidad de producción.
+- CP05-A `COMPLETE` bajo el cierre proyectado; CP05-B–D y CP06–08 `NOT_STARTED`.
 
 - **Procedencia:** diseño ChatGPT/Arquitectura en el borrador no canónico
   `17bf06639ad84a18c26865b46cdecf26dc3ab9ed`; Antigravity: diseño usable,
   SHA rechazado para merge por ROLE_DRIFT. Cortex rematerializa documentación,
   registro y tests desde el baseline; el borrador queda fuera de la genealogía.
 - **Siguiente acción:** auditoría independiente de Antigravity sobre el nuevo
-  SHA exacto, interpretación posterior de ChatGPT y decisión separada del Owner.
+  SHA exacto del cierre BR-026, interpretación posterior de ChatGPT y decisión separada del Owner.
+
+- **Integración:** PR #14, merge `3d9db61cf7414ce7fe3d94819b5f9e005fff527f`,
+  parents `6409717…` / `2caf234…`, tree `0375d8e…` idéntico al candidato.
+- **Auditorías del candidato integrado:** bundle PASS; publicación PASS;
+  GOV_001–004 y STAT_001 CLOSED. Esta evidencia no se transfiere como PASS
+  al nuevo SHA de cierre.
+- **Límites:** CI remoto sin statuses/checks; sólo validación documental
+  reproducida. Firma PGP presente, GitHub reporta verificación; no verificación
+  criptográfica local. Bypass automático divulgado y aceptado como evento
+  procedural; alineación de ruleset separada. Holdout PENDING_OWNER.
