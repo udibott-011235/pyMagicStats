@@ -80,3 +80,73 @@ endpoint and all interior endpoints retain the Wilson formula.
 The interval inventory records canonical SHA-256 hashes and row counts instead
 of committing the enormous raw endpoint grid. Coverage, event-regime, oracle,
 invariant, and worst-case summaries are persisted incrementally as Parquet.
+
+## CP06-G shadow Monte Carlo
+
+The additive G/H implementation is source-bound to C-F commit
+`c87c6126135e300958e13d088aaef0643b28d645`. Every command fails closed if
+`harness.py`, `run.py`, or `high_precision.py` differs byte-for-byte from that
+commit, or if any production path differs from candidate
+`fb3ecc6252e8c631596b7b975e683360dcde4ae4`.
+
+After checkpoint E (and F where triggered) has been completed on Quantum,
+materialize the frozen 128 critical plus 512 broad selection:
+
+```text
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.gh g-select \
+  --e-minima experiments/results/proportion_ci_cp06_e_adversarial_minima.parquet \
+  --e-metadata experiments/results/proportion_ci_cp06_e_metadata.json \
+  --f-audit experiments/results/proportion_ci_cp06_f_high_precision_audit.parquet \
+  --f-metadata experiments/results/proportion_ci_cp06_f_metadata.json \
+  --output-dir experiments/results
+```
+
+The Project Owner must supply the production master seed at runtime. It is not
+embedded in code or documentation:
+
+```text
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.gh g-run \
+  --selection experiments/results/proportion_ci_cp06_g_selection.parquet \
+  --master-seed '<PROJECT_OWNER_SECRET>' --workers 8 \
+  --output-dir experiments/results
+```
+
+G uses `Generator(PCG64DXSM)` with a separate 128-bit SHA-256-derived seed per
+canonical cell. There is no user-adjustable draw batch. The 128 million
+critical plus 128 million broad draws are never part of local validation.
+
+## CP06-H confirmatory holdout
+
+H is intentionally split. Only after the implementation SHA is frozen does the
+Project Owner provide a new master seed and generate the real design:
+
+```text
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.gh h-generate \
+  --master-seed '<NEW_PROJECT_OWNER_SECRET>' \
+  --output-dir experiments/results
+```
+
+Evaluation verifies both the persisted Parquet SHA-256 and its canonical-cell
+hash before processing any row:
+
+```text
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.gh h-evaluate \
+  --design experiments/results/proportion_ci_cp06_h_design.parquet \
+  --design-metadata experiments/results/proportion_ci_cp06_h_design_metadata.json \
+  --workers 8 --output-dir experiments/results
+```
+
+Acceptance localization is independent and memory-bounded: Wilson score
+inversion, Clopper-Pearson equal-tail binomial inversion, the approved unclipped
+Wald quadratic, and monotone Beta inversion for the Jeffreys comparator.
+Production-method boundaries and their excluded neighbors are checked through
+the public count API. Stable binomial CDF/SF evaluation supplies deterministic
+coverage, and all CP04 high-precision triggers remain governing and fail closed
+when unresolved.
+
+Local validation uses only conspicuously named fixture seeds and a 32-cell
+design; it neither creates nor reveals the real holdout:
+
+```text
+env -u PYTHONPATH python -m experiments.proportion_ci_calibration.gh fixture-smoke --workers 2
+```
