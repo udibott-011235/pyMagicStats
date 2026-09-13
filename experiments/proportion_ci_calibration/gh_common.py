@@ -28,12 +28,12 @@ SOURCE_CF_HARNESS_SHA = "c87c6126135e300958e13d088aaef0643b28d645"
 PRODUCTION_CANDIDATE_SHA = "fb3ecc6252e8c631596b7b975e683360dcde4ae4"
 CP04_DOCUMENT_SHA = "63eaaed6842e2f82473bfa857524645123f95218"
 
-GH_EXPERIMENT_VERSION = "proportion-ci-cp06-gh-v2"
-GH_SCHEMA_VERSION = "cp06-gh-schema-v2"
-G_SELECTION_SCHEMA_VERSION = "cp06-g-selection-schema-v2"
-G_MC_SCHEMA_VERSION = "cp06-g-mc-schema-v2"
-H_DESIGN_SCHEMA_VERSION = "cp06-h-design-schema-v2"
-H_EVALUATION_SCHEMA_VERSION = "cp06-h-evaluation-schema-v2"
+GH_EXPERIMENT_VERSION = "proportion-ci-cp06-gh-v3"
+GH_SCHEMA_VERSION = "cp06-gh-schema-v3"
+G_SELECTION_SCHEMA_VERSION = "cp06-g-selection-schema-v3"
+G_MC_SCHEMA_VERSION = "cp06-g-mc-schema-v3"
+H_DESIGN_SCHEMA_VERSION = "cp06-h-design-schema-v3"
+H_EVALUATION_SCHEMA_VERSION = "cp06-h-evaluation-schema-v3"
 
 SOURCE_FILES = (
     "experiments/proportion_ci_calibration/harness.py",

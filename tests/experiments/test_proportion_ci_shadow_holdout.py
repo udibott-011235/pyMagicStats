@@ -114,6 +114,34 @@ def _brute_coverage(method: str, n: int, alpha: float, p: float) -> tuple[float,
     return float(np.sum(probabilities)), selected
 
 
+def _wald_boundary_probabilities() -> list[float]:
+    lower = [
+        0.0,
+        float(np.nextafter(0.0, 1.0)),
+        float(1e-323),
+        1e-300,
+        1e-12,
+        1e-11,
+        1e-10,
+        1e-9,
+        1e-8,
+        1e-7,
+        1e-6,
+        1e-5,
+    ]
+    values = lower + [1.0 - value for value in lower]
+    values.extend([float(np.nextafter(1.0, 0.0)), 1.0])
+    return sorted({value for value in values if 0.0 <= value <= 1.0})
+
+
+def _acceptance_from_intervals(
+    intervals: list[tuple[float, float]], p: float
+) -> list[int]:
+    return [
+        x for x, (lower, upper) in enumerate(intervals) if lower <= p <= upper
+    ]
+
+
 def _selection_with_authority(*, include_f: bool = True) -> pd.DataFrame:
     selection = build_g_selection(_e_minima_fixture())
     lookup = {
@@ -765,6 +793,200 @@ def test_wald_localization_follows_unclipped_production_formula():
         warnings.simplefilter("ignore", UserWarning)
         interval = PopulationProportionCI.from_counts(1, 10, alpha=0.05, method="wald").calculate_interval()
     assert interval["lb"] < 0.0
+
+
+def test_wald_maj01_small_n_boundary_grid_matches_production_brute_force():
+    empty_cases: list[tuple[int, float, float]] = []
+    for n in (1, 2):
+        for alpha in ALPHAS:
+            intervals = [interval_for_cell("wald", n, x, alpha) for x in range(n + 1)]
+            for p in _wald_boundary_probabilities():
+                expected = _acceptance_from_intervals(intervals, p)
+                localized = localize_acceptance("wald", n, float(alpha), p)
+                actual = (
+                    []
+                    if localized.is_empty
+                    else list(range(localized.first_x, localized.last_x + 1))
+                )
+                assert actual == expected, (n, alpha, p.hex(), actual, expected)
+                coverage = stable_binomial_coverage(
+                    n, p, localized.first_x, localized.last_x
+                )
+                brute = float(__import__("scipy").stats.binom.pmf(expected, n, p).sum())
+                assert coverage == pytest.approx(brute, abs=1e-12)
+                if not expected:
+                    empty_cases.append((n, float(alpha), p))
+                    assert localized.acceptance_kind == "empty"
+                    assert localized.first_x > localized.last_x
+                    assert coverage == 0.0
+    assert empty_cases
+
+
+def test_wald_adversarial_n1_to_n100_grid_matches_exact_production_membership():
+    probabilities = sorted(
+        set(_wald_boundary_probabilities())
+        | {0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99}
+    )
+    for n in range(1, 101):
+        for alpha in ALPHAS:
+            intervals = [interval_for_cell("wald", n, x, alpha) for x in range(n + 1)]
+            for p in probabilities:
+                expected = _acceptance_from_intervals(intervals, p)
+                if expected:
+                    assert expected == list(range(expected[0], expected[-1] + 1))
+                localized = localize_acceptance("wald", n, float(alpha), p)
+                actual = (
+                    []
+                    if localized.is_empty
+                    else list(range(localized.first_x, localized.last_x + 1))
+                )
+                assert actual == expected, (n, alpha, p.hex(), actual, expected)
+                exact = float(__import__("scipy").stats.binom.pmf(expected, n, p).sum())
+                independent = stable_binomial_coverage(
+                    n, p, localized.first_x, localized.last_x
+                )
+                assert abs(independent - exact) <= 1e-12
+
+
+def test_wald_acceptance_has_representable_complement_symmetry():
+    probabilities = sorted(
+        set(_wald_boundary_probabilities()) | {0.01, 0.1, 0.25, 0.5}
+    )
+    for n in (1, 2, 3, 10, 27, 100):
+        for alpha in ALPHAS:
+            for p in probabilities:
+                complement = 1.0 - p
+                if 1.0 - complement != p:
+                    continue
+                left = localize_acceptance("wald", n, float(alpha), p)
+                right = localize_acceptance("wald", n, float(alpha), complement)
+                left_set = (
+                    [] if left.is_empty else list(range(left.first_x, left.last_x + 1))
+                )
+                right_set = (
+                    [] if right.is_empty else list(range(right.first_x, right.last_x + 1))
+                )
+                assert right_set == sorted(n - x for x in left_set)
+
+
+def test_wald_subnormal_guards_exclude_impossible_boundary_outcomes():
+    positive_subnormal = float(np.nextafter(0.0, 1.0))
+    below_one = float(np.nextafter(1.0, 0.0))
+    for n in (1, 2):
+        for alpha in ALPHAS:
+            low = localize_acceptance("wald", n, float(alpha), positive_subnormal)
+            high = localize_acceptance("wald", n, float(alpha), below_one)
+            low_actual = (
+                [] if low.is_empty else list(range(low.first_x, low.last_x + 1))
+            )
+            high_actual = (
+                [] if high.is_empty else list(range(high.first_x, high.last_x + 1))
+            )
+            low_brute = _brute_coverage("wald", n, float(alpha), positive_subnormal)[1]
+            high_brute = _brute_coverage("wald", n, float(alpha), below_one)[1]
+            assert low_actual == low_brute
+            assert high_actual == high_brute
+            assert 0 not in low_actual
+            assert n not in high_actual
+
+
+def test_g_wald_boundary_fixture_retains_cf_truth_and_simulates_empty_membership():
+    p = float(np.nextafter(0.0, 1.0))
+    rows = []
+    truth: dict[str, float] = {}
+    for n in (1, 2):
+        identity = canonical_cell_id("wald", n, 0.05, p)
+        coverage, _ = _brute_coverage("wald", n, 0.05, p)
+        truth[identity] = coverage
+        rows.append(
+            {
+                "method": "wald",
+                "n": n,
+                "alpha": 0.05,
+                "p": p,
+                "selection_kind": "broad",
+                "canonical_cell_id": identity,
+            }
+        )
+    selection = attach_cf_float64_authority(
+        pd.DataFrame(rows),
+        cf_provider=lambda method, n, alpha, value: truth[
+            canonical_cell_id(method, n, alpha, value)
+        ],
+    )
+    result = simulate_shadow_cells(
+        selection,
+        master_seed=FIXTURE_G_SEED,
+        workers=1,
+        fixture_reps=2_000,
+        verify_source=False,
+    )
+    n1 = result.loc[result["n"] == 1].iloc[0]
+    assert n1["coverage_cf_float64"] == 0.0
+    assert n1["coverage_independent_localization"] == 0.0
+    assert n1["acceptance_kind"] == "empty"
+    assert n1["first_x"] > n1["last_x"]
+    assert n1["covered_float64"] == 0
+    assert n1["float64_mc_gate_pass"]
+    assert result["cf_vs_independent_consistent"].all()
+
+
+def test_h_wald_maj01_empty_region_is_statistical_evidence_not_implementation_failure():
+    p = float(np.nextafter(0.0, 1.0))
+    row = {
+        "method": "wald",
+        "n": 1,
+        "alpha": 0.05,
+        "p": p,
+        "p_family": "fixture_boundary",
+        "canonical_cell_id": canonical_cell_id("wald", 1, 0.05, p),
+    }
+    summary, audit, failure = holdout._evaluate_one(row)
+    assert summary["coverage_float64"] == 0.0
+    assert summary["classification"] == "observed_statistical_shortfall"
+    assert summary["resolved"] is True
+    assert audit is None
+    assert failure is None
+
+
+def test_gh_v3_schema_family_invalidates_pre_remediation_artifacts():
+    assert GH_EXPERIMENT_VERSION == "proportion-ci-cp06-gh-v3"
+    assert GH_SCHEMA_VERSION == "cp06-gh-schema-v3"
+    assert G_SELECTION_SCHEMA_VERSION == "cp06-g-selection-schema-v3"
+    assert G_MC_SCHEMA_VERSION == "cp06-g-mc-schema-v3"
+    assert H_DESIGN_SCHEMA_VERSION == "cp06-h-design-schema-v3"
+    assert gh_common.H_EVALUATION_SCHEMA_VERSION == "cp06-h-evaluation-schema-v3"
+
+
+def test_f_resolved_validation_emits_no_futurewarning_and_accepts_only_true(tmp_path):
+    selection = _selection_with_authority(include_f=False)
+    audit_path, metadata_path, _ = _write_f_audit(tmp_path, selection)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        attached = gh._attach_f_audit(selection, audit_path, metadata_path)
+    assert attached.loc[
+        (attached["selection_kind"] == "critical")
+        & (attached["method"] == "wilson"),
+        "resolved",
+    ].eq(True).all()
+
+    unresolved_path, unresolved_metadata, _ = _write_f_audit(
+        tmp_path / "false", selection, unresolved=True
+    )
+    with warnings.catch_warnings(), pytest.raises(ValueError, match="unresolved rows"):
+        warnings.simplefilter("error", FutureWarning)
+        gh._attach_f_audit(selection, unresolved_path, unresolved_metadata)
+
+    missing = _selection_with_authority()
+    wilson_index = missing.index[
+        (missing["selection_kind"] == "critical") & (missing["method"] == "wilson")
+    ][0]
+    missing.loc[wilson_index, "resolved"] = np.nan
+    with warnings.catch_warnings(), pytest.raises(
+        ValueError, match="resolved F coverage"
+    ):
+        warnings.simplefilter("error", FutureWarning)
+        validate_g_selection(missing, require_authority=True, require_f=True)
 
 
 def test_jeffreys_evaluation_remains_bayesian_comparator():

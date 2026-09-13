@@ -142,12 +142,18 @@ def _wald_bounds(n: int, alpha: float, p: float) -> tuple[int, int]:
     z2 = z * z
     discriminant = z2 * z2 + 4.0 * n * z2 * p * (1.0 - p)
     root = math.sqrt(max(0.0, discriminant))
-    denominator = 2.0 * (n + z2)
-    y_lower = (2.0 * n * p + z2 - root) / denominator
-    y_upper = (2.0 * n * p + z2 + root) / denominator
-    return math.ceil(np.nextafter(n * y_lower, -math.inf)), math.floor(
-        np.nextafter(n * y_upper, math.inf)
-    )
+    lower_sum = 2.0 * n * p + z2
+    y_lower = 2.0 * n * p * p / (lower_sum + root)
+    q = 1.0 - p
+    upper_sum = 2.0 * n * q + z2
+    y_upper = 1.0 - 2.0 * n * q * q / (upper_sum + root)
+    first = math.ceil(np.nextafter(n * y_lower, -math.inf))
+    last = math.floor(np.nextafter(n * y_upper, math.inf))
+    if p > 0.0:
+        first = max(first, 1)
+    if p < 1.0:
+        last = min(last, n - 1)
+    return first, last
 
 
 def _jeffreys_bounds(n: int, alpha: float, p: float) -> tuple[int, int]:

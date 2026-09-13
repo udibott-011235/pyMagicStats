@@ -123,7 +123,8 @@ def _attach_f_audit(
     if (
         "resolved" not in audit
         or not pd.api.types.is_bool_dtype(audit["resolved"].dtype)
-        or not bool(audit["resolved"].fillna(False).all())
+        or bool(audit["resolved"].isna().any())
+        or not bool(audit["resolved"].eq(True).all())
     ):
         raise ValueError("F audit contains unresolved rows")
     needed = {

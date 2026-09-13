@@ -482,8 +482,11 @@ def validate_g_selection(
             "acceptance_runs_float64",
             "acceptance_runs_hp",
         ]
+        resolved_is_explicit_true = evidence["resolved"].map(
+            lambda value: isinstance(value, (bool, np.bool_)) and bool(value)
+        )
         if evidence[required_values].isna().any().any() or not bool(
-            evidence["resolved"].fillna(False).astype(bool).all()
+            resolved_is_explicit_true.all()
         ):
             raise ValueError(
                 "every selected critical Wilson cell requires resolved F coverage evidence"
