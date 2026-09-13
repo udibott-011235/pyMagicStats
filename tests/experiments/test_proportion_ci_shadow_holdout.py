@@ -626,7 +626,8 @@ def test_old_hp_gate_expression_reproduces_object_dtype_inversion_defect():
             "hp_mc_gate_pass": pd.Series([True, True, None], dtype=object),
         }
     )
-    filled = results["hp_mc_gate_pass"].fillna(True)
+    filled = results["hp_mc_gate_pass"].copy()
+    filled.loc[filled.isna()] = True
     assert filled.dtype == object
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
