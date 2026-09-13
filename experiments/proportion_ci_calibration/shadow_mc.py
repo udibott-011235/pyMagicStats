@@ -374,13 +374,18 @@ def attach_cf_float64_authority(
         result["cf_vs_independent_difference"].to_numpy() <= tolerances
     )
     critical = result["selection_kind"] == "critical"
-    e_values = pd.to_numeric(result.get("coverage"), errors="coerce")
+    e_values = (
+        pd.to_numeric(result["coverage"], errors="coerce")
+        if "coverage" in result.columns
+        else pd.Series(np.nan, index=result.index, dtype=np.float64)
+    )
+    has_e_value = critical & e_values.notna()
     result["coverage_e_float64"] = np.where(critical, e_values, np.nan)
     result["e_vs_cf_difference"] = np.where(
-        critical, np.abs(e_values - cf_values), np.nan
+        has_e_value, np.abs(e_values - cf_values), np.nan
     )
     result["e_vs_cf_consistent"] = np.where(
-        critical, result["e_vs_cf_difference"] <= tolerances, True
+        has_e_value, result["e_vs_cf_difference"] <= tolerances, True
     )
     inconsistent = ~result["cf_vs_independent_consistent"] | ~result[
         "e_vs_cf_consistent"
@@ -450,6 +455,8 @@ def validate_g_selection(
         if not bool(selection["cf_vs_independent_consistent"].astype(bool).all()):
             raise DeterministicMappingError("G selection contains a blocking C-F mapping mismatch")
         critical = selection["selection_kind"] == "critical"
+        if selection.loc[critical, "coverage_e_float64"].isna().any():
+            raise ValueError("critical G selection lacks retained E coverage")
         if not bool(selection.loc[critical, "e_vs_cf_consistent"].astype(bool).all()):
             raise DeterministicMappingError("critical E and reconstructed C-F coverage disagree")
     if require_f:
