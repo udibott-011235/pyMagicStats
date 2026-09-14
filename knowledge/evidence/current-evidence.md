@@ -258,7 +258,7 @@ Fuente canónica:
 - EV-011 y los checkpoints anteriores conservan observaciones históricas;
   este registro documenta el estado actual de CP04 y no reescribe ese baseline.
 
-## EV-013 — CP05-A GOF architecture baseline and preregistration
+## EV-013 — CP05-A GOF architecture baseline and preregistration (histórico)
 
 - **Estado:** `accepted` bajo la proyección post-merge de BR-026; apertura histórica 2026-09-12.
 - **Evidencia:** [distribution-family-framework-cp05-preregistration.md](distribution-family-framework-cp05-preregistration.md).
@@ -277,7 +277,8 @@ Fuente canónica:
   prerregistración documental auditada e integrada mediante PR #14.
 - **No demuestra:** software GOF, harness, calibración, potencia, rendimiento,
   holdout, auditoría de software GOF o idoneidad de producción.
-- CP05-A `COMPLETE` bajo el cierre proyectado; CP05-B–D y CP06–08 `NOT_STARTED`.
+- Al cierre histórico de CP05-A, CP05-A estaba `COMPLETE` y CP05-B–D y
+  CP06–08 estaban `NOT_STARTED`; EV-014 registra el estado vigente de CP05-B.
 
 - **Procedencia:** diseño ChatGPT/Arquitectura en el borrador no canónico
   `17bf06639ad84a18c26865b46cdecf26dc3ab9ed`; Antigravity: diseño usable,
@@ -295,3 +296,30 @@ Fuente canónica:
   reproducida. Firma PGP presente, GitHub reporta verificación; no verificación
   criptográfica local. Bypass automático divulgado y aceptado como evento
   procedural; alineación de ruleset separada. Holdout PENDING_OWNER.
+
+## EV-014 — CP05-B research harness: software audit and integration
+
+- **Estado:** `accepted`; cierre materializado 2026-09-13.
+- **Claim scope:** `SOFTWARE_CORRECTNESS_ONLY`.
+- **Baseline:** `main@5eb179be578594aa900a29bf5ae2f5540e05ffa2`.
+- **Candidato final:** `75529e4415558c1abef6166432ebbafafd00a812`.
+- **Integración:** PR #16, merge `9fac41a38ed6583356b0e305a856dca7a3096530`,
+  tree `71f7b72fedee0fd4dbcdd1e41f208d53056fdb2f`.
+- **Auditoría adversarial:** PASS; `FINDING-CP05B-001=CLOSED` tras remediación
+  de serialización Parquet y reauditoría independiente.
+- **Validación:** research 43 passed; CP04 313 passed; distribución 888 passed;
+  producción 1128 passed con 3 skips heredados; registry validator PASS;
+  compileall PASS; diff-check PASS.
+- **Demuestra:** corrección de software del harness, oráculos, invariancias,
+  resume, procedencia y contabilidad requeridos por los gates CP05-B de DEC-014.
+- **No demuestra:** calibración, control de error tipo I, potencia, selección de
+  método o idoneidad de producción. CP05-C y CP05-D no fueron ejecutados; no se
+  accedió al holdout ni se generó un secreto holdout.
+- **Estado:** CP05-A y CP05-B `COMPLETE`; CP05 `IN_PROGRESS`; CP05-C, CP05-D y
+  CP06–CP08 `NOT_STARTED`.
+- **Notas no bloqueantes:** el bypass de reglas de rama de PR #16 permanece
+  deuda procedural, no estadística; Windows pytest restringido puede requerir
+  `--basetemp` explícito.
+
+Fuente canónica:
+`knowledge/evidence/distribution-family-framework-cp05-preregistration.md`.

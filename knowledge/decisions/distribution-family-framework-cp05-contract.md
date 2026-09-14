@@ -1,23 +1,23 @@
 # DEC-014 — CP05 fitted-family GOF calibration contract and preregistration
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP05-A — COMPLETE`
+- **Checkpoint:** `CP05-B — COMPLETE / GOVERNANCE_CLOSED`
 - **Estado del registro:** `accepted`
 - **Estado de arquitectura:** `ACCEPTED`
-- **Estado de implementación:** `NOT_STARTED`
+- **Estado de implementación:** `CP05-B COMPLETE`
 - **Fecha:** 2026-09-12
-- **Baseline:** `main` @ `6409717ebdfdd34d41d41c36983dda82de935e6b`
-- **Rama:** `feature/distribution-family-framework-cp05-gof-calibration`
+- **Baseline CP05-B:** `main` @ `5eb179be578594aa900a29bf5ae2f5540e05ffa2`
+- **Rama CP05-B integrada:** `feature/distribution-family-framework-cp05-b-harness`
 - **Owner de arquitectura:** `statistical-software-architecture`
 - **Diseño matemático:** ChatGPT / Arquitectura; borrador no canónico identificado en EV-013
 - **Rematerialización documental y tests:** Cortex / Implementación
-- **Implementación futura:** `implementation-engineering`
-- **QA futura:** `adversarial-statistical-qa`
+- **Implementación CP05-B:** `implementation-engineering`
+- **QA CP05-B:** `adversarial-statistical-qa`
 - **Evidencia de apertura:** `EV-013`
 - **Extiende:** `DEC-010`, `DEC-013`
 - **Supersedes:** ninguno
 
-## Post-merge governance projection — 2026-09-13
+## Post-merge governance projection de CP05-A — 2026-09-13 (histórico)
 
 The statuses above project the state effective on integration of this closure.
 PR #14 already integrated the audited documentary candidate `2caf234cf1bfa8c66dd0317986803ff443ca3194`
@@ -42,13 +42,32 @@ CP05 is divided into four independently authorized checkpoints:
 | Checkpoint | State at this decision | Required result |
 |---|---|---|
 | `CP05-A` | `COMPLETE` | Reviewed architecture, statistical-risk contract and preregistration |
-| `CP05-B` | `NOT_STARTED` | Reproducible research harness and independent software oracles |
+| `CP05-B` | `COMPLETE` | Reproducible research harness and independent software oracles; software-correctness scope only |
 | `CP05-C` | `NOT_STARTED` | Exploratory calibration, power characterization and performance evaluation |
 | `CP05-D` | `NOT_STARTED` | Sealed confirmatory holdout and independent adversarial audit |
 
 CP05-A is documentation and governance only. It does not authorize production
 code, a research harness, simulation, calibration, publication, PR or merge.
 CP05 is not complete until all four checkpoints pass.
+
+## CP05-B post-merge governance closure — 2026-09-13
+
+PR #16 integrated the independently audited candidate
+`75529e4415558c1abef6166432ebbafafd00a812` into
+`main@9fac41a38ed6583356b0e305a856dca7a3096530`. The merge tree is
+`71f7b72fedee0fd4dbcdd1e41f208d53056fdb2f`. `FINDING-CP05B-001` is CLOSED
+after remediation and independent reaudit; the technical verdict is PASS.
+
+The CP05-B integration, governance and overall checkpoint are COMPLETE/CLOSED.
+The claim scope is strictly `SOFTWARE_CORRECTNESS_ONLY`: calibration, type-I
+control, power, method selection and production suitability remain unvalidated.
+CP05 remains IN_PROGRESS; CP05-C, CP05-D and CP06–CP08 are NOT_STARTED. No
+CP05-C or CP05-D execution occurred, no holdout was accessed, and no holdout
+secret was generated. The mathematical contract below is unchanged.
+
+The repository branch/ruleset bypass required for PR #16 remains procedural
+debt rather than statistical debt. Restricted Windows pytest environments may
+require an explicit `--basetemp`.
 
 ## 2. Estimand, population, design and experimental unit
 

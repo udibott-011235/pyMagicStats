@@ -1,9 +1,9 @@
 # EV-013 — CP05-A GOF architecture baseline and preregistration
 
-- **Estado:** `accepted` (proyección efectiva al integrar este cierre)
+- **Estado:** `accepted`; CP05-A y CP05-B cerrados
 - **Fecha:** 2026-09-12
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP05-A — COMPLETE` (proyección post-merge)
+- **Checkpoint vigente:** `CP05-B — COMPLETE / GOVERNANCE_CLOSED`
 - **Repositorio:** `udibott-011235/pyMagicStats`
 - **Baseline:** `main` @ `6409717ebdfdd34d41d41c36983dda82de935e6b`
 - **Rama:** `feature/distribution-family-framework-cp05-gof-calibration`
@@ -272,7 +272,7 @@ unchanged during publication. The Project Owner accepted preserving this
 procedural event. Future branch-creation ruleset alignment remains separate
 governance debt and does not alter the audited candidate.
 
-### Projected state and next role
+### Projected state and next role at CP05-A closure (historical)
 
 ```text
 DEC_014=ACCEPTED
@@ -282,7 +282,7 @@ CP05_A_INTEGRATION=COMPLETE
 CP05_A_GOVERNANCE=CLOSED
 CP05_A_OVERALL=COMPLETE
 CP05_OVERALL=IN_PROGRESS
-CP05_B=NOT_STARTED
+CP05_B_AT_CP05_A_CLOSURE=NOT_STARTED
 CP05_C=NOT_STARTED
 CP05_D=NOT_STARTED
 CP06_CP08=NOT_STARTED
@@ -297,3 +297,68 @@ No holdout secret was created or inspected. The only current authorization is
 one local documentary closure commit; no push, PR, merge or CP05-B–D.
 Next: independent Antigravity audit of the exact closure SHA, then ChatGPT
 interpretation and a separate Project Owner decision.
+
+## CP05-B software harness closure — 2026-09-13
+
+### Identity, integration and independent audit
+
+```text
+CP05_B_CANDIDATE_SHA=75529e4415558c1abef6166432ebbafafd00a812
+CP05_B_MERGE_SHA=9fac41a38ed6583356b0e305a856dca7a3096530
+CP05_B_MERGE_TREE=71f7b72fedee0fd4dbcdd1e41f208d53056fdb2f
+ADVERSARIAL_AUDIT=PASS
+FINDING_CP05B_001=CLOSED
+```
+
+PR #16 integrated the exact remediated candidate by merge commit. Its first
+parent is `5eb179be578594aa900a29bf5ae2f5540e05ffa2`, its second parent is the
+candidate above, and its tree equals the candidate tree. The source branch
+`feature/distribution-family-framework-cp05-b-harness` remains preserved.
+
+The independent audit closed `FINDING-CP05B-001` after the Parquet artifact
+serialization remediation. The technical verdict is PASS within the exact
+claim scope `SOFTWARE_CORRECTNESS_ONLY`.
+
+### Validation evidence
+
+```text
+RESEARCH_TESTS=43 passed
+CP04_REGRESSION=313 passed
+DISTRIBUTION_REGRESSION=888 passed
+PRODUCTION_REGRESSION=1128 passed, 3 inherited skips
+REGISTRY_VALIDATOR=PASS
+COMPILEALL=PASS
+DIFF_CHECK=PASS
+```
+
+### Canonical state and claim limits
+
+```text
+CP05_A_INTEGRATION=COMPLETE
+CP05_A_GOVERNANCE=CLOSED
+CP05_A_OVERALL=COMPLETE
+CP05_B_INTEGRATION=COMPLETE
+CP05_B_GOVERNANCE=CLOSED
+CP05_B_OVERALL=COMPLETE
+CP05_OVERALL=IN_PROGRESS
+CP05_C=NOT_STARTED
+CP05_D=NOT_STARTED
+CP06_CP08=NOT_STARTED
+CP05_B_CLAIM_SCOPE=SOFTWARE_CORRECTNESS_ONLY
+CALIBRATION_VALIDATED=NO
+TYPE_I_CONTROL_VALIDATED=NO
+POWER_VALIDATED=NO
+METHOD_SELECTED=NO
+PRODUCTION_SUITABILITY_VALIDATED=NO
+CP05_C_EXECUTED=NO
+CP05_D_EXECUTED=NO
+HOLDOUT_ACCESSED=NO
+HOLDOUT_SECRET_GENERATED=NO
+```
+
+Repository branch/ruleset governance required a PR #16-specific bypass and
+remains procedural debt, not statistical debt. Restricted Windows pytest
+environments may require explicit `--basetemp`.
+
+BR-028 records the clean opening snapshot for this documentary closure. No
+CP05-C implementation or execution is authorized by this state change.
