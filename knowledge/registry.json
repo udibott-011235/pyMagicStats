@@ -578,7 +578,7 @@
       "kind": "decision",
       "title": "CP05 fitted-family GOF calibration contract and preregistration",
       "status": "accepted",
-      "scope": "Accepted CP05 contract: CP05-A architecture and CP05-B research harness integrated with governance closed; CP05-B certifies software correctness only, with no calibration, type-I control, power, method-selection or production-suitability claim",
+      "scope": "Accepted CP05 contract: CP05-A architecture and CP05-B research harness integrated with governance closed; CP05-D public namespace commitment deposited; CP05-C authorized to start but execution not started; CP05-B certifies software correctness only, with no calibration, type-I control, power, method-selection or production-suitability claim",
       "path": "knowledge/decisions/distribution-family-framework-cp05-contract.md",
       "evidence_paths": [
         "knowledge/evidence/distribution-family-framework-cp05-preregistration.md",
@@ -669,6 +669,35 @@
         "adversarial-pass",
         "integration",
         "no-calibration-run"
+      ]
+    },
+    {
+      "id": "EV-015",
+      "kind": "evidence",
+      "title": "CP05-C0 public holdout commitment gate",
+      "status": "accepted",
+      "scope": "Public CP05-D namespace commitment SHA-256 0d15aa19ff174fba06e3b06817e288b78e6168d4a775061cd4766e94c3c1896b deposited from main@c8df1bdab55aabf10e048e31aed61fd0d09cb5f6; secret stored off-repository, undisclosed and unaccessed; CP05-C authorized to start with execution not started; CP05-D not started",
+      "path": "knowledge/evidence/distribution-family-framework-cp05-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-cp05-contract.md",
+        "knowledge/decisions/distribution-family-framework-stage.md",
+        "tests/test_knowledge_base.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "distribution-families",
+        "cp05-c0",
+        "sealed-holdout",
+        "commitment",
+        "documentation-only",
+        "no-calibration-run",
+        "no-holdout-access"
       ]
     },
     {
@@ -1130,8 +1159,8 @@
       "id": "BR-028",
       "kind": "branch",
       "title": "Branch lifecycle — docs/close-cp05-b-governance",
-      "status": "under_review",
-      "scope": "Local CP05-B post-merge governance closure; one documentary commit authorized from the exact PR #16 merge",
+      "status": "archived",
+      "scope": "CP05-B post-merge governance closure integrated through PR #17 into main@c8df1bdab55aabf10e048e31aed61fd0d09cb5f6",
       "path": "knowledge/versioning/branches.md",
       "evidence_paths": [
         "knowledge/decisions/distribution-family-framework-stage.md",
@@ -1151,11 +1180,59 @@
         "cp05-b",
         "post-merge",
         "governance",
-        "under-review"
+        "archived",
+        "merged",
+        "pr-17"
       ],
       "branch": {
         "name": "docs/close-cp05-b-governance",
-        "head_sha_at_decision": "9fac41a38ed6583356b0e305a856dca7a3096530",
+        "head_sha_at_decision": "00c48edcb107089a314a43e55f31c50b68bf303e",
+        "observed_at": "2026-09-13",
+        "relation_to_main": "fully_contained",
+        "integration_state": "merged",
+        "ahead_of_main": 0,
+        "behind_main": 1,
+        "unique_commits": [],
+        "parent_branch": "main",
+        "parent_sha": "9fac41a38ed6583356b0e305a856dca7a3096530",
+        "merge_base": "00c48edcb107089a314a43e55f31c50b68bf303e",
+        "decision_reason": "Owner authorized PR #17 merge with a PR-specific ruleset bypass; first parent 9fac41a38ed6583356b0e305a856dca7a3096530, second parent 00c48edcb107089a314a43e55f31c50b68bf303e and tree dac6130bcbb1c7271593f0f278b8d73a20e72d09. Source branch preserved.",
+        "next_action": "Preserve the archived source branch; review the CP05-C0 public commitment registration on BR-029.",
+        "merged_via": "PR #17 / merge commit c8df1bdab55aabf10e048e31aed61fd0d09cb5f6",
+        "pr_number": 17
+      }
+    },
+    {
+      "id": "BR-029",
+      "kind": "branch",
+      "title": "Branch lifecycle — docs/cp05-c-holdout-commitment",
+      "status": "under_review",
+      "scope": "Local CP05-C0 documentary registration of the public CP05-D holdout namespace commitment from exact main baseline c8df1bdab55aabf10e048e31aed61fd0d09cb5f6; no secret access or experimental execution",
+      "path": "knowledge/versioning/branches.md",
+      "evidence_paths": [
+        "knowledge/decisions/distribution-family-framework-stage.md",
+        "knowledge/decisions/distribution-family-framework-cp05-contract.md",
+        "knowledge/evidence/distribution-family-framework-cp05-preregistration.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "branch",
+        "distribution-families",
+        "cp05-c0",
+        "sealed-holdout",
+        "commitment",
+        "documentation-only",
+        "under-review"
+      ],
+      "branch": {
+        "name": "docs/cp05-c-holdout-commitment",
+        "head_sha_at_decision": "c8df1bdab55aabf10e048e31aed61fd0d09cb5f6",
         "observed_at": "2026-09-13",
         "relation_to_main": "same_head",
         "integration_state": "pending",
@@ -1163,10 +1240,10 @@
         "behind_main": 0,
         "unique_commits": [],
         "parent_branch": "main",
-        "parent_sha": "9fac41a38ed6583356b0e305a856dca7a3096530",
-        "merge_base": "9fac41a38ed6583356b0e305a856dca7a3096530",
-        "decision_reason": "Owner authorized one isolated CP05-B documentary governance closure commit. The recorded head is the clean opening snapshot and does not self-reference the future closure commit.",
-        "next_action": "Request separate authorization to publish the exact closure commit. No PR, merge, CP05-C, calibration or holdout access."
+        "parent_sha": "c8df1bdab55aabf10e048e31aed61fd0d09cb5f6",
+        "merge_base": "c8df1bdab55aabf10e048e31aed61fd0d09cb5f6",
+        "decision_reason": "Owner authorized one local documentary commit recording only the public CP05-D namespace commitment. The recorded head is the clean opening snapshot and does not self-reference the future commitment commit.",
+        "next_action": "Request separate authorization to publish the exact commitment commit. No push, PR, merge, simulation, calibration, method selection or holdout access."
       }
     },
     {
@@ -1200,16 +1277,16 @@
       ],
       "branch": {
         "name": "main",
-        "head_sha_at_decision": "9fac41a38ed6583356b0e305a856dca7a3096530",
+        "head_sha_at_decision": "c8df1bdab55aabf10e048e31aed61fd0d09cb5f6",
         "observed_at": "2026-09-13",
         "relation_to_main": "canonical",
         "integration_state": "not_applicable",
         "ahead_of_main": 0,
         "behind_main": 0,
         "unique_commits": [],
-        "decision_reason": "Canonical main after authorized PR #16 merge of the independently audited CP05-B candidate; parents and candidate tree confirmed. The PR-specific bypass remains procedural debt.",
-        "merge_base": "9fac41a38ed6583356b0e305a856dca7a3096530",
-        "next_action": "Preserve canonical main; review CP05-B governance closure on BR-028. CP05-C and CP05-D remain not started."
+        "decision_reason": "Canonical main after authorized PR #17 merge of the CP05-B governance closure; parents and tree confirmed. The PR-specific bypass remains procedural debt.",
+        "merge_base": "c8df1bdab55aabf10e048e31aed61fd0d09cb5f6",
+        "next_action": "Preserve canonical main; review the CP05-C0 public commitment registration on BR-029. CP05-C execution and CP05-D remain not started."
       }
     },
     {

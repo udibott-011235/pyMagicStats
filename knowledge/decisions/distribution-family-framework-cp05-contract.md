@@ -1,13 +1,15 @@
 # DEC-014 — CP05 fitted-family GOF calibration contract and preregistration
 
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint:** `CP05-B — COMPLETE / GOVERNANCE_CLOSED`
+- **Checkpoint:** `CP05-C0 — HOLDOUT_COMMITMENT_DEPOSITED / EXECUTION_NOT_STARTED`
 - **Estado del registro:** `accepted`
 - **Estado de arquitectura:** `ACCEPTED`
-- **Estado de implementación:** `CP05-B COMPLETE`
+- **Estado de implementación:** `CP05-B COMPLETE; CP05-C AUTHORIZED_TO_START / EXECUTION_NOT_STARTED`
 - **Fecha:** 2026-09-12
 - **Baseline CP05-B:** `main` @ `5eb179be578594aa900a29bf5ae2f5540e05ffa2`
 - **Rama CP05-B integrada:** `feature/distribution-family-framework-cp05-b-harness`
+- **Baseline CP05-C0:** `main` @ `c8df1bdab55aabf10e048e31aed61fd0d09cb5f6`
+- **Rama CP05-C0:** `docs/cp05-c-holdout-commitment`
 - **Owner de arquitectura:** `statistical-software-architecture`
 - **Diseño matemático:** ChatGPT / Arquitectura; borrador no canónico identificado en EV-013
 - **Rematerialización documental y tests:** Cortex / Implementación
@@ -43,7 +45,7 @@ CP05 is divided into four independently authorized checkpoints:
 |---|---|---|
 | `CP05-A` | `COMPLETE` | Reviewed architecture, statistical-risk contract and preregistration |
 | `CP05-B` | `COMPLETE` | Reproducible research harness and independent software oracles; software-correctness scope only |
-| `CP05-C` | `NOT_STARTED` | Exploratory calibration, power characterization and performance evaluation |
+| `CP05-C` | `AUTHORIZED_TO_START` | Commitment gate satisfied; exploratory calibration, power characterization and performance evaluation not started |
 | `CP05-D` | `NOT_STARTED` | Sealed confirmatory holdout and independent adversarial audit |
 
 CP05-A is documentation and governance only. It does not authorize production
@@ -68,6 +70,32 @@ secret was generated. The mathematical contract below is unchanged.
 The repository branch/ruleset bypass required for PR #16 remains procedural
 debt rather than statistical debt. Restricted Windows pytest environments may
 require an explicit `--basetemp`.
+
+## CP05-C0 holdout commitment gate — 2026-09-13
+
+The Project Owner deposited only the public SHA-256 commitment below. The
+plaintext CP05-D namespace remains stored off-repository, was not disclosed to
+or accessed by Cortex, and is not represented anywhere in this repository.
+
+```text
+CP05_D_NAMESPACE_COMMITMENT_SHA256=0d15aa19ff174fba06e3b06817e288b78e6168d4a775061cd4766e94c3c1896b
+COMMITMENT_STATUS=DEPOSITED
+HOLDOUT_COMMITMENT=DEPOSITED
+SECRET_STORED_OFF_REPO=YES
+SECRET_DISCLOSED=NO
+HOLDOUT_SECRET_ACCESSED=NO
+HOLDOUT_SECRET_DISCLOSED=NO
+HOLDOUT_EXECUTED=NO
+CP05_C=AUTHORIZED_TO_START
+CP05_C_EXECUTION=NOT_STARTED
+CP05_D=NOT_STARTED
+CP05_OVERALL=IN_PROGRESS
+```
+
+This satisfies only the precondition gate required before CP05-C. It does not
+execute or authorize any particular experiment command, calibration, power
+analysis, method selection or CP05-D activity. The mathematical contract below
+is unchanged.
 
 ## 2. Estimand, population, design and experimental unit
 
@@ -295,8 +323,11 @@ The CP05-D namespace remains secret. Before CP05-C begins, the decision owner
 must deposit its SHA-256 commitment in the accepted preregistration record.
 The plaintext namespace is revealed to the independent CP05-D executor only
 after code, dependency lock, selected method, selected `B`, cell manifest and
-analysis command are frozen. At CP05-A materialization the commitment is
-`PENDING_OWNER`; therefore CP05-D cannot start.
+analysis command are frozen. At CP05-A materialization the commitment was
+`PENDING_OWNER` (historical state). CP05-C0 has now deposited the public
+commitment recorded above without disclosing or accessing the plaintext.
+CP05-D remains `NOT_STARTED` and cannot start before the remaining freeze and
+authorization requirements are satisfied.
 
 ## 7. Calibration cells
 

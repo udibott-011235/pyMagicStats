@@ -20,6 +20,8 @@ Decisiones iniciales indexadas:
 - `DEC-013`: contrato ejecutable congelado de fitting Wave 1 para CP04.
 - `DEC-014`: contrato y prerregistración GOF para familias Wave 1 ajustadas;
   CP05-A y CP05-B están completos. CP05-B certifica sólo corrección de software,
-  no calibración, potencia, selección de método ni idoneidad de producción.
+  no calibración, potencia, selección de método ni idoneidad de producción. El
+  commitment público CP05-D está depositado; CP05-C está autorizado para
+  comenzar, pero su ejecución permanece `NOT_STARTED` y CP05-D no ha comenzado.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

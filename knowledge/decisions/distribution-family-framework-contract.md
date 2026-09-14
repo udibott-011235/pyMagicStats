@@ -405,10 +405,11 @@ The following questions remain deliberately unresolved:
 4. Parameter uncertainty.
 5. Exact family-specific fitted-family GOF calibration, including EDF, CvM, AD
    and bootstrap methodology. `DEC-014` supplies the accepted design for the
-   three Wave 1 families. CP05-A and CP05-B are complete after PR #16; CP05-B
-   validates the research harness and software oracles only. CP05-C and CP05-D
-   remain NOT_STARTED, so calibration, power, method selection, holdout results
-   and production suitability remain unresolved.
+   three Wave 1 families. CP05-A and CP05-B are complete after PR #17; CP05-B
+   validates the research harness and software oracles only. The CP05-D public
+   namespace commitment is deposited, so CP05-C is authorized to start, but
+   CP05-C execution and CP05-D remain NOT_STARTED. Calibration, power, method
+   selection, holdout results and production suitability remain unresolved.
 6. Optimization convergence policy.
 7. Boundary estimates.
 8. Discrete-family estimation rules.

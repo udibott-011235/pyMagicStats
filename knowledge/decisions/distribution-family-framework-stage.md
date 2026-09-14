@@ -1,7 +1,7 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP05-B — COMPLETE / GOVERNANCE_CLOSED`
+- **Checkpoint actual:** `CP05-C0 — HOLDOUT_COMMITMENT_DEPOSITED / EXECUTION_NOT_STARTED`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico de apertura (CP01):** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
@@ -21,6 +21,8 @@
 - **Baseline de CP05-B:** `main@5eb179be578594aa900a29bf5ae2f5540e05ffa2`
 - **Rama de CP05-B:** `feature/distribution-family-framework-cp05-b-harness`
 - **Integración de CP05-B:** PR #16, `main@9fac41a38ed6583356b0e305a856dca7a3096530`
+- **Cierre de gobernanza CP05-B:** PR #17, `main@c8df1bdab55aabf10e048e31aed61fd0d09cb5f6`
+- **Rama CP05-C0:** `docs/cp05-c-holdout-commitment`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación:** `implementation-engineering`
@@ -45,11 +47,11 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | CP02 — Continuous distribution core | `COMPLETE` | Implementación `e9ef63b…`, `ADVERSARIAL_PASS` e integración mediante PR #8 en `main@aa5723d…` |
 | CP03 — Discrete distribution core | `COMPLETE` | Implementación `4f7fa09…` y PR head `a1e4d61…` con auditorías `ADVERSARIAL_PASS`; integración mediante PR #10 en `main@28b57a2…` |
 | CP04 — Wave 1 fitting | `COMPLETE` | Gates CP04-A–D aceptados; implementación `6e92ef20…`, `ADVERSARIAL_PASS`, PR #12 y cierre de gobernanza en EV-012 |
-| CP05 | `IN_PROGRESS` | CP05-A y CP05-B completos; CP05-C y CP05-D no iniciados |
+| CP05 | `IN_PROGRESS` | CP05-A y CP05-B completos; commitment depositado; CP05-C autorizado pero no ejecutado; CP05-D no iniciado |
 | CP05-A — Contract, risk and preregistration | `COMPLETE` | DEC-014/EV-013 aceptados, auditorías PASS, PR #14 y gobernanza cerrada mediante PR #15 |
 | CP05-B — Reproducible harness and software oracles | `COMPLETE` | Candidato `75529e4…`, auditoría adversarial PASS, finding cerrado, PR #16 y gobernanza cerrada; sólo corrección de software |
-| CP05-C — Exploratory calibration and performance | `NOT_STARTED` | Requiere harness validado y autorización posterior |
-| CP05-D — Confirmatory holdout and adversarial audit | `NOT_STARTED` | Requiere selección congelada, compromiso de semilla y autorización posterior |
+| CP05-C — Exploratory calibration and performance | `AUTHORIZED_TO_START` | Gate de commitment satisfecho; ejecución experimental aún no iniciada |
+| CP05-D — Confirmatory holdout and adversarial audit | `NOT_STARTED` | Commitment depositado; requiere selección congelada y autorización posterior |
 | CP06 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP07 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
 | CP08 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -97,6 +99,11 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 - Evidencia de implementación, auditoría e integración: [EV-014](../evidence/distribution-family-framework-cp05-preregistration.md#cp05-b-software-harness-closure--2026-09-13)
 - Rama de implementación integrada: `BR-027`
 - Rama documental de cierre CP05-B: `BR-028`
+
+## Artefactos de CP05-C0
+
+- Commitment público y estado del gate: [EV-015](../evidence/distribution-family-framework-cp05-preregistration.md#cp05-c0-holdout-commitment-registration--2026-09-13)
+- Rama documental del commitment: `BR-029`
 
 ## Alcance autorizado
 
@@ -171,8 +178,9 @@ integración está `COMPLETE` mediante PR #6 en
 `4f7fa09…` y su cierre de gobernanza están integrados mediante PR #10 y
 PR #11. CP04 está `COMPLETE`, con implementación e integración completas y
 gobernanza cerrada según EV-012 y PR #13. CP05-A y CP05-B están `COMPLETE` con
-gobernanza `CLOSED` según DEC-014, EV-013 y EV-014; CP05-C, CP05-D y CP06–CP08
-permanecen `NOT_STARTED`.
+gobernanza `CLOSED` según DEC-014, EV-013 y EV-014. EV-015 registra el
+commitment CP05-D depositado: CP05-C está `AUTHORIZED_TO_START` con ejecución
+`NOT_STARTED`; CP05-D y CP06–CP08 permanecen `NOT_STARTED`.
 
 ## Apertura autorizada de CP02
 
@@ -389,3 +397,19 @@ restringidos de Windows puede ser necesario indicar `--basetemp`.
 BR-028 abre desde el merge exacto con árbol limpio y cero commits únicos. Esta
 rama materializa sólo el cierre documental y queda pendiente de publicación y
 revisión mediante autorización separada. No inicia CP05-C.
+
+## Integración de BR-028 y apertura CP05-C0 — 2026-09-13
+
+PR #17 integró el cierre documental CP05-B mediante el merge commit
+`c8df1bdab55aabf10e048e31aed61fd0d09cb5f6`, con primer parent
+`9fac41a38ed6583356b0e305a856dca7a3096530`, segundo parent
+`00c48edcb107089a314a43e55f31c50b68bf303e` y tree
+`dac6130bcbb1c7271593f0f278b8d73a20e72d09`. BR-028 queda archivada,
+fully-contained e integrada; su rama fuente permanece preservada.
+
+BR-029 abre desde ese `main` exacto para registrar únicamente el commitment
+SHA-256 público de CP05-D. El secreto permanece fuera del repositorio, no fue
+divulgado ni accedido. El gate deja CP05-C `AUTHORIZED_TO_START`, pero
+`CP05_C_EXECUTION=NOT_STARTED`; no se ejecutaron `R_PREFLIGHT`, simulación,
+calibración, potencia o selección. CP05-D permanece `NOT_STARTED` y CP05 sigue
+`IN_PROGRESS`.

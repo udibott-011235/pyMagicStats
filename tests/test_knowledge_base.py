@@ -38,6 +38,7 @@ EXPECTED_BRANCH_NAMES = {
     "docs/distribution-family-framework-cp05-a-post-merge",
     "feature/distribution-family-framework-cp05-b-harness",
     "docs/close-cp05-b-governance",
+    "docs/cp05-c-holdout-commitment",
 }
 
 EXPECTED_LIFECYCLE = {
@@ -68,7 +69,8 @@ EXPECTED_LIFECYCLE = {
     "BR-025": ("archived", "fully_contained", "merged"),
     "BR-026": ("archived", "fully_contained", "merged"),
     "BR-027": ("archived", "fully_contained", "merged"),
-    "BR-028": ("under_review", "same_head", "pending"),
+    "BR-028": ("archived", "fully_contained", "merged"),
+    "BR-029": ("under_review", "same_head", "pending"),
 }
 
 
@@ -137,7 +139,7 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert registry["canonical_branch"] == "main"
     assert main["status"] == "accepted"
     assert main["branch"]["relation_to_main"] == "canonical"
-    assert main["branch"]["head_sha_at_decision"] == "9fac41a38ed6583356b0e305a856dca7a3096530"
+    assert main["branch"]["head_sha_at_decision"] == "c8df1bdab55aabf10e048e31aed61fd0d09cb5f6"
     assert main["branch"]["merge_base"] == main["branch"]["head_sha_at_decision"]
     assert (main["branch"]["ahead_of_main"], main["branch"]["behind_main"]) == (0, 0)
     evidence_path = "knowledge/evidence/distribution-family-framework-cp04-evidence.md"
@@ -188,16 +190,28 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert cp05b["merged_via"] == "PR #16 / merge commit 9fac41a38ed6583356b0e305a856dca7a3096530"
     cp05b_closure = _record(registry, "BR-028")["branch"]
     assert cp05b_closure["parent_branch"] == "main"
-    assert cp05b_closure["parent_sha"] == main["branch"]["head_sha_at_decision"]
-    assert cp05b_closure["head_sha_at_decision"] == cp05b_closure["parent_sha"]
-    assert cp05b_closure["merge_base"] == cp05b_closure["parent_sha"]
-    assert (cp05b_closure["ahead_of_main"], cp05b_closure["behind_main"]) == (0, 0)
+    assert cp05b_closure["parent_sha"] == "9fac41a38ed6583356b0e305a856dca7a3096530"
+    assert cp05b_closure["head_sha_at_decision"] == "00c48edcb107089a314a43e55f31c50b68bf303e"
+    assert cp05b_closure["merge_base"] == cp05b_closure["head_sha_at_decision"]
+    assert (cp05b_closure["ahead_of_main"], cp05b_closure["behind_main"]) == (0, 1)
     assert cp05b_closure["unique_commits"] == []
-    assert "merged_via" not in cp05b_closure
-    assert "pr_number" not in cp05b_closure
+    assert cp05b_closure["merged_via"] == (
+        "PR #17 / merge commit c8df1bdab55aabf10e048e31aed61fd0d09cb5f6"
+    )
+    assert cp05b_closure["pr_number"] == 17
+    cp05c0 = _record(registry, "BR-029")["branch"]
+    assert cp05c0["parent_branch"] == "main"
+    assert cp05c0["parent_sha"] == main["branch"]["head_sha_at_decision"]
+    assert cp05c0["head_sha_at_decision"] == cp05c0["parent_sha"]
+    assert cp05c0["merge_base"] == cp05c0["parent_sha"]
+    assert (cp05c0["ahead_of_main"], cp05c0["behind_main"]) == (0, 0)
+    assert cp05c0["unique_commits"] == []
+    assert "merged_via" not in cp05c0
+    assert "pr_number" not in cp05c0
     assert _record(registry, "DEC-014")["status"] == "accepted"
     assert _record(registry, "EV-013")["status"] == "accepted"
     assert _record(registry, "EV-014")["status"] == "accepted"
+    assert _record(registry, "EV-015")["status"] == "accepted"
     assert _record(registry, "DEC-014")["path"] == (
         "knowledge/decisions/distribution-family-framework-cp05-contract.md"
     )
@@ -216,8 +230,9 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
     assert "ROLE_DRIFT" in evidence["scope"]
     assert "17bf06639ad84a18c26865b46cdecf26dc3ab9ed" in evidence["scope"]
     assert "draft excluded from candidate genealogy" in evidence["scope"]
-    assert "separate authorization" in cp05b_closure["next_action"]
-    assert "No PR, merge, CP05-C, calibration or holdout access" in cp05b_closure["next_action"]
+    assert "BR-029" in cp05b_closure["next_action"]
+    assert "separate authorization" in cp05c0["next_action"]
+    assert "No push, PR, merge, simulation, calibration, method selection or holdout access" in cp05c0["next_action"]
     evidence_text = (ROOT / evidence["path"]).read_text(encoding="utf-8")
     assert "noncanonical_draft_in_genealogy = false" in evidence_text
     assert "TECHNICAL_DESIGN_DISPOSITION=USABLE" in evidence_text
@@ -250,6 +265,27 @@ def test_lifecycle_decisions_and_gate2_supersession_are_materialized_exactly():
         "REGISTRY_VALIDATOR=PASS", "COMPILEALL=PASS", "DIFF_CHECK=PASS",
     ):
         assert evidence_item in closure
+    commitment = evidence_text.split("## CP05-C0 holdout commitment registration", 1)[1]
+    for state in (
+        "CP05_D_NAMESPACE_COMMITMENT_SHA256=0d15aa19ff174fba06e3b06817e288b78e6168d4a775061cd4766e94c3c1896b",
+        "COMMITMENT_STATUS=DEPOSITED", "HOLDOUT_COMMITMENT=DEPOSITED",
+        "SECRET_STORED_OFF_REPO=YES",
+        "SECRET_DISCLOSED=NO", "SECRET_ACCESSED_BY_CORTEX=NO",
+        "HOLDOUT_SECRET_ACCESSED=NO", "HOLDOUT_SECRET_DISCLOSED=NO",
+        "HOLDOUT_EXECUTED=NO", "CP05_C=AUTHORIZED_TO_START",
+        "CP05_C_EXECUTION=NOT_STARTED", "CP05_D=NOT_STARTED",
+        "CP05_OVERALL=IN_PROGRESS", "R_PREFLIGHT_EXECUTED=NO",
+        "CP05_C_SIMULATION_EXECUTED=NO", "CALIBRATION_EXECUTED=NO",
+        "POWER_ANALYSIS_EXECUTED=NO", "METHOD_SELECTED=NO",
+    ):
+        assert state in commitment
+    namespace_assignments = [
+        line for line in commitment.splitlines() if line.startswith("CP05_D_NAMESPACE")
+    ]
+    assert namespace_assignments == [
+        "CP05_D_NAMESPACE_COMMITMENT_SHA256=0d15aa19ff174fba06e3b06817e288b78e6168d4a775061cd4766e94c3c1896b"
+    ]
+    assert "PENDING_OWNER" not in commitment
     assert knowledge["status"] == "archived"
     assert knowledge["branch"]["integration_state"] == "merged"
     assert knowledge["branch"]["merged_via"] == "PR #1"
