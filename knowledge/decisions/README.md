@@ -18,7 +18,8 @@ Decisiones iniciales indexadas:
 - `DEC-011`: contrato ejecutable del core continuo para CP02.
 - `DEC-012`: contrato ejecutable congelado del core discreto para CP03.
 - `DEC-013`: contrato ejecutable congelado de fitting Wave 1 para CP04.
-- `DEC-014`: contrato y prerregistración GOF para familias Wave 1 ajustadas en
-  CP05-A (aceptado; cierre post-merge proyectado en BR-026).
+- `DEC-014`: contrato y prerregistración GOF para familias Wave 1 ajustadas;
+  CP05-A y CP05-B están completos. CP05-B certifica sólo corrección de software,
+  no calibración, potencia, selección de método ni idoneidad de producción.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

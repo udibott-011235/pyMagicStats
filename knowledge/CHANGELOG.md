@@ -1,5 +1,22 @@
 # Historial de la base de conocimiento
 
+## 2026-09-13 — CP05-B post-merge governance closure
+
+- PR #15 integró el cierre de CP05-A en `main@5eb179be578594aa900a29bf5ae2f5540e05ffa2`.
+- PR #16 integró el candidato CP05-B auditado
+  `75529e4415558c1abef6166432ebbafafd00a812` mediante el merge commit
+  `9fac41a38ed6583356b0e305a856dca7a3096530`; el tree integrado es
+  `71f7b72fedee0fd4dbcdd1e41f208d53056fdb2f` y la rama fuente se preserva.
+- `FINDING-CP05B-001` queda cerrado tras remediación y reauditoría independiente;
+  el dictamen técnico es PASS dentro de `SOFTWARE_CORRECTNESS_ONLY`.
+- CP05-B integración COMPLETE, gobernanza CLOSED y overall COMPLETE. CP05
+  permanece IN_PROGRESS; CP05-C, CP05-D y CP06–CP08 permanecen NOT_STARTED.
+- No se validan calibración, control de error tipo I, potencia, selección de
+  método o idoneidad de producción. No se accedió ni generó secreto holdout.
+- La necesidad de bypass de reglas de rama durante la integración permanece
+  deuda procedural, no estadística. En Windows restringido, pytest puede
+  requerir `--basetemp` explícito.
+
 ## 2026-09-13 — CP05-A post-merge governance closure
 
 - PR #14 integró el candidato auditado `2caf234…` en `main@3d9db61…`,

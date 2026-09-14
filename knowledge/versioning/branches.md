@@ -8,7 +8,9 @@ post-merge CP02 mediante `BR-020` materializados: `2026-09-06`; apertura CP03
 y evidencia adversarial pre-merge mediante `BR-021`, y cierre post-merge CP03
 mediante `BR-022`: `2026-09-07`; apertura CP04 Wave 1 fitting mediante
 `BR-023`: `2026-09-08`; cierre CP04 y apertura `BR-024`: `2026-09-10`;
-cierre canónico de CP04 y apertura CP05-A mediante `BR-025`: `2026-09-12`.
+cierre canónico de CP04 y apertura CP05-A mediante `BR-025`: `2026-09-12`;
+cierre CP05-A mediante `BR-026`, integración CP05-B mediante `BR-027` y
+apertura de su cierre documental mediante `BR-028`: `2026-09-13`.
 Consulte `EV-003`
 para la evidencia Git reproducible inicial, `EV-005` para la integración de
 Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
@@ -16,7 +18,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `3d9db61cf7414ce7fe3d94819b5f9e005fff527f` | CP05-A integrado vía PR #14; revisar cierre BR-026 |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `9fac41a38ed6583356b0e305a856dca7a3096530` | CP05-B integrado vía PR #16; revisar cierre BR-028 |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -41,7 +43,9 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-023 | `feature/distribution-family-framework-cp04-wave1-fitting` | `archived` | `fully_contained` | `merged` | 0/1 | `6e92ef20aca375878964321596ba525539433f79` | integrada vía PR #12; preservar rama remota |
 | BR-024 | `docs/distribution-family-framework-cp04-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `9da985d1770ac2ec6bb542e2233d6e882e56d1c2` | integrada vía PR #13; preservar rama remota |
 | BR-025 | `feature/distribution-family-framework-cp05-gof-calibration` | `archived` | `fully_contained` | `merged` | 0/1 | `2caf234cf1bfa8c66dd0317986803ff443ca3194` | integrada vía PR #14; preservar rama fuente |
-| BR-026 | `docs/distribution-family-framework-cp05-a-post-merge` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `3d9db61cf7414ce7fe3d94819b5f9e005fff527f` | auditoría independiente del cierre; sin CP05-B ni publicación |
+| BR-026 | `docs/distribution-family-framework-cp05-a-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `ded24ff19bc0ab515bdd9a3442879d005356f867` | integrada vía PR #15; preservar rama fuente |
+| BR-027 | `feature/distribution-family-framework-cp05-b-harness` | `archived` | `fully_contained` | `merged` | 0/1 | `75529e4415558c1abef6166432ebbafafd00a812` | integrada vía PR #16; preservar rama fuente |
+| BR-028 | `docs/close-cp05-b-governance` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `9fac41a38ed6583356b0e305a856dca7a3096530` | solicitar autorización separada para publicar el cierre; no CP05-C |
 
 ### Cronología de BR-017
 
@@ -268,3 +272,36 @@ Proyecta el cierre de CP05-A al integrarse y permanece under_review.
 Siguiente acción: auditoría independiente de Antigravity del SHA exacto del
 cierre, interpretación de ChatGPT y decisión separada del Project Owner.
 No CP05-B, push, PR ni merge. Los demás lifecycle, incluido BR-018, se conservan.
+
+### Integración de BR-026, BR-027 y apertura de BR-028 — 2026-09-13
+
+El cierre CP05-A `ded24ff19bc0ab515bdd9a3442879d005356f867` fue integrado
+mediante PR #15 en `main@5eb179be578594aa900a29bf5ae2f5540e05ffa2`.
+Sus parents son `3d9db61cf7414ce7fe3d94819b5f9e005fff527f` y el candidato;
+el tree es `78fac91f0219a18ca6b0f85e0e1710a7d39035a0`. BR-026 queda
+archived / fully_contained / merged.
+
+BR-027 materializó el harness CP05-B. El candidato inicial `b6738dd…` recibió
+`FINDING-CP05B-001`; el candidato remediado
+`75529e4415558c1abef6166432ebbafafd00a812` fue reaudited PASS y el finding
+quedó CLOSED. PR #16 lo integró mediante el merge commit
+`9fac41a38ed6583356b0e305a856dca7a3096530`, con primer parent
+`5eb179be578594aa900a29bf5ae2f5540e05ffa2`, segundo parent el candidato y
+tree `71f7b72fedee0fd4dbcdd1e41f208d53056fdb2f`. No hubo commits extra y la
+rama fuente se preserva. BR-027 queda archived / fully_contained / merged.
+
+El merge usó el bypass autorizado exclusivamente para PR #16. GitHub mostró:
+
+```text
+Cannot update this protected ref.
+At least 1 approving review is required by reviewers with write access.
+Cannot change this locked branch
+```
+
+El ruleset no fue modificado. Esta deuda es procedural, no estadística.
+
+BR-028 abre desde `main@9fac41a38ed6583356b0e305a856dca7a3096530`, con árbol
+limpio y cero commits únicos. `head_sha_at_decision`, `parent_sha` y
+`merge_base` conservan ese snapshot sin autorreferenciar el commit documental.
+Su único alcance es el cierre de gobernanza CP05-B. CP05-C, calibración y
+holdout permanecen fuera de autorización.

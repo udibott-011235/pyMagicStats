@@ -1,7 +1,7 @@
 # STAGE-DIST-FAMILIES-001 — Distribution Family Framework
 
 - **Estado general:** `in_progress`
-- **Checkpoint actual:** `CP05-A — COMPLETE / GOVERNANCE_CLOSED`
+- **Checkpoint actual:** `CP05-B — COMPLETE / GOVERNANCE_CLOSED`
 - **Fecha de apertura:** 2026-09-06
 - **Baseline canónico de apertura (CP01):** `origin/main` @ `402e4601df460811779b3238c2526ac12f463a67`
 - **Rama de integración de CP01 (`merged` / `archived`):** `feature/distribution-family-framework-cp01`
@@ -17,7 +17,10 @@
 - **Baseline de integración de CP04:** `main@2b6e1263b8489592030b0838cd3851f193fbfd7f`
 - **Rama de cierre post-merge de CP04:** `docs/distribution-family-framework-cp04-post-merge`
 - **Baseline canónico tras cierre de CP04:** `main@6409717ebdfdd34d41d41c36983dda82de935e6b`
-- **Rama de CP05:** `feature/distribution-family-framework-cp05-gof-calibration`
+- **Rama de CP05-A:** `feature/distribution-family-framework-cp05-gof-calibration`
+- **Baseline de CP05-B:** `main@5eb179be578594aa900a29bf5ae2f5540e05ffa2`
+- **Rama de CP05-B:** `feature/distribution-family-framework-cp05-b-harness`
+- **Integración de CP05-B:** PR #16, `main@9fac41a38ed6583356b0e305a856dca7a3096530`
 - **Owner de decisión:** `decision-owner`
 - **Arquitectura:** `statistical-software-architecture`
 - **Implementación:** `implementation-engineering`
@@ -42,9 +45,9 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 | CP02 — Continuous distribution core | `COMPLETE` | Implementación `e9ef63b…`, `ADVERSARIAL_PASS` e integración mediante PR #8 en `main@aa5723d…` |
 | CP03 — Discrete distribution core | `COMPLETE` | Implementación `4f7fa09…` y PR head `a1e4d61…` con auditorías `ADVERSARIAL_PASS`; integración mediante PR #10 en `main@28b57a2…` |
 | CP04 — Wave 1 fitting | `COMPLETE` | Gates CP04-A–D aceptados; implementación `6e92ef20…`, `ADVERSARIAL_PASS`, PR #12 y cierre de gobernanza en EV-012 |
-| CP05 | `IN_PROGRESS` | CP05-A completo; CP05-B–D no iniciados |
-| CP05-A — Contract, risk and preregistration | `COMPLETE` | DEC-014/EV-013 aceptados, auditorías PASS, PR #14 y cierre documental proyectado; sin producción ni calibración |
-| CP05-B — Reproducible harness and software oracles | `NOT_STARTED` | Requiere autorización posterior y aceptación de CP05-A |
+| CP05 | `IN_PROGRESS` | CP05-A y CP05-B completos; CP05-C y CP05-D no iniciados |
+| CP05-A — Contract, risk and preregistration | `COMPLETE` | DEC-014/EV-013 aceptados, auditorías PASS, PR #14 y gobernanza cerrada mediante PR #15 |
+| CP05-B — Reproducible harness and software oracles | `COMPLETE` | Candidato `75529e4…`, auditoría adversarial PASS, finding cerrado, PR #16 y gobernanza cerrada; sólo corrección de software |
 | CP05-C — Exploratory calibration and performance | `NOT_STARTED` | Requiere harness validado y autorización posterior |
 | CP05-D — Confirmatory holdout and adversarial audit | `NOT_STARTED` | Requiere selección congelada, compromiso de semilla y autorización posterior |
 | CP06 | `NOT_STARTED` | Requiere autorización y contrato posteriores |
@@ -87,6 +90,13 @@ ajustes, nuevas evaluaciones GOF ni selección automática.
 - Evidencia de apertura y riesgo: [`../evidence/distribution-family-framework-cp05-preregistration.md`](../evidence/distribution-family-framework-cp05-preregistration.md)
 - Rama integrada de CP05-A: `BR-025`
 - Rama documental de cierre CP05-A: `BR-026`
+
+## Artefactos de CP05-B
+
+- Contrato preservado: [`distribution-family-framework-cp05-contract.md`](distribution-family-framework-cp05-contract.md)
+- Evidencia de implementación, auditoría e integración: [EV-014](../evidence/distribution-family-framework-cp05-preregistration.md#cp05-b-software-harness-closure--2026-09-13)
+- Rama de implementación integrada: `BR-027`
+- Rama documental de cierre CP05-B: `BR-028`
 
 ## Alcance autorizado
 
@@ -154,13 +164,15 @@ nuevas familias.
 
 ## Estado de cierre arquitectónico de CP01
 
-CP01 está `COMPLETE` y su integración está `COMPLETE` mediante PR #6 en
+Este resumen refleja el estado vigente del stage. CP01 está `COMPLETE` y su
+integración está `COMPLETE` mediante PR #6 en
 `main@46f827dd107aa9e6f940f0de085fbb91075ff049`. El stage general permanece
 `in_progress`; CP02 y CP03 están `COMPLETE`, la implementación CP03 auditada
 `4f7fa09…` y su cierre de gobernanza están integrados mediante PR #10 y
 PR #11. CP04 está `COMPLETE`, con implementación e integración completas y
-gobernanza cerrada según EV-012 y PR #13; CP05-A está `COMPLETE` bajo la proyección de cierre de
-`DEC-014`, mientras CP05-B–D y CP06–CP08 permanecen `NOT_STARTED`.
+gobernanza cerrada según EV-012 y PR #13. CP05-A y CP05-B están `COMPLETE` con
+gobernanza `CLOSED` según DEC-014, EV-013 y EV-014; CP05-C, CP05-D y CP06–CP08
+permanecen `NOT_STARTED`.
 
 ## Apertura autorizada de CP02
 
@@ -327,7 +339,7 @@ proyecciones de gobernanza y tests de Knowledge Base. La superficie pública,
 los módulos `pyMagicStat/**`, los runners `experiments/**` y las pruebas de
 producción permanecen sin cambios.
 
-## Cierre post-merge de CP05-A — 2026-09-13
+## Cierre post-merge de CP05-A — 2026-09-13 (histórico)
 
 Este documento proyecta los estados efectivos al integrar el cierre BR-026;
 la rama de cierre sigue under_review/pending. DEC-014 y EV-013 se proyectan
@@ -345,8 +357,35 @@ permanece excluido de la genealogía; la rama fuente se conserva.
 CP05-B–D y CP06–08 permanecen NOT_STARTED. Este cierre no valida GOF ejecutable,
 precisión numérica, invariancia RNG, rendimiento, error empírico ni potencia.
 
-## Siguiente acción
+## Siguiente acción al cierre de CP05-A (histórica)
 
 Antigravity debe auditar independientemente el SHA exacto del cierre BR-026;
 después ChatGPT interpreta el informe y el Project Owner decide por separado.
 No se autoriza CP05-B, push, PR ni merge.
+
+## Cierre post-merge de CP05-B — 2026-09-13
+
+El párrafo anterior registra el estado histórico al cierre de CP05-A. Después,
+PR #15 integró BR-026 mediante `main@5eb179be578594aa900a29bf5ae2f5540e05ffa2`.
+CP05-B se implementó en BR-027 y su candidato final auditado
+`75529e4415558c1abef6166432ebbafafd00a812` fue integrado por PR #16 mediante
+`main@9fac41a38ed6583356b0e305a856dca7a3096530`, con tree
+`71f7b72fedee0fd4dbcdd1e41f208d53056fdb2f`. La rama fuente permanece
+preservada. `FINDING-CP05B-001` está CLOSED y el dictamen adversarial es PASS.
+
+CP05-A integración COMPLETE, gobernanza CLOSED y overall COMPLETE. CP05-B
+integración COMPLETE, gobernanza CLOSED y overall COMPLETE. CP05 permanece
+IN_PROGRESS; CP05-C, CP05-D y CP06–CP08 permanecen NOT_STARTED.
+
+El alcance de la afirmación CP05-B es exclusivamente
+`SOFTWARE_CORRECTNESS_ONLY`. No se validan calibración, control de error tipo I,
+potencia, selección de método o idoneidad de producción. No se ejecutaron
+CP05-C ni CP05-D; no se accedió al holdout ni se generó su secreto.
+
+La integración de PR #16 requirió bypass de reglas de rama autorizado sólo
+para ese PR; la deuda permanece procedural y no estadística. En entornos pytest
+restringidos de Windows puede ser necesario indicar `--basetemp`.
+
+BR-028 abre desde el merge exacto con árbol limpio y cero commits únicos. Esta
+rama materializa sólo el cierre documental y queda pendiente de publicación y
+revisión mediante autorización separada. No inicia CP05-C.
