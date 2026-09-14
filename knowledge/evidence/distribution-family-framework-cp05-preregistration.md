@@ -1,9 +1,9 @@
 # EV-013 — CP05-A GOF architecture baseline and preregistration
 
-- **Estado:** `accepted`; CP05-A y CP05-B cerrados
+- **Estado:** `accepted`; CP05-A y CP05-B cerrados; CP05-C0 commitment depositado
 - **Fecha:** 2026-09-12
 - **Stage:** `STAGE-DIST-FAMILIES-001`
-- **Checkpoint vigente:** `CP05-B — COMPLETE / GOVERNANCE_CLOSED`
+- **Checkpoint vigente:** `CP05-C0 — HOLDOUT_COMMITMENT_DEPOSITED / EXECUTION_NOT_STARTED`
 - **Repositorio:** `udibott-011235/pyMagicStats`
 - **Baseline:** `main` @ `6409717ebdfdd34d41d41c36983dda82de935e6b`
 - **Rama:** `feature/distribution-family-framework-cp05-gof-calibration`
@@ -362,3 +362,57 @@ environments may require explicit `--basetemp`.
 
 BR-028 records the clean opening snapshot for this documentary closure. No
 CP05-C implementation or execution is authorized by this state change.
+
+## CP05-C0 holdout commitment registration — 2026-09-13
+
+### Public commitment and secrecy boundary
+
+The Project Owner certified that the secret namespace is stored off-repository
+and undisclosed. Cortex received, recorded and validated only this public
+commitment digest:
+
+```text
+CP05_D_NAMESPACE_COMMITMENT_SHA256=0d15aa19ff174fba06e3b06817e288b78e6168d4a775061cd4766e94c3c1896b
+COMMITMENT_STATUS=DEPOSITED
+HOLDOUT_COMMITMENT=DEPOSITED
+SECRET_STORED_OFF_REPO=YES
+SECRET_DISCLOSED=NO
+SECRET_ACCESSED_BY_CORTEX=NO
+HOLDOUT_SECRET_ACCESSED=NO
+HOLDOUT_SECRET_DISCLOSED=NO
+HOLDOUT_EXECUTED=NO
+```
+
+No plaintext CP05-D namespace was available, requested, inferred, searched for,
+reconstructed, generated or stored. The digest is a commitment record only; it
+does not reveal or validate the secret namespace.
+
+### Current gate state
+
+```text
+CP05_A=COMPLETE
+CP05_B=COMPLETE
+CP05_C=AUTHORIZED_TO_START
+CP05_C_EXECUTION=NOT_STARTED
+CP05_D=NOT_STARTED
+CP05_OVERALL=IN_PROGRESS
+R_PREFLIGHT_EXECUTED=NO
+CP05_C_SIMULATION_EXECUTED=NO
+CALIBRATION_EXECUTED=NO
+POWER_ANALYSIS_EXECUTED=NO
+METHOD_SELECTED=NO
+```
+
+The deposited commitment satisfies the DEC-014 precondition gate for a future,
+separately authorized CP05-C execution. CP05-C has not run any experiment and
+CP05-D remains sealed and `NOT_STARTED`. No statistical claim is created by
+this documentary action.
+
+### Repository identity and scope
+
+BR-029 opened cleanly from
+`main@c8df1bdab55aabf10e048e31aed61fd0d09cb5f6` after PR #17 closed CP05-B
+governance. This action modifies governance documentation and Knowledge Base
+tests only. It does not modify `pyMagicStat/**` or
+`experiments/distribution_gof/**` and does not execute simulation, calibration,
+power analysis, method selection or holdout work.

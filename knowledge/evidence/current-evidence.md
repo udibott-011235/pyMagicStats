@@ -295,7 +295,8 @@ Fuente canónica:
 - **Límites:** CI remoto sin statuses/checks; sólo validación documental
   reproducida. Firma PGP presente, GitHub reporta verificación; no verificación
   criptográfica local. Bypass automático divulgado y aceptado como evento
-  procedural; alineación de ruleset separada. Holdout PENDING_OWNER.
+  procedural; alineación de ruleset separada. En ese cierre histórico de
+  EV-013, el holdout estaba PENDING_OWNER.
 
 ## EV-014 — CP05-B research harness: software audit and integration
 
@@ -320,6 +321,25 @@ Fuente canónica:
 - **Notas no bloqueantes:** el bypass de reglas de rama de PR #16 permanece
   deuda procedural, no estadística; Windows pytest restringido puede requerir
   `--basetemp` explícito.
+
+Fuente canónica:
+`knowledge/evidence/distribution-family-framework-cp05-preregistration.md`.
+
+## EV-015 — CP05-C0 public holdout commitment gate
+
+- **Estado:** `accepted` como registro documental local pendiente de publicación.
+- **Baseline:** `main@c8df1bdab55aabf10e048e31aed61fd0d09cb5f6`.
+- **Commitment público:**
+  `0d15aa19ff174fba06e3b06817e288b78e6168d4a775061cd4766e94c3c1896b`.
+- **Secreto:** almacenado fuera del repositorio; no divulgado ni accedido por
+  Cortex; no ejecutado en holdout.
+- **Demuestra:** el precondition gate de commitment requerido por DEC-014 para
+  comenzar CP05-C quedó satisfecho.
+- **No demuestra:** ejecución CP05-C, calibración, control de error tipo I,
+  potencia, selección de método, idoneidad de producción o ejecución CP05-D.
+- **Estado vigente:** CP05-A y CP05-B `COMPLETE`; CP05-C
+  `AUTHORIZED_TO_START` con ejecución `NOT_STARTED`; CP05-D `NOT_STARTED`;
+  CP05 `IN_PROGRESS`.
 
 Fuente canónica:
 `knowledge/evidence/distribution-family-framework-cp05-preregistration.md`.

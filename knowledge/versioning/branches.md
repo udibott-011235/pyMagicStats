@@ -9,8 +9,8 @@ y evidencia adversarial pre-merge mediante `BR-021`, y cierre post-merge CP03
 mediante `BR-022`: `2026-09-07`; apertura CP04 Wave 1 fitting mediante
 `BR-023`: `2026-09-08`; cierre CP04 y apertura `BR-024`: `2026-09-10`;
 cierre canónico de CP04 y apertura CP05-A mediante `BR-025`: `2026-09-12`;
-cierre CP05-A mediante `BR-026`, integración CP05-B mediante `BR-027` y
-apertura de su cierre documental mediante `BR-028`: `2026-09-13`.
+cierre CP05-A mediante `BR-026`, integración CP05-B mediante `BR-027`, cierre
+documental mediante `BR-028` y apertura CP05-C0 mediante `BR-029`: `2026-09-13`.
 Consulte `EV-003`
 para la evidencia Git reproducible inicial, `EV-005` para la integración de
 Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
@@ -18,7 +18,7 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 
 | ID | Rama | Status | Relación | Integración | Ahead/behind | HEAD observado | Siguiente acción resumida |
 |---|---|---|---|---|---:|---|---|
-| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `9fac41a38ed6583356b0e305a856dca7a3096530` | CP05-B integrado vía PR #16; revisar cierre BR-028 |
+| BR-001 | `main` | `accepted` | `canonical` | `not_applicable` | 0/0 | `c8df1bdab55aabf10e048e31aed61fd0d09cb5f6` | gobernanza CP05-B integrada vía PR #17; revisar commitment BR-029 |
 | BR-002 | `audit/global-main-a0881c4` | `archived` | `fully_contained` | `not_applicable` | 0/8 | `a0881c479bcc0496f79d0f8477d53a41a91907d9` | conservar archivada |
 | BR-003 | `docs/project-knowledge-base` | `archived` | `fully_contained` | `merged` | 0/17 | `0a853ba4f25dd160bd8f182e221744280cd980a8` | integrada vía PR #1; conservar archivada |
 | BR-004 | `experiments/el-vs-t-calibration-harness` | `archived` | `fully_contained` | `merged` | 0/12 | `05bc7106cca40fafc64ea78433f637ddbdfe48c5` | conservar archivada |
@@ -45,7 +45,8 @@ Gate 2, `EV-007` para la apertura de CP01 del Distribution Family Framework y
 | BR-025 | `feature/distribution-family-framework-cp05-gof-calibration` | `archived` | `fully_contained` | `merged` | 0/1 | `2caf234cf1bfa8c66dd0317986803ff443ca3194` | integrada vía PR #14; preservar rama fuente |
 | BR-026 | `docs/distribution-family-framework-cp05-a-post-merge` | `archived` | `fully_contained` | `merged` | 0/1 | `ded24ff19bc0ab515bdd9a3442879d005356f867` | integrada vía PR #15; preservar rama fuente |
 | BR-027 | `feature/distribution-family-framework-cp05-b-harness` | `archived` | `fully_contained` | `merged` | 0/1 | `75529e4415558c1abef6166432ebbafafd00a812` | integrada vía PR #16; preservar rama fuente |
-| BR-028 | `docs/close-cp05-b-governance` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `9fac41a38ed6583356b0e305a856dca7a3096530` | solicitar autorización separada para publicar el cierre; no CP05-C |
+| BR-028 | `docs/close-cp05-b-governance` | `archived` | `fully_contained` | `merged` | 0/1 | `00c48edcb107089a314a43e55f31c50b68bf303e` | integrada vía PR #17; preservar rama fuente |
+| BR-029 | `docs/cp05-c-holdout-commitment` | `under_review` | `same_head` al abrir | `pending` | 0/0 al abrir | `c8df1bdab55aabf10e048e31aed61fd0d09cb5f6` | solicitar autorización separada para publicar el commitment; sin ejecución CP05-C/CP05-D |
 
 ### Cronología de BR-017
 
@@ -305,3 +306,20 @@ limpio y cero commits únicos. `head_sha_at_decision`, `parent_sha` y
 `merge_base` conservan ese snapshot sin autorreferenciar el commit documental.
 Su único alcance es el cierre de gobernanza CP05-B. CP05-C, calibración y
 holdout permanecen fuera de autorización.
+
+### Integración de BR-028 y apertura de BR-029 — 2026-09-13
+
+El cierre CP05-B `00c48edcb107089a314a43e55f31c50b68bf303e` fue integrado
+mediante PR #17 en `main@c8df1bdab55aabf10e048e31aed61fd0d09cb5f6`.
+Sus parents son `9fac41a38ed6583356b0e305a856dca7a3096530` y el candidato;
+el tree es `dac6130bcbb1c7271593f0f278b8d73a20e72d09`. BR-028 queda
+archived / fully_contained / merged y su rama fuente se preserva. El merge usó
+el bypass autorizado exclusivamente para PR #17; el ruleset no fue modificado.
+
+BR-029 abre desde el `main@c8df1bd…` exacto, con árbol limpio y cero commits
+únicos. `head_sha_at_decision`, `parent_sha` y `merge_base` conservan ese
+snapshot de apertura sin autorreferenciar el futuro commit documental. Su único
+alcance es registrar el commitment SHA-256 público de CP05-D y proyectar el gate
+CP05-C0. El secreto permanece fuera del repositorio, no divulgado y no accedido.
+CP05-C queda autorizado para comenzar, pero su ejecución sigue `NOT_STARTED`;
+CP05-D permanece `NOT_STARTED`.

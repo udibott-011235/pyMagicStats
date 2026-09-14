@@ -1,5 +1,21 @@
 # Historial de la base de conocimiento
 
+## 2026-09-13 — CP05-C0 public holdout commitment gate
+
+- PR #17 integró el cierre de gobernanza CP05-B mediante
+  `main@c8df1bdab55aabf10e048e31aed61fd0d09cb5f6`; BR-028 queda archivada y su
+  rama fuente permanece preservada.
+- Se deposita exclusivamente el commitment SHA-256 público
+  `0d15aa19ff174fba06e3b06817e288b78e6168d4a775061cd4766e94c3c1896b`.
+  El secreto permanece almacenado fuera del repositorio, no divulgado y no
+  accedido por Cortex.
+- El precondition gate queda satisfecho: CP05-C pasa a
+  `AUTHORIZED_TO_START`, pero `CP05_C_EXECUTION=NOT_STARTED`; CP05-D permanece
+  `NOT_STARTED` y CP05 permanece `IN_PROGRESS`.
+- No se ejecutaron `R_PREFLIGHT`, simulación, calibración, potencia, selección
+  de método ni holdout. No se modifican producción, experimentos ni DEC-014.
+- BR-029 abre desde el baseline exacto para este único registro documental.
+
 ## 2026-09-13 — CP05-B post-merge governance closure
 
 - PR #15 integró el cierre de CP05-A en `main@5eb179be578594aa900a29bf5ae2f5540e05ffa2`.
