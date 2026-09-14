@@ -1,0 +1,13 @@
+{
+  "completed_configurations": 0,
+  "failed_configurations": [],
+  "schema_version": "cp05-c1-performance-preflight-v1",
+  "status": "BLOCKED_SOFTWARE",
+  "subprocess_failures": [
+    {
+      "configuration_id": "gamma_shape_0p25_scale_1__ad__b199",
+      "return_code": 1
+    }
+  ],
+  "work_item": "CP05-C1"
+}

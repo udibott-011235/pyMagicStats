@@ -1,0 +1,60 @@
+{
+  "branch": "experiments/cp05-c-performance-preflight",
+  "dependency_added": null,
+  "diagnosis": {
+    "failure_class": "OSError",
+    "failure_message": "GetProcessMemoryInfo failed",
+    "failure_stage": "GetProcessMemoryInfo invocation",
+    "function": "experiments.distribution_gof.cp05_c1_preflight._peak_working_set_bytes",
+    "mechanism": "ctypes.windll kernel32.GetCurrentProcess plus psapi.GetProcessMemoryInfo without explicit ctypes signatures",
+    "raw_call": {
+      "get_current_process_default_restype": "c_int",
+      "handle_decimal": -1,
+      "handle_hex_masked_64bit": "0xffffffffffffffff",
+      "last_error": 6,
+      "last_error_name": "ERROR_INVALID_HANDLE",
+      "return_value": 0
+    },
+    "root_cause": "On 64-bit Python 3.12 the untyped ctypes call treated GetCurrentProcess as returning c_int and passed the pseudo-handle to GetProcessMemoryInfo without a HANDLE argtype, producing ERROR_INVALID_HANDLE. The PROCESS_MEMORY_COUNTERS layout was not the failing component, and no owned process handle was opened.",
+    "typed_control_call": {
+      "get_current_process_restype": "wintypes.HANDLE",
+      "get_process_memory_info_argtypes": "HANDLE, POINTER(PROCESS_MEMORY_COUNTERS), DWORD",
+      "get_process_memory_info_restype": "wintypes.BOOL",
+      "last_error": 0,
+      "peak_working_set_bytes": 228249600,
+      "return_value": 1
+    }
+  },
+  "functional_probe": {
+    "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+    "includes_child_processes": false,
+    "includes_native_memory": true,
+    "metric": "PEAK_PROCESS_WORKING_SET",
+    "peak_memory_bytes": 227041280,
+    "peak_memory_mib": 216.5234375,
+    "scope": "current process since process start; child processes excluded",
+    "unit": "bytes"
+  },
+  "previous_blocked_artifacts": {
+    "path": "experiments/distribution_gof/cp05_c1_results",
+    "preserved_without_overwrite": true,
+    "root_digest_validation": "PASS",
+    "status": "BLOCKED_SOFTWARE"
+  },
+  "remediation": {
+    "memory_backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+    "module": "experiments.distribution_gof.resource_measurement",
+    "owned_handles_created": false,
+    "portable_fallback": "POSIX getrusage(RUSAGE_SELF).ru_maxrss with platform-specific byte normalization",
+    "statistical_code_changed": false
+  },
+  "schema_version": "cp05-c1-memory-remediation-v1",
+  "source_sha": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+  "validation": {
+    "full_preflight_resumed": false,
+    "memory_probe_tests": "11 passed in 5.72s",
+    "registry_validator": "PASS",
+    "research_tests": "54 passed in 205.70s"
+  },
+  "work_item": "CP05-C1-R1"
+}
