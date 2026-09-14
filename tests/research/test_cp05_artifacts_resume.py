@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from experiments.distribution_gof.artifacts import (
     ArtifactIntegrityError,
+    read_parquet_rows,
     read_checkpoint,
     resume_manifest,
     validate_artifact_digests,
@@ -16,10 +19,189 @@ from experiments.distribution_gof.artifacts import (
 )
 from experiments.distribution_gof.cost_preflight import estimate_cost
 from experiments.distribution_gof.manifest import canonical_json
-from experiments.distribution_gof.runner import RunnerHooks, run_manifest, run_outer_unit
+from experiments.distribution_gof.runner import (
+    RunOutput,
+    RunnerHooks,
+    run_manifest,
+    run_outer_unit,
+)
 from experiments.distribution_gof.statistics import StatisticEvaluation
 
 from ._helpers import manifest
+
+
+@pytest.fixture(scope="module")
+def parquet_source_output():
+    return run_manifest(manifest(raw_outer_range=(0, 1)))
+
+
+def _logical_jsonl_rows(path):
+    return [json.loads(line) for line in path.read_text().splitlines()]
+
+
+@pytest.mark.parametrize(
+    (
+        "family",
+        "null_type",
+        "canonical_parameters",
+        "reason_counts",
+        "fit_provenance",
+    ),
+    [
+        pytest.param(
+            "exponential", "simple", {"scale": "1"}, {}, None, id="continuous-simple"
+        ),
+        pytest.param(
+            "exponential",
+            "composite",
+            {"scale": "1"},
+            {},
+            {
+                "estimation_method": "maximum_likelihood",
+                "estimator_id": "exponential-mle-v1",
+            },
+            id="continuous-composite",
+        ),
+        pytest.param(
+            "negative_binomial",
+            "composite",
+            {"r": "2", "p": "0.5"},
+            {},
+            {"estimation_method": "maximum_likelihood", "estimator_id": "nb-mle-v1"},
+            id="nb-clean",
+        ),
+        pytest.param(
+            "negative_binomial",
+            "composite",
+            {"r": "2", "p": "0.5"},
+            {"NoFiniteMLEError": 3},
+            {"estimation_method": "maximum_likelihood", "estimator_id": "nb-mle-v1"},
+            id="nb-one-reason",
+        ),
+        pytest.param(
+            "negative_binomial",
+            "composite",
+            {"r": "2", "p": "0.5"},
+            {"FitIdentifiabilityError": 2, "NoFiniteMLEError": 3},
+            {"estimation_method": "maximum_likelihood", "estimator_id": "nb-mle-v1"},
+            id="nb-multiple-reasons",
+        ),
+    ],
+)
+def test_parquet_structured_fields_round_trip_as_exact_logical_rows(
+    tmp_path,
+    parquet_source_output,
+    family,
+    null_type,
+    canonical_parameters,
+    reason_counts,
+    fit_provenance,
+):
+    configured = manifest(
+        family=family,
+        null_type=null_type,
+        canonical_parameters=canonical_parameters,
+        raw_outer_range=(0, 1),
+    )
+    result = replace(
+        parquet_source_output.outer_results[0],
+        canonical_cell_id=configured.canonical_cell_id,
+        inner_ineligibility_reason_counts=reason_counts,
+        observed_fit_provenance=fit_provenance,
+        observed_fit_calls=1 if null_type == "composite" else 0,
+        replicate_fit_calls=configured.B if null_type == "composite" else 0,
+    )
+    inner = tuple(
+        replace(row, canonical_cell_id=configured.canonical_cell_id)
+        for row in parquet_source_output.inner_accounting
+    )
+    output = RunOutput(outer_results=(result,), inner_accounting=inner)
+    parquet_directory = tmp_path / "parquet"
+    jsonl_directory = tmp_path / "jsonl"
+
+    parquet_digests = write_run_artifacts(
+        parquet_directory,
+        configured,
+        output,
+        command="CP05-B Parquet round trip",
+        elapsed_seconds=0.0,
+    )
+    write_run_artifacts(
+        jsonl_directory,
+        configured,
+        output,
+        table_format="jsonl",
+        command="CP05-B Parquet round trip",
+        elapsed_seconds=0.0,
+    )
+
+    parquet_outer = read_parquet_rows(parquet_directory / "outer_results.parquet")
+    parquet_inner = read_parquet_rows(parquet_directory / "inner_accounting.parquet")
+    assert parquet_outer == _logical_jsonl_rows(jsonl_directory / "outer_results.jsonl")
+    assert parquet_inner == _logical_jsonl_rows(jsonl_directory / "inner_accounting.jsonl")
+    assert parquet_outer[0]["inner_ineligibility_reason_counts"] == reason_counts
+
+    import pyarrow.parquet as pq
+
+    encoded = pq.read_table(parquet_directory / "outer_results.parquet").to_pylist()[0]
+    assert encoded["inner_ineligibility_reason_counts"] == canonical_json(reason_counts)
+    assert encoded["canonical_parameters"] == canonical_json(
+        dict(configured.canonical_parameters)
+    )
+    assert encoded["observed_fit_provenance"] == canonical_json(fit_provenance)
+    assert encoded["raw_inner_indices"] == canonical_json(result.raw_inner_indices)
+    assert "outer_results.parquet" in parquet_digests
+    validate_auditable_artifacts(parquet_directory)
+    assert not list(parquet_directory.glob(".*.tmp"))
+
+
+def test_parquet_failure_closes_handle_cleans_temp_and_delays_digest(
+    tmp_path, monkeypatch, parquet_source_output
+):
+    configured = manifest(raw_outer_range=(0, 1))
+    captured_temporary: Path | None = None
+    injected_error = RuntimeError("injected Parquet write failure")
+
+    def fail_after_partial_write(table, destination, **kwargs):
+        del table, kwargs
+        nonlocal captured_temporary
+        captured_temporary = Path(destination.name)
+        destination.write(b"partial parquet")
+        destination.flush()
+        raise injected_error
+
+    import pyarrow.parquet as pq
+
+    with monkeypatch.context() as patch:
+        patch.setattr(pq, "write_table", fail_after_partial_write)
+        with pytest.raises(RuntimeError, match="injected Parquet write failure") as raised:
+            write_run_artifacts(
+                tmp_path,
+                configured,
+                parquet_source_output,
+                command="CP05-B injected Parquet failure",
+                elapsed_seconds=0.0,
+            )
+
+    assert raised.value is injected_error
+    assert captured_temporary is not None
+    assert not captured_temporary.exists()
+    assert not (tmp_path / "outer_results.parquet").exists()
+    assert not (tmp_path / "digests.json").exists()
+    assert not list(tmp_path.glob(".*.tmp"))
+    captured_temporary.write_bytes(b"unlocked")
+    captured_temporary.unlink()
+
+    digests = write_run_artifacts(
+        tmp_path,
+        configured,
+        parquet_source_output,
+        command="CP05-B successful Parquet retry",
+        elapsed_seconds=0.0,
+    )
+    assert (tmp_path / "digests.json").is_file()
+    assert validate_artifact_digests(tmp_path) == digests
+    assert not list(tmp_path.glob(".*.tmp"))
 
 
 def test_atomic_artifact_surface_provenance_and_digests(tmp_path):

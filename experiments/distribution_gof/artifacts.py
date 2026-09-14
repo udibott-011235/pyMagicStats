@@ -24,6 +24,14 @@ from .seed_derivation import SEED_DERIVATION_VERSION
 
 CHECKPOINT_SCHEMA_VERSION = "cp05-b-checkpoint-v1"
 ARTIFACT_SCHEMA_VERSION = "cp05-b-artifacts-v1"
+_PARQUET_JSON_FIELDS = frozenset(
+    {
+        "canonical_parameters",
+        "inner_ineligibility_reason_counts",
+        "observed_fit_provenance",
+        "raw_inner_indices",
+    }
+)
 
 
 class ArtifactIntegrityError(RuntimeError):
@@ -124,22 +132,66 @@ def _write_jsonl(path: Path, rows: Iterable[Mapping[str, Any]]) -> None:
     _atomic_bytes(path, content)
 
 
-def _write_parquet(path: Path, rows: list[Mapping[str, Any]]) -> None:
+def _parquet_rows(rows: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Encode structured columns as canonical JSON scalar values."""
+
+    return [
+        {
+            key: canonical_json(value) if key in _PARQUET_JSON_FIELDS else value
+            for key, value in row.items()
+        }
+        for row in rows
+    ]
+
+
+def _pyarrow_modules():
     try:
-        import pandas as pd
+        import pyarrow as pa
+        import pyarrow.parquet as pq
     except ImportError as exc:
-        raise RuntimeError("Parquet output requires pandas and a Parquet engine") from exc
+        raise RuntimeError("Parquet output requires pyarrow") from exc
+    return pa, pq
+
+
+def _write_parquet(path: Path, rows: list[Mapping[str, Any]]) -> None:
+    pa, pq = _pyarrow_modules()
     temporary = _temporary_path(path)
     try:
-        try:
-            pd.DataFrame(rows).to_parquet(temporary, index=False)
-        except ImportError as exc:
-            raise RuntimeError("Parquet output requires pyarrow or fastparquet") from exc
-        with temporary.open("rb") as handle:
+        table = pa.Table.from_pylist(_parquet_rows(rows))
+        with temporary.open("wb") as handle:
+            pq.write_table(table, handle)
+            handle.flush()
             os.fsync(handle.fileno())
         os.replace(temporary, path)
-    finally:
-        temporary.unlink(missing_ok=True)
+    except BaseException as error:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError as cleanup_error:
+            raise ArtifactIntegrityError(
+                f"Parquet write failed and temporary cleanup failed: {cleanup_error}"
+            ) from error
+        raise
+
+
+def read_parquet_rows(path: str | Path) -> list[dict[str, Any]]:
+    """Read canonical Parquet rows and restore their logical structured values."""
+
+    _, pq = _pyarrow_modules()
+    rows = pq.read_table(Path(path)).to_pylist()
+    for row in rows:
+        for key in _PARQUET_JSON_FIELDS.intersection(row):
+            value = row[key]
+            if not isinstance(value, str):
+                raise ArtifactIntegrityError(
+                    f"Parquet structured field is not canonical JSON: {key}"
+                )
+            try:
+                row[key] = json.loads(value)
+            except json.JSONDecodeError as exc:
+                raise ArtifactIntegrityError(
+                    f"Parquet structured field is invalid: {key}"
+                ) from exc
+    return rows
 
 
 def write_run_artifacts(
