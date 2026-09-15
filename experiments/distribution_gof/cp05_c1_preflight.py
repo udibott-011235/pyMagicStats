@@ -56,6 +56,39 @@ R_C = 2_000
 STATISTICS = ("AD", "CVM")
 B_VALUES = (199, 999)
 RESULT_SCHEMA_VERSION = "cp05-c1-performance-preflight-v1"
+FULL_MATRIX_SAMPLE_SIZES = (20, 50, 100, 250)
+FULL_MATRIX_NULL_TYPES = ("simple", "composite")
+FULL_MATRIX_PARAMETER_COUNTS = {"gamma": 5, "exponential": 1, "negative_binomial": 12}
+FULL_MATRIX_STATISTICS = {
+    "gamma": ("AD", "CVM", "KS"),
+    "exponential": ("AD", "CVM", "KS"),
+    "negative_binomial": ("AD", "CVM", "DISCRETE_KS", "PEARSON_HELPER"),
+}
+PARALLEL_WORKER_SCENARIOS = (1, 4, 8, 16)
+PRIMARY_CONFIGURATION_COUNT = sum(
+    len(FULL_MATRIX_SAMPLE_SIZES)
+    * parameter_count
+    * len(FULL_MATRIX_NULL_TYPES)
+    * len(STATISTICS)
+    * len(B_VALUES)
+    for parameter_count in FULL_MATRIX_PARAMETER_COUNTS.values()
+)
+FULL_DEVELOPMENT_CELL_COUNT = sum(
+    len(FULL_MATRIX_SAMPLE_SIZES)
+    * parameter_count
+    * len(FULL_MATRIX_NULL_TYPES)
+    for parameter_count in FULL_MATRIX_PARAMETER_COUNTS.values()
+)
+FULL_CONFIGURATION_COUNT = sum(
+    len(FULL_MATRIX_SAMPLE_SIZES)
+    * parameter_count
+    * len(FULL_MATRIX_NULL_TYPES)
+    * len(FULL_MATRIX_STATISTICS[family])
+    * len(B_VALUES)
+    for family, parameter_count in FULL_MATRIX_PARAMETER_COUNTS.items()
+)
+COMPARATOR_CONFIGURATION_COUNT = FULL_CONFIGURATION_COUNT - PRIMARY_CONFIGURATION_COUNT
+ELIGIBLE_OUTER_TARGET = FULL_CONFIGURATION_COUNT * R_C
 
 
 @dataclass(frozen=True, slots=True)
@@ -531,79 +564,309 @@ def _run_configuration(
     return summary
 
 
-def _full_matrix_projection(summaries: list[dict[str, Any]]) -> dict[str, Any]:
+def _resource_assessment(
+    projection: dict[str, Any],
+    authorized_budget: dict[str, float | int] | None,
+) -> dict[str, Any]:
+    if authorized_budget is None:
+        return {
+            "RESOURCE_BUDGET": "NOT_PREVIOUSLY_AUTHORIZED",
+            "RESOURCE_ASSESSMENT": "AWAITING_OWNER_RESOURCE_BUDGET",
+            "budget_violations": [],
+        }
+
+    supported = {
+        "max_n20_equivalent_p95_seconds",
+        "max_peak_process_memory_bytes",
+    }
+    unexpected = set(authorized_budget) - supported
+    if unexpected or not authorized_budget:
+        raise ValueError(
+            "authorized resource budget must contain only supported quantitative limits"
+        )
+    for key, value in authorized_budget.items():
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+            or value <= 0
+        ):
+            raise ValueError(f"authorized resource budget value must be positive: {key}")
+
+    violations: list[dict[str, float | int | str]] = []
+    projected_p95 = projection["PROJECTED_CP05_C_FULL_MATRIX_COMPUTE"][
+        "n20_equivalent_p95_seconds"
+    ]
+    max_peak = projection["PROJECTED_PEAK_MEMORY"][
+        "max_observed_peak_process_memory_bytes"
+    ]
+    if (
+        "max_n20_equivalent_p95_seconds" in authorized_budget
+        and projected_p95 > authorized_budget["max_n20_equivalent_p95_seconds"]
+    ):
+        violations.append(
+            {
+                "metric": "n20_equivalent_p95_seconds",
+                "projected": projected_p95,
+                "authorized_maximum": authorized_budget[
+                    "max_n20_equivalent_p95_seconds"
+                ],
+            }
+        )
+    if (
+        "max_peak_process_memory_bytes" in authorized_budget
+        and max_peak > authorized_budget["max_peak_process_memory_bytes"]
+    ):
+        violations.append(
+            {
+                "metric": "max_peak_process_memory_bytes",
+                "projected": max_peak,
+                "authorized_maximum": authorized_budget[
+                    "max_peak_process_memory_bytes"
+                ],
+            }
+        )
+    return {
+        "RESOURCE_BUDGET": dict(sorted(authorized_budget.items())),
+        "RESOURCE_ASSESSMENT": "BLOCKED_RESOURCE" if violations else "PASS",
+        "budget_violations": violations,
+    }
+
+
+def _full_matrix_projection(
+    summaries: list[dict[str, Any]],
+    *,
+    authorized_budget: dict[str, float | int] | None = None,
+) -> dict[str, Any]:
     by_key: dict[tuple[str, str, int], list[dict[str, Any]]] = {}
     for row in summaries:
         by_key.setdefault((row["family"], row["statistic"], row["B"]), []).append(row)
 
-    parameter_counts = {"gamma": 5, "exponential": 1, "negative_binomial": 12}
-    sample_sizes = (20, 50, 100, 250)
-    null_types = ("simple", "composite")
-    compute_median = 0.0
-    compute_p95 = 0.0
-    assessment_units = 0
-    projected_raw_outer_attempts = 0.0
-    for family, parameter_count in parameter_counts.items():
-        for statistic in STATISTICS:
-            for B in B_VALUES:
-                reference = by_key[(family, statistic, B)]
-                median = max(float(row["wall_time_per_assessment_median_seconds"]) for row in reference)
-                p95 = max(float(row["wall_time_per_assessment_p95_seconds"]) for row in reference)
-                nb_rate = (
-                    min(float(row["NB_eligibility_rate"]) for row in reference)
-                    if family == "negative_binomial"
-                    else 1.0
-                )
-                for n in sample_sizes:
-                    scale = n / 20.0
-                    for null_type in null_types:
-                        multiplier = 1.0 / nb_rate if family == "negative_binomial" and null_type == "composite" else 1.0
-                        units = parameter_count * R_C
-                        assessment_units += units
-                        projected_raw_outer_attempts += units * multiplier
-                        compute_median += units * median * scale * multiplier
-                        compute_p95 += units * p95 * scale * multiplier
+    measured_costs: dict[tuple[str, int, str], dict[str, float | str]] = {}
+    for family in FULL_MATRIX_PARAMETER_COUNTS:
+        for B in B_VALUES:
+            primary_costs: dict[str, dict[str, float | str]] = {}
+            for statistic in STATISTICS:
+                reference = by_key.get((family, statistic, B), [])
+                if not reference:
+                    raise ValueError(
+                        f"missing preflight timing basis for {family}/{statistic}/B={B}"
+                    )
+                primary_costs[statistic] = {
+                    "median_seconds": max(
+                        float(row["wall_time_per_assessment_median_seconds"])
+                        for row in reference
+                    ),
+                    "p95_seconds": max(
+                        float(row["wall_time_per_assessment_p95_seconds"])
+                        for row in reference
+                    ),
+                    "cost_class": "MEASURED_COST",
+                    "timing_basis": statistic,
+                }
+                measured_costs[(family, B, statistic)] = primary_costs[statistic]
+            proxy = {
+                "median_seconds": max(
+                    float(item["median_seconds"]) for item in primary_costs.values()
+                ),
+                "p95_seconds": max(
+                    float(item["p95_seconds"]) for item in primary_costs.values()
+                ),
+                "cost_class": "PROXY_PROJECTED_COST",
+                "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY",
+            }
+            for statistic in FULL_MATRIX_STATISTICS[family]:
+                if statistic not in STATISTICS:
+                    measured_costs[(family, B, statistic)] = dict(proxy)
 
-    assumed_workers = 1
-    detected_logical_cpus = os.cpu_count() or 1
+    nb_factors: dict[int, dict[str, float | int]] = {}
+    for B in B_VALUES:
+        rows = [
+            row
+            for row in summaries
+            if row["family"] == "negative_binomial" and row["B"] == B
+        ]
+        rates = [
+            float(row["NB_eligibility_rate"])
+            for row in rows
+            if row.get("NB_eligibility_rate") is not None
+            and float(row["NB_eligibility_rate"]) > 0
+        ]
+        retry_factors = []
+        for row in rows:
+            burden = row.get("NB_inner_retry_burden")
+            if not burden:
+                continue
+            eligible_inner = int(burden["eligible_inner"])
+            raw_inner = int(burden["raw_inner_attempts"])
+            if eligible_inner > 0:
+                retry_factors.append(raw_inner / eligible_inner)
+        if not rates or not retry_factors:
+            raise ValueError(f"insufficient Negative Binomial workload basis for B={B}")
+        nb_factors[B] = {
+            "minimum_outer_eligibility_rate": min(rates),
+            "maximum_inner_retry_factor": max(retry_factors),
+            "observed_preflight_rows": len(rows),
+        }
+
+    breakdown = {
+        "MEASURED_COST": {
+            "configuration_count": 0,
+            "eligible_outer_assessments": 0,
+            "n20_equivalent_median_seconds": 0.0,
+            "n20_equivalent_p95_seconds": 0.0,
+        },
+        "PROXY_PROJECTED_COST": {
+            "configuration_count": 0,
+            "eligible_outer_assessments": 0,
+            "n20_equivalent_median_seconds": 0.0,
+            "n20_equivalent_p95_seconds": 0.0,
+        },
+    }
+    projected_raw_outer_attempts = 0.0
+    projected_inner_bootstrap_attempts = 0.0
+    projected_composite_refit_attempts = 0.0
+    for family, parameter_count in FULL_MATRIX_PARAMETER_COUNTS.items():
+        for _n in FULL_MATRIX_SAMPLE_SIZES:
+            for null_type in FULL_MATRIX_NULL_TYPES:
+                for statistic in FULL_MATRIX_STATISTICS[family]:
+                    for B in B_VALUES:
+                        cost = measured_costs[(family, B, statistic)]
+                        cost_class = str(cost["cost_class"])
+                        configurations = parameter_count
+                        eligible = configurations * R_C
+                        target = breakdown[cost_class]
+                        target["configuration_count"] += configurations
+                        target["eligible_outer_assessments"] += eligible
+                        target["n20_equivalent_median_seconds"] += (
+                            eligible * float(cost["median_seconds"])
+                        )
+                        target["n20_equivalent_p95_seconds"] += (
+                            eligible * float(cost["p95_seconds"])
+                        )
+
+                        if family == "negative_binomial" and null_type == "composite":
+                            outer_rate = float(
+                                nb_factors[B]["minimum_outer_eligibility_rate"]
+                            )
+                            retry_factor = float(
+                                nb_factors[B]["maximum_inner_retry_factor"]
+                            )
+                            raw_outer = eligible / outer_rate
+                            raw_inner = eligible * B * retry_factor
+                            projected_raw_outer_attempts += raw_outer
+                            projected_inner_bootstrap_attempts += raw_inner
+                            projected_composite_refit_attempts += raw_outer + raw_inner
+                        else:
+                            projected_raw_outer_attempts += eligible
+                            projected_inner_bootstrap_attempts += eligible * B
+                            if null_type == "composite":
+                                projected_composite_refit_attempts += eligible * (B + 1)
+
+    compute_median = sum(
+        float(item["n20_equivalent_median_seconds"]) for item in breakdown.values()
+    )
+    compute_p95 = sum(
+        float(item["n20_equivalent_p95_seconds"]) for item in breakdown.values()
+    )
     max_peak = max(int(row["peak_memory_bytes"]) for row in summaries)
-    return {
+    parallel_scenarios = {
+        str(workers): {
+            "workers": workers,
+            "IDEAL_LOWER_BOUND": {
+                "n20_equivalent_median_seconds": compute_median / workers,
+                "n20_equivalent_p95_seconds": compute_p95 / workers,
+            },
+            "PRACTICAL_ESTIMATE": "NOT_ESTABLISHED",
+            "parallel_efficiency_measured": False,
+        }
+        for workers in PARALLEL_WORKER_SCENARIOS
+    }
+    memory_scenarios = {
+        str(workers): {
+            "workers": workers,
+            "naive_upper_concurrent_memory_bytes": workers * max_peak,
+            "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+            "measured_concurrent_memory": False,
+        }
+        for workers in PARALLEL_WORKER_SCENARIOS
+    }
+    projection: dict[str, Any] = {
         "schema_version": RESULT_SCHEMA_VERSION,
         "claim_status": "NON_CALIBRATION_NON_CLAIMING",
         "guarantee": False,
-        "full_matrix_primary_candidate_configurations": 576,
-        "full_matrix_eligible_assessment_units": assessment_units,
-        "projected_raw_outer_attempts": projected_raw_outer_attempts,
+        "FROZEN_PREFLIGHT_CONFIGURATION_COUNT": len(_configurations()),
+        "PRIMARY_CONFIGURATION_COUNT": PRIMARY_CONFIGURATION_COUNT,
+        "COMPARATOR_CONFIGURATION_COUNT": COMPARATOR_CONFIGURATION_COUNT,
+        "number_of_development_cells": FULL_DEVELOPMENT_CELL_COUNT,
+        "FULL_DEVELOPMENT_CONFIGURATION_COUNT": FULL_CONFIGURATION_COUNT,
+        "PROJECTED_ELIGIBLE_OUTER_ASSESSMENTS": ELIGIBLE_OUTER_TARGET,
+        "eligible_outer_target": ELIGIBLE_OUTER_TARGET,
+        "raw_outer_attempt_projection": projected_raw_outer_attempts,
+        "inner_bootstrap_attempt_projection": projected_inner_bootstrap_attempts,
+        "composite_refit_attempt_projection": projected_composite_refit_attempts,
+        "COMPARATOR_TIMINGS_DIRECTLY_MEASURED": False,
+        "COMPARATOR_PROJECTION_METHOD": "CONSERVATIVE_PRIMARY_MAX_PROXY",
+        "N_EFFECT_MEASURED": False,
+        "PROJECTION_BASIS": "N20_EQUIVALENT_COST_PROJECTION",
+        "SCALING_UNCERTAINTY": "UNMEASURED_N_EFFECT",
+        "PARALLEL_EFFICIENCY_MEASURED": False,
+        "PRACTICAL_PARALLEL_RUNTIME": "NOT_ESTABLISHED",
+        "NB_OBSERVED_OUTER_ELIGIBILITY_RATE": {
+            str(B): nb_factors[B]["minimum_outer_eligibility_rate"] for B in B_VALUES
+        },
+        "NB_OBSERVED_INNER_RETRY_FACTOR": {
+            str(B): nb_factors[B]["maximum_inner_retry_factor"] for B in B_VALUES
+        },
+        "NB_RAW_WORKLOAD_PROJECTION_UNCERTAIN": True,
+        "NB_RAW_WORKLOAD_PROJECTION_UNCERTAINTY_REASON": (
+            "R_PREFLIGHT_20_EXTREME_CELLS_ONLY"
+        ),
+        "cost_basis_by_family_B_statistic": [
+            {
+                "family": family,
+                "B": B,
+                "statistic": statistic,
+                **measured_costs[(family, B, statistic)],
+            }
+            for family in FULL_MATRIX_PARAMETER_COUNTS
+            for B in B_VALUES
+            for statistic in FULL_MATRIX_STATISTICS[family]
+        ],
+        "cost_basis_breakdown": breakdown,
         "PROJECTED_CP05_C_FULL_MATRIX_COMPUTE": {
-            "median_basis_seconds": compute_median,
-            "p95_planning_seconds": compute_p95,
+            "projection_basis": "N20_EQUIVALENT_COST_PROJECTION",
+            "n20_equivalent_median_seconds": compute_median,
+            "n20_equivalent_p95_seconds": compute_p95,
         },
         "PROJECTED_CP05_C_FULL_MATRIX_WALL_TIME": {
-            "assumed_parallel_workers": assumed_workers,
-            "median_basis_seconds": compute_median / assumed_workers,
-            "p95_planning_seconds": compute_p95 / assumed_workers,
-            "idealized_p95_seconds_at_detected_logical_cpus": compute_p95 / detected_logical_cpus,
-            "detected_logical_cpus": detected_logical_cpus,
+            "projection_basis": "N20_EQUIVALENT_COST_PROJECTION",
+            "parallel_efficiency_measured": False,
+            "practical_parallel_runtime": "NOT_ESTABLISHED",
+            "scenarios": parallel_scenarios,
+            "detected_logical_cpus": os.cpu_count() or 1,
         },
         "PROJECTED_PEAK_MEMORY": {
-            "assumed_parallel_workers": assumed_workers,
-            "per_worker_peak_bytes": max_peak,
-            "aggregate_peak_bytes": max_peak * assumed_workers,
+            "max_observed_peak_process_memory_bytes": max_peak,
+            "scenarios": memory_scenarios,
+            "scaling_assumption": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE_NOT_MEASURED_SCALING",
         },
         "assumptions": [
-            "Only primary candidates AD and CVM are included; KS and Pearson are excluded.",
-            "R_C is 2000 eligible outer assessments per mandatory development cell.",
-            "Both simple-null and composite-null cells and B in {199,999} are included.",
-            "Observed n=20 time scales linearly with n for n in {20,50,100,250}.",
-            "The slower observed preflight parameter cell is used within each family/statistic/B stratum.",
-            "Simple-null cells are conservatively priced at the observed composite-null rate.",
-            "Composite Negative Binomial raw attempts use the lowest observed eligibility rate in the two preregistered corner cells.",
-            "The primary wall-time projection assumes one worker, matching the measured topology.",
-            "The detected-CPU figure assumes perfect parallel efficiency and is sensitivity information only.",
-            "Artifact I/O and scheduler contention beyond measured per-assessment time are not separately modeled.",
-            "This projection is not a guarantee and is not calibration evidence.",
+            "AD and CVM costs are measured by CP05-C1 at n=20.",
+            "Comparator costs use the conservative maximum measured primary cost within family and B.",
+            "Comparator timings are proxy projections and are not direct measurements.",
+            "All n values use an n=20-equivalent cost; the effect of n is unmeasured.",
+            "R_C is 2000 eligible outer assessments for every full-matrix configuration.",
+            "Composite Negative Binomial raw attempts use the lowest observed outer eligibility rate by B.",
+            "Composite Negative Binomial inner attempts use the highest observed retry factor by B.",
+            "Parallel scenarios are ideal lower bounds only; practical efficiency is unmeasured.",
+            "Concurrent-memory scenarios are simple upper estimates, not measured scaling.",
+            "Artifact I/O and scheduler contention are not separately modeled.",
+            "This projection is not a runtime guarantee or calibration evidence.",
         ],
     }
+    projection.update(_resource_assessment(projection, authorized_budget))
+    return projection
 
 
 def _sha256(path: Path) -> str:
@@ -769,7 +1032,8 @@ def _run_all(output_root: Path, identity: dict[str, Any]) -> int:
             "B199_completed": all(row["configuration_status"] == "PASS" for row in summaries if row["B"] == 199),
             "B999_completed": all(row["configuration_status"] == "PASS" for row in summaries if row["B"] == 999),
             "failures": [],
-            "resource_assessment": "PASS",
+            "resource_budget": projection["RESOURCE_BUDGET"],
+            "resource_assessment": projection["RESOURCE_ASSESSMENT"],
             "full_matrix_executed": False,
             "calibration_claim_made": False,
             "power_analysis_executed": False,
