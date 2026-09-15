@@ -16,6 +16,7 @@ import math
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -47,8 +48,8 @@ from .resource_measurement import measure_peak_process_memory
 
 
 WORK_ITEM = "CP05-C1"
-SOURCE_SHA = "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce"
-EXPECTED_BRANCH = "experiments/cp05-c-performance-preflight"
+BASELINE_SHA = "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce"
+AUTHORIZED_BRANCH = "experiments/cp05-c-performance-preflight"
 R_PREFLIGHT = 20
 OUTER_ATTEMPT_MULTIPLIER = 100
 R_C = 2_000
@@ -86,20 +87,201 @@ def _configurations() -> tuple[tuple[str, PreflightCell, str, int], ...]:
     )
 
 
-def _git(*args: str) -> str:
-    return subprocess.check_output(
-        ["git", *args], text=True, encoding="utf-8", errors="strict"
-    ).strip()
+class GitEnvironmentError(RuntimeError):
+    """Raised when Git cannot provide the evidence required for identity checks."""
 
 
-def _verify_source_identity() -> dict[str, str]:
-    source_sha = _git("rev-parse", "HEAD")
-    branch = _git("branch", "--show-current")
-    if source_sha != SOURCE_SHA:
-        raise RuntimeError(f"source SHA mismatch: {source_sha}")
-    if branch != EXPECTED_BRANCH:
-        raise RuntimeError(f"branch mismatch: {branch}")
-    return {"source_sha": source_sha, "branch": branch}
+class SourceIdentityError(RuntimeError):
+    """Raised when repository evidence does not match the authorized work line."""
+
+
+def _resolve_git_executable() -> str:
+    executable = shutil.which("git")
+    if executable is None:
+        raise GitEnvironmentError(
+            "BLOCKED_ENVIRONMENT: git executable was not found via shutil.which('git')"
+        )
+    return executable
+
+
+def _git_result(
+    executable: str,
+    repository: Path,
+    *args: str,
+) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(
+            [executable, *args],
+            cwd=repository,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+        )
+    except OSError as exc:
+        raise GitEnvironmentError(
+            f"BLOCKED_ENVIRONMENT: unable to execute git: {exc}"
+        ) from exc
+
+
+def _git(
+    executable: str,
+    repository: Path,
+    *args: str,
+) -> str:
+    completed = _git_result(executable, repository, *args)
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip() or "no diagnostic"
+        raise GitEnvironmentError(
+            f"BLOCKED_ENVIRONMENT: git {' '.join(args)} failed "
+            f"with exit {completed.returncode}: {detail}"
+        )
+    return completed.stdout.strip()
+
+
+def _is_ancestor(
+    executable: str,
+    repository: Path,
+    ancestor: str,
+    descendant: str,
+) -> bool:
+    completed = _git_result(
+        executable,
+        repository,
+        "merge-base",
+        "--is-ancestor",
+        ancestor,
+        descendant,
+    )
+    if completed.returncode == 0:
+        return True
+    if completed.returncode == 1:
+        return False
+    detail = completed.stderr.strip() or completed.stdout.strip() or "no diagnostic"
+    raise GitEnvironmentError(
+        "BLOCKED_ENVIRONMENT: git merge-base --is-ancestor failed "
+        f"with exit {completed.returncode}: {detail}"
+    )
+
+
+def _optional_ref_sha(
+    executable: str,
+    repository: Path,
+    ref: str,
+) -> str | None:
+    probe = _git_result(executable, repository, "show-ref", "--verify", "--quiet", ref)
+    if probe.returncode == 1:
+        return None
+    if probe.returncode != 0:
+        detail = probe.stderr.strip() or probe.stdout.strip() or "no diagnostic"
+        raise GitEnvironmentError(
+            f"BLOCKED_ENVIRONMENT: unable to inspect authorized ref {ref}: {detail}"
+        )
+    return _git(executable, repository, "show-ref", "--verify", "--hash", ref)
+
+
+def _verify_source_identity(
+    repository: Path | str = Path("."),
+    *,
+    baseline_sha: str = BASELINE_SHA,
+    authorized_branch: str = AUTHORIZED_BRANCH,
+    git_executable: str | None = None,
+) -> dict[str, Any]:
+    repository = Path(repository)
+    executable = git_executable or _resolve_git_executable()
+    actual_head_sha = _git(executable, repository, "rev-parse", "--verify", "HEAD^{commit}")
+    branch = _git(executable, repository, "branch", "--show-current")
+
+    baseline_object = _git_result(
+        executable,
+        repository,
+        "cat-file",
+        "-e",
+        f"{baseline_sha}^{{commit}}",
+    )
+    if baseline_object.returncode != 0:
+        raise SourceIdentityError(
+            f"BLOCKED_IDENTITY: baseline commit is unavailable: {baseline_sha}"
+        )
+    if not _is_ancestor(executable, repository, baseline_sha, actual_head_sha):
+        raise SourceIdentityError(
+            "BLOCKED_IDENTITY: baseline is not an ancestor of actual HEAD: "
+            f"baseline={baseline_sha} head={actual_head_sha}"
+        )
+    merge_base = _git(executable, repository, "merge-base", baseline_sha, actual_head_sha)
+    if merge_base != baseline_sha:
+        raise SourceIdentityError(
+            "BLOCKED_IDENTITY: unexpected divergence from baseline: "
+            f"merge_base={merge_base} baseline={baseline_sha}"
+        )
+
+    authorized_refs: list[dict[str, str]] = []
+    if branch:
+        if branch != authorized_branch:
+            raise SourceIdentityError(
+                "BLOCKED_IDENTITY: active branch is not the authorized work line: "
+                f"actual={branch} authorized={authorized_branch}"
+            )
+        ref = f"refs/heads/{authorized_branch}"
+        ref_sha = _optional_ref_sha(executable, repository, ref)
+        if ref_sha != actual_head_sha:
+            raise SourceIdentityError(
+                "BLOCKED_IDENTITY: authorized local branch does not resolve to actual HEAD: "
+                f"ref={ref_sha or 'UNAVAILABLE'} head={actual_head_sha}"
+            )
+        authorized_refs.append({"ref": ref, "sha": ref_sha})
+        checkout_mode = "AUTHORIZED_BRANCH"
+        identity_limitation = None
+    else:
+        checkout_mode = "DETACHED_HEAD"
+        identity_limitation = None
+        for ref in (
+            f"refs/heads/{authorized_branch}",
+            f"refs/remotes/origin/{authorized_branch}",
+        ):
+            ref_sha = _optional_ref_sha(executable, repository, ref)
+            if ref_sha is not None:
+                authorized_refs.append({"ref": ref, "sha": ref_sha})
+        if not authorized_refs:
+            identity_limitation = "AUTHORIZED_BRANCH_REF_UNAVAILABLE"
+            raise SourceIdentityError(
+                "BLOCKED_IDENTITY: detached HEAD cannot be tied to the authorized work line; "
+                "limitation=AUTHORIZED_BRANCH_REF_UNAVAILABLE"
+            )
+        reachable_refs = [
+            item
+            for item in authorized_refs
+            if _is_ancestor(executable, repository, actual_head_sha, item["sha"])
+        ]
+        if not reachable_refs:
+            raise SourceIdentityError(
+                "BLOCKED_IDENTITY: detached HEAD is not reachable from an authorized branch ref: "
+                f"head={actual_head_sha}"
+            )
+        authorized_refs = reachable_refs
+
+    # The authorized candidate is derived from the verified checkout rather than
+    # frozen in source, so evidence commits on this branch remain reproducible.
+    authorized_candidate_sha = actual_head_sha
+    return {
+        "source_identity_status": "PASS",
+        "baseline_sha": baseline_sha,
+        "baseline_main_sha": baseline_sha,
+        "authorized_candidate_sha": authorized_candidate_sha,
+        "execution_source_sha": actual_head_sha,
+        "actual_head_sha": actual_head_sha,
+        "source_sha": actual_head_sha,
+        "authorized_branch": authorized_branch,
+        "branch": branch or "DETACHED",
+        "branch_or_detached_state": checkout_mode,
+        "checkout_mode": checkout_mode,
+        "baseline_ancestor_of_head": True,
+        "merge_base": merge_base,
+        "baseline_merge_base": merge_base,
+        "authorized_refs": authorized_refs,
+        "identity_limitation": identity_limitation,
+    }
 
 
 def _environment_requirements() -> dict[str, str]:
@@ -113,7 +295,12 @@ def _environment_requirements() -> dict[str, str]:
     }
 
 
-def _manifest(cell: PreflightCell, statistic: str, B: int) -> ExperimentManifest:
+def _manifest(
+    cell: PreflightCell,
+    statistic: str,
+    B: int,
+    execution_source_sha: str,
+) -> ExperimentManifest:
     raw_cap = (
         OUTER_ATTEMPT_MULTIPLIER * R_PREFLIGHT
         if cell.family == "negative_binomial"
@@ -123,7 +310,7 @@ def _manifest(cell: PreflightCell, statistic: str, B: int) -> ExperimentManifest
         schema_version=MANIFEST_SCHEMA_VERSION,
         phase=NON_CALIBRATION_PHASE,
         source_repository=SOURCE_REPOSITORY,
-        source_sha=SOURCE_SHA,
+        source_sha=execution_source_sha,
         namespace_id=DEVELOPMENT_NAMESPACE,
         null_type="composite",
         family=cell.family,
@@ -180,8 +367,9 @@ def _run_configuration(
     cell: PreflightCell,
     statistic: str,
     B: int,
+    execution_source_sha: str,
 ) -> dict[str, Any]:
-    manifest = _manifest(cell, statistic, B)
+    manifest = _manifest(cell, statistic, B, execution_source_sha)
     target = output_root / "configurations" / configuration_id
     target.mkdir(parents=True, exist_ok=True)
     checkpoint_path = target / "checkpoint.json"
@@ -438,15 +626,24 @@ def _write_root_digests(output_root: Path) -> None:
     )
 
 
-def _plan_payload() -> dict[str, Any]:
+def _plan_payload(identity: dict[str, Any]) -> dict[str, Any]:
     return {
         "schema_version": RESULT_SCHEMA_VERSION,
         "work_item": WORK_ITEM,
         "purpose": "NON_INFERENTIAL_PERFORMANCE_PREFLIGHT",
         "claim_status": "NON_CALIBRATION_NON_CLAIMING",
         "source_repository": SOURCE_REPOSITORY,
-        "source_sha": SOURCE_SHA,
-        "branch": EXPECTED_BRANCH,
+        "source_sha": identity["actual_head_sha"],
+        "execution_source_sha": identity["execution_source_sha"],
+        "actual_head_sha": identity["actual_head_sha"],
+        "authorized_candidate_sha": identity["authorized_candidate_sha"],
+        "baseline_sha": identity["baseline_sha"],
+        "baseline_main_sha": identity["baseline_main_sha"],
+        "authorized_branch": identity["authorized_branch"],
+        "branch": identity["branch"],
+        "branch_or_detached_state": identity["branch_or_detached_state"],
+        "checkout_mode": identity["checkout_mode"],
+        "merge_base": identity["merge_base"],
         "namespace_id": DEVELOPMENT_NAMESPACE,
         "secret_namespace_used": False,
         "null_type": "composite",
@@ -472,10 +669,27 @@ def _plan_payload() -> dict[str, Any]:
     }
 
 
-def _run_all(output_root: Path) -> int:
-    identity = _verify_source_identity()
+def _provenance_payload(
+    identity: dict[str, Any],
+    configuration_count: int,
+    *,
+    executable: str,
+    command: str,
+) -> dict[str, Any]:
+    return {
+        "schema_version": RESULT_SCHEMA_VERSION,
+        "repository": SOURCE_REPOSITORY,
+        **identity,
+        "environment": _environment_requirements(),
+        "executable": executable,
+        "command": command,
+        "configuration_count": configuration_count,
+    }
+
+
+def _run_all(output_root: Path, identity: dict[str, Any]) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
-    write_json_atomic(output_root / "preflight_manifest.json", _plan_payload())
+    write_json_atomic(output_root / "preflight_manifest.json", _plan_payload(identity))
     failures: list[dict[str, Any]] = []
     for configuration_id, _, _, _ in _configurations():
         command = [
@@ -507,6 +721,10 @@ def _run_all(output_root: Path) -> int:
                 "subprocess_failures": failures,
                 "failed_configurations": failed_configurations,
                 "completed_configurations": len(summaries),
+                "baseline_sha": identity["baseline_sha"],
+                "baseline_main_sha": identity["baseline_main_sha"],
+                "execution_source_sha": identity["execution_source_sha"],
+                "actual_head_sha": identity["actual_head_sha"],
             },
         )
         _write_root_digests(output_root)
@@ -539,7 +757,11 @@ def _run_all(output_root: Path) -> int:
             "work_item": WORK_ITEM,
             "status": "COMPLETE",
             "claim_status": "NON_CALIBRATION_NON_CLAIMING",
-            "source_sha": SOURCE_SHA,
+            "source_sha": identity["actual_head_sha"],
+            "execution_source_sha": identity["execution_source_sha"],
+            "actual_head_sha": identity["actual_head_sha"],
+            "baseline_sha": identity["baseline_sha"],
+            "baseline_main_sha": identity["baseline_main_sha"],
             "R_PREFLIGHT": R_PREFLIGHT,
             "cells_executed": len(CELLS),
             "configurations_executed": len(summaries),
@@ -558,15 +780,12 @@ def _run_all(output_root: Path) -> int:
     )
     write_json_atomic(
         output_root / "provenance.json",
-        {
-            "schema_version": RESULT_SCHEMA_VERSION,
-            "repository": SOURCE_REPOSITORY,
-            **identity,
-            "environment": _environment_requirements(),
-            "executable": sys.executable,
-            "command": " ".join(sys.argv),
-            "configuration_count": len(summaries),
-        },
+        _provenance_payload(
+            identity,
+            len(summaries),
+            executable=sys.executable,
+            command=" ".join(sys.argv),
+        ),
     )
     _write_root_digests(output_root)
     return 0
@@ -588,13 +807,20 @@ def main() -> int:
     )
     parser.add_argument("--single")
     args = parser.parse_args()
-    _verify_source_identity()
+    identity = _verify_source_identity()
     if args.single:
         cell, statistic, B = _find_configuration(args.single)
-        summary = _run_configuration(args.output, args.single, cell, statistic, B)
+        summary = _run_configuration(
+            args.output,
+            args.single,
+            cell,
+            statistic,
+            B,
+            identity["actual_head_sha"],
+        )
         print(json.dumps(summary, sort_keys=True), flush=True)
         return 0 if summary["configuration_status"] == "PASS" else 1
-    return _run_all(args.output)
+    return _run_all(args.output, identity)
 
 
 if __name__ == "__main__":
