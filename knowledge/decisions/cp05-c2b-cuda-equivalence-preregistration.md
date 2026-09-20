@@ -14,7 +14,7 @@ This preregistration asks whether the CUDA engine implements the same mathematic
 ## Frozen gates
 
 - **A categorical:** 100% exact agreement for `ELIGIBLE`, `ALL_ZERO_NON_IDENTIFYING`, `VARIANCE_NOT_GREATER_THAN_MEAN`, `NOT_ASSESSED`, `FAILED`, `RETRY_CAP_EXHAUSTED`.
-- **B fits:** Exponential scale and Gamma shape/scale use `abs(cuda-cpu) <= max(5e-12, 5e-10*abs(cpu))`. NB uses `abs(log(r_cuda)-log(r_cpu)) <= 1e-8`, `abs(logit(p_cuda)-logit(p_cpu)) <= 1e-8`, and `abs(LL_cuda-LL_cpu) <= 1e-9*max(1,abs(LL_cpu))`. A flat objective may record `PARAMETERIZATION_DIFFERENCE_ON_FLAT_OBJECTIVE` only with equal category, objective, downstream PMF/CDF and GOF statistic gates.
+- **B fits:** Exponential scale and Gamma shape/scale use `abs(cuda-cpu) <= max(5e-12, 5e-10*abs(cpu))`. NB uses `abs(log(r_cuda)-log(r_cpu)) <= 1e-8`, `abs(logit(p_cuda)-logit(p_cpu)) <= 1e-8`, and exactly `abs(LL_cuda-LL_cpu) <= 1e-9*max(1.0,abs(LL_cpu))`. If transformed parameters fail, the evaluator computes the nine-point `t={0,0.125,...,1}` straight path in `(log(r),logit(p))` and evaluates every point with the CP04 reference likelihood. The flat exception is permitted only if every path likelihood is finite, `max(LL_PATH)-min(LL_PATH)<=TAU_LL`, the CPU/CUDA objective meets `TAU_LL`, category agrees, and downstream distribution/GOF gates pass. It records eta endpoints, t-grid, LL_PATH, LL_span and TAU_LL; callers cannot force the exception.
 - **C values:** CDF, SF, logCDF, logSF and PMF/logPMF use `abs(cuda-cpu) <= max(5e-13, 5e-11*abs(cpu))`; extreme values are assessed in log space without clipping.
 - **D GOF:** AD/CvM use `abs(T_cuda-T_cpu) <= 2e-11*max(1,abs(T_cpu))`. Where an oracle exists, both engines separately meet DEC-014 oracle requirements.
 - **E MC:** the integer exceedance count and reject decision are exact. `p_MC=(b+1)/(B+1)` and ties use `T* >= T_obs`.
@@ -22,9 +22,9 @@ This preregistration asks whether the CUDA engine implements the same mathematic
 
 ## Fixture matrix and artifacts
 
-The fixed primary composite matrix has 144 cells: Gamma shapes `0.25,0.5,1,2,10`, Exponential scale `1`, NB `r={0.25,1,5,20}` and `p={0.1,0.5,0.9}`, each at `n={20,50,100,250}` and `AD/CVM`. `R_EQ=8`; `B_EQ=15`. Deterministic adversarial fixtures cover NB eligibility cliffs, sparse/heavy-tail NB, Gamma shape 0.25, tail/CDF extremes, and exact/near MC ties.
+The fixed primary composite matrix has 144 cells: Gamma shapes `0.25,0.5,1,2,10`, Exponential scale `1`, NB `r={0.25,1,5,20}` and `p={0.1,0.5,0.9}`, each at `n={20,50,100,250}` and `AD/CVM`. `R_EQ=8`; `B_EQ=15`. The fourteen deterministic adversarial fixtures are materialized numerically in `cp05_c2b_adversarial_fixtures.json`, including NB boundary samples and frozen exact/nextafter MC cliffs; they are not regenerated during Quantum.
 
-Generator validation is a separate non-GOF gate: structural contracts are exact; the future sanity check has `N_GENERATOR_SANITY=1_000_000`, `|z_mean| <= 5`, and `|z_variance| <= 5` per frozen fixture.
+Generator validation is a separate non-GOF gate with exactly seven frozen cases: Gamma `(shape,scale)=(0.25,1),(2,1),(10,1)`, Exponential `(1)`, and NB `(r,p)=(0.25,0.1),(1,0.5),(20,0.9)`. It uses `N_GENERATOR_SANITY=1_000_000`, sample variance `ddof=1`, `Var(S2)=(mu4-((N-3)/(N-1))*sigma2**2)/N`, `|z_mean|<=5`, and `|z_variance|<=5`. Gamma has `mu4=3*alpha*(alpha+2)*theta**4`, Exponential has `mu4=9*theta**4`, and NB uses `mu4=(3+(1+4q+q**2)/(r*q))*sigma2**2` with `q=1-p`.
 
 The future artifact contract is `equivalence_manifest.json`, `fixture_manifest.json`, comparison parquet files, `batch_invariance.json`, `rng_identity.json`, `generator_sanity.json`, `environment.json`, `summary.json`, and `digests.json`. Initial `summary.json` begins `equivalence_gate_passed=false` and `calibration_claim=false`.
 

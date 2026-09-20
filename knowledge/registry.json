@@ -644,6 +644,7 @@
       "path": "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
       "evidence_paths": [
         "experiments/distribution_gof/cuda_calibration/equivalence_preregistration.py",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2b_adversarial_fixtures.json",
         "tests/research/test_cp05_cuda_equivalence_preregistration.py"
       ],
       "owner_role": "decision-owner",
