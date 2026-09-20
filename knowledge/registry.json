@@ -608,6 +608,34 @@
       ]
     },
     {
+      "id": "DEC-015",
+      "kind": "decision",
+      "title": "Experimental-engine policy and agent execution boundary",
+      "status": "accepted",
+      "scope": "Cross-cutting distinction between implementation validation, statistical calibration, experimental-engine selection and controlled long-running execution; CP05-C2A CUDA/RAPIDS prototype only",
+      "path": "knowledge/decisions/experimental-engine-policy.md",
+      "evidence_paths": [
+        "experiments/distribution_gof/cuda_calibration/cp05_cuda_engine.py",
+        "experiments/distribution_gof/cuda_calibration/README.md",
+        "tests/research/test_cp05_cuda_engine.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "experimental-engine",
+        "calibration",
+        "implementation-validation",
+        "cuda",
+        "rapids",
+        "agent-boundary"
+      ]
+    },
+    {
       "id": "EV-013",
       "kind": "evidence",
       "title": "CP05-A GOF architecture baseline and preregistration",

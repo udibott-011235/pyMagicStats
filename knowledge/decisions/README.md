@@ -23,5 +23,8 @@ Decisiones iniciales indexadas:
   no calibración, potencia, selección de método ni idoneidad de producción. El
   commitment público CP05-D está depositado; CP05-C está autorizado para
   comenzar, pero su ejecución permanece `NOT_STARTED` y CP05-D no ha comenzado.
+- `DEC-015`: separa validación de implementación, calibración estadística,
+  selección del motor experimental y frontera de ejecución de agentes; CP05-C2A
+  es un prototipo CUDA/RAPIDS aislado, sin equivalencia ni calibración.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
