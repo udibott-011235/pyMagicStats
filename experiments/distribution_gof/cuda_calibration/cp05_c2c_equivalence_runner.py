@@ -12,19 +12,21 @@ import platform
 import shutil
 import tempfile
 import math
+import subprocess
 from pathlib import Path
 
 from .equivalence_preregistration import B_EQ, GENERATOR_SANITY_CASES, GENERATOR_SANITY_N, PRIMARY_CELL_COUNT, R_EQ, REQUIRED_ARTIFACTS, primary_fixture_matrix, initial_summary
 from .cp05_cuda_engine import _cp04_fit, _cp04_statistic, _generate, _parameters, derive_seed, mc_pvalue
 from . import cuda_candidate
 from .nb_support import certify_nb_support
-from .equivalence_preregistration import categorical_agreement, distribution_value_agreement, fit_agreement, global_equivalence_pass, statistic_agreement
+from .equivalence_preregistration import categorical_agreement, distribution_value_agreement, fit_agreement, generator_sanity_check, global_equivalence_pass, statistic_agreement
 from .artifact_writers import (write_batch_invariance, write_classification_comparison,
     write_digests, write_environment, write_equivalence_manifest, write_fixture_manifest,
     write_fit_comparison, write_generator_sanity, write_rng_identity,
     write_statistic_comparison, write_summary)
 from .artifact_validation import generate_digests, publish_atomic
-from .a2_artifacts import NAMES, load_fixtures
+from .a2_artifacts import NAMES, load_fixtures, run_adversarial_fixture
+from .execution_checkpoint import CheckpointError, ExecutionCheckpoint
 
 BASELINE_SHA = "fc92de4fc9b51303924d21b877eeece18caaf846"
 BOOTSTRAP_FIXTURE_SOURCE = "CPU_REFERENCE_FITTED_PARAMETERS"
@@ -124,18 +126,31 @@ def traverse_primary(namespace, *, reference_adapter=evaluate_reference_record, 
     records=[]; outers=[]
     for cell in primary_fixture_matrix():
         for outer in range(R_EQ):
-            observed,meta=fixed_observed(cell,outer,namespace)
-            support=certify_nb_support(observed,reference_fit(cell.family,observed)["bound"],cell.statistic) if cell.family=="negative_binomial" else None
-            cuda=lambda c,s: cuda_adapter(c,s,certified_support=support.indices if support else None,remainder_bound=support.remainder_bound if support else None)
-            obs=evaluate_fixed_record(identity=f"{cell.canonical_id}|raw_outer={outer}",record_type="observed",cell=cell,raw_outer_index=outer,raw_inner_index=None,sample=observed,reference_adapter=reference_adapter,cuda_adapter=cuda)
-            cpu,attempts,eligible=fixed_bootstraps(cell,observed,outer,namespace); boots=[]
-            for item in eligible:
-                bs=certify_nb_support(item["sample"],reference_fit(cell.family,item["sample"])["bound"],cell.statistic) if cell.family=="negative_binomial" else None
-                cuda_bs=lambda c,s: cuda_adapter(c,s,certified_support=bs.indices if bs else None,remainder_bound=bs.remainder_bound if bs else None)
-                row=evaluate_fixed_record(identity=f"{cell.canonical_id}|raw_outer={outer}|raw_inner={item['raw_inner_index']}",record_type="bootstrap",cell=cell,raw_outer_index=outer,raw_inner_index=item["raw_inner_index"],sample=item["sample"],reference_adapter=reference_adapter,cuda_adapter=cuda_bs); boots.append(row)
-            records.extend([obs,*boots]); outers.append({"identity":obs["identity"],**aggregate_outer(obs,boots),"raw_attempts":len(attempts)})
+            completed=execute_primary_outer(cell,outer,namespace,reference_adapter=reference_adapter,cuda_adapter=cuda_adapter)
+            records.extend(completed["records"]); outers.append(completed["outer"])
     assert_identities([{ "identity": item["identity"]} for item in outers])
     return records,outers
+
+
+def execute_primary_outer(cell, raw_outer_index, namespace, *, reference_adapter=evaluate_reference_record, cuda_adapter=evaluate_cuda_record):
+    """Execute exactly one canonical outer identity for checkpointing or traversal."""
+    observed, meta = fixed_observed(cell, raw_outer_index, namespace)
+    support = certify_nb_support(observed, reference_fit(cell.family, observed)["bound"], cell.statistic) if cell.family == "negative_binomial" else None
+    cuda = lambda c, s: cuda_adapter(c, s, certified_support=support.indices if support else None, remainder_bound=support.remainder_bound if support else None)
+    identity = f"{cell.canonical_id}|raw_outer={raw_outer_index}"
+    observed_record = evaluate_fixed_record(identity=identity, record_type="observed", cell=cell, raw_outer_index=raw_outer_index, raw_inner_index=None, sample=observed, reference_adapter=reference_adapter, cuda_adapter=cuda)
+    _, attempts, eligible = fixed_bootstraps(cell, observed, raw_outer_index, namespace)
+    boots = []
+    for item in eligible:
+        certification = certify_nb_support(item["sample"], reference_fit(cell.family, item["sample"])["bound"], cell.statistic) if cell.family == "negative_binomial" else None
+        cuda_bootstrap = lambda c, s: cuda_adapter(c, s, certified_support=certification.indices if certification else None, remainder_bound=certification.remainder_bound if certification else None)
+        boots.append(evaluate_fixed_record(identity=f"{identity}|raw_inner={item['raw_inner_index']}", record_type="bootstrap", cell=cell, raw_outer_index=raw_outer_index, raw_inner_index=item["raw_inner_index"], sample=item["sample"], reference_adapter=reference_adapter, cuda_adapter=cuda_bootstrap))
+    raw_attempts = [{key: value for key, value in item.items() if key != "sample"} for item in attempts]
+    eligible_identities = [{"raw_inner_index": item["raw_inner_index"], "seed_identity": item["seed_identity"], "sample_digest": item["sample_digest"]} for item in eligible]
+    return {"identity": identity, "cell_id": cell.canonical_id, "raw_outer_index": raw_outer_index,
+            "observed_sample_digest": meta["sample_digest_sha256"], "raw_bootstrap_attempts": raw_attempts,
+            "eligible_bootstrap_identities": eligible_identities, "records": [observed_record, *boots],
+            "outer": {"identity": identity, **aggregate_outer(observed_record, boots), "raw_attempts": len(attempts)}}
 
 
 def fixed_observed(cell, raw_outer_index, namespace):
@@ -255,7 +270,8 @@ def _classification_rows(records):
 def publish_execution_bundle(output: Path, *, mode: str, git_sha: str, records: list[dict],
                              outer_results: list[dict], adversarial: list[dict],
                              batch_passed: bool, rng_identities: list[dict],
-                             generator_sanity_passed: bool = False) -> dict:
+                             generator_sanity_passed: bool = False, generator_results: list[dict] | None = None,
+                             adversarial_observed: int | None = None) -> dict:
     """The sole C2C artifact path. Scientific false gates remain publishable evidence.
 
     It is deliberately independent of the CUDA implementation: callers supply already
@@ -278,9 +294,9 @@ def publish_execution_bundle(output: Path, *, mode: str, git_sha: str, records: 
         write_classification_comparison(stage/"classification_comparison.parquet", _classification_rows(records))
         write_batch_invariance(stage/"batch_invariance.json", [], {"mode": mode}, passed=batch_passed)
         write_rng_identity(stage/"rng_identity.json", rng_identities)
-        write_generator_sanity(stage/"generator_sanity.json", passed=generator_sanity_passed)
+        write_generator_sanity(stage/"generator_sanity.json", passed=generator_sanity_passed, results=generator_results)
         write_environment(stage/"environment.json", git_sha)
-        write_summary(stage/"summary.json", execution_mode=mode, primary_outer_observed=len(outer_results), adversarial_fixture_observed=len(adversarial), equivalence_gate_passed=equivalence, generator_sanity_passed=generator_sanity_passed, overall_pass=overall, batch_invariance_passed=batch_passed, artifact_validation_passed=True, failure_reasons=reasons)
+        write_summary(stage/"summary.json", execution_mode=mode, primary_outer_observed=len(outer_results), adversarial_fixture_observed=len(adversarial) if adversarial_observed is None else adversarial_observed, equivalence_gate_passed=equivalence, generator_sanity_passed=generator_sanity_passed, overall_pass=overall, batch_invariance_passed=batch_passed, artifact_validation_passed=True, failure_reasons=reasons)
         generate_digests(stage)
         publish_atomic(stage, output)
     return json.loads((output/"summary.json").read_text(encoding="utf-8"))
@@ -290,12 +306,79 @@ def _require_cuda() -> None:
     cuda_candidate.require_cuda()
 
 
+def _execution_sha() -> str:
+    root = Path(__file__).resolve().parents[3]
+    return subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+
+
+def _checkpoint_contract(args) -> dict:
+    return {"execution_sha": _execution_sha(), "schema": "cp05-c2c-v1", "dec016": "DEC-016",
+            "mode": args.mode, "namespace": args.namespace, "R_EQ": R_EQ, "B_EQ": B_EQ,
+            "primary_cell_ids": [cell.canonical_id for cell in primary_fixture_matrix()],
+            "fixture_digest": fixture_digest(), "float_precision": "float64"}
+
+
+def _progress(kind: str, complete: int, total: int) -> None:
+    print(f"C2C_PROGRESS {kind}={complete}/{total}", flush=True)
+
+
+def _execute_equivalence(args, checkpoint: ExecutionCheckpoint) -> tuple[list[dict], list[dict], list[dict], bool, list[dict]]:
+    primary = checkpoint.data["primary"]
+    print(f"C2C_RESUME recovered_primary={len(primary)}", flush=True)
+    print(f"C2C_RESUME remaining_primary={PRIMARY_OUTER_TARGET-len(primary)}", flush=True)
+    for cell in primary_fixture_matrix():
+        for raw_outer_index in range(R_EQ):
+            identity = f"{cell.canonical_id}|raw_outer={raw_outer_index}"
+            if not checkpoint.has_primary(identity):
+                checkpoint.store_primary(identity, execute_primary_outer(cell, raw_outer_index, args.namespace))
+                _progress("primary", len(checkpoint.data["primary"]), PRIMARY_OUTER_TARGET)
+    fixtures, digest = load_fixtures()
+    for name in NAMES:
+        if name not in checkpoint.data["adversarial"]:
+            checkpoint.store_adversarial(name, run_adversarial_fixture(name, fixtures[name], digest))
+            _progress("adversarial", len(checkpoint.data["adversarial"]), len(NAMES))
+    if checkpoint.data["batch_invariance"] is None:
+        identities = sorted(checkpoint.data["primary"])
+        checkpoint.store_batch({"passed": len(identities) == PRIMARY_OUTER_TARGET and len(identities) == len(set(identities)), "identities": identities})
+    rows = [row for item in checkpoint.data["primary"].values() for row in item["records"]]
+    outer = [item["outer"] for item in checkpoint.data["primary"].values()]
+    adversarial = [checkpoint.data["adversarial"][name] for name in NAMES]
+    rng = [{"canonical_cell_id": item["cell_id"], "raw_outer_index": item["raw_outer_index"], "purpose": "outer_observed", "raw_inner_index": None} for item in checkpoint.data["primary"].values()]
+    return rows, outer, adversarial, checkpoint.data["batch_invariance"]["passed"], rng
+
+
+def _execute_generator_sanity(args, checkpoint: ExecutionCheckpoint) -> tuple[list[dict], bool]:
+    results = checkpoint.data["generator"]
+    for index, (family, parameters) in enumerate(GENERATOR_SANITY_CASES):
+        identity = f"{family}|{json.dumps(parameters, sort_keys=True)}"
+        if identity not in results:
+            seed = derive_seed(args.namespace, identity, index, "generator_sanity")
+            sample = cuda_candidate.generate(family, parameters, GENERATOR_SANITY_N, seed)
+            check = generator_sanity_check(float(cuda_candidate.cp.asnumpy(cuda_candidate.cp.mean(sample))), float(cuda_candidate.cp.asnumpy(cuda_candidate.cp.var(sample, ddof=1))), family, parameters)
+            checkpoint.store_generator(identity, {"identity": identity, "seed_identity": seed, "family": family, "parameters": parameters, **check})
+            _progress("generator", len(checkpoint.data["generator"]), len(GENERATOR_SANITY_CASES))
+    values = [results[f"{family}|{json.dumps(parameters, sort_keys=True)}"] for family, parameters in GENERATOR_SANITY_CASES]
+    return values, all(value["passed"] for value in values)
+
+
 def _official_dispatch(args) -> int:
-    """Execution entry point; real workload remains protected by the GPU gate."""
+    """Official noninteractive C2C workload, guarded by CUDA and checkpoint identity."""
     _require_cuda()
-    # Full fixed-data execution is intentionally not launched implicitly by tests.
-    # An authorized CUDA invocation must provide the records to publish_execution_bundle.
-    raise C2CError("official C2C execution requires an authorized fixed-data workload")
+    checkpoint = ExecutionCheckpoint.open(args.output, _checkpoint_contract(args), resume=args.resume)
+    try:
+        records: list[dict] = []; outer: list[dict] = []; batch = False; rng: list[dict] = []
+        adversarial = [{"fixture_name": name, "overall_fixture_pass": False, "execution_skipped": True} for name in NAMES]
+        generator_results: list[dict] = []; generator_pass = False
+        if args.mode in {"equivalence", "all"}:
+            records, outer, adversarial, batch, rng = _execute_equivalence(args, checkpoint)
+        if args.mode in {"generator-sanity", "all"}:
+            generator_results, generator_pass = _execute_generator_sanity(args, checkpoint)
+        publish_execution_bundle(args.output, mode=args.mode, git_sha=checkpoint.contract["execution_sha"], records=records, outer_results=outer, adversarial=adversarial, batch_passed=batch, rng_identities=rng, generator_sanity_passed=generator_pass, generator_results=generator_results, adversarial_observed=len(checkpoint.data["adversarial"]))
+        checkpoint.close_after_publication()
+        return 0
+    except Exception:
+        # Scientific failures are records and publish normally; only software failures reach here.
+        raise
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -303,6 +386,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--mode", choices=("equivalence", "generator-sanity", "all"), default="equivalence")
     parser.add_argument("--require-gpu", action="store_true")
+    parser.add_argument("--namespace", default="CP05-C2C", help="frozen public execution namespace")
+    parser.add_argument("--resume", action="store_true")
     parser.add_argument("--R", type=int, default=R_EQ); parser.add_argument("--B", type=int, default=B_EQ)
     return parser
 
