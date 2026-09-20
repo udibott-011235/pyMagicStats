@@ -1,0 +1,49 @@
+{
+  "B": 999,
+  "NB_eligibility_rate": null,
+  "NB_ineligibility_reason_histogram": null,
+  "NB_inner_retry_burden": null,
+  "NB_raw_outer_attempts": null,
+  "R_PREFLIGHT": 20,
+  "artifact_validation": "PASS",
+  "assessed_outer": 20,
+  "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+  "completed_outer": 20,
+  "configuration_id": "gamma_shape_0p25_scale_1__cvm__b999",
+  "configuration_status": "PASS",
+  "eligible_outer": 20,
+  "failed": 0,
+  "failure": null,
+  "family": "gamma",
+  "manifest_digest": "dad72a91583f5f9325275ef8d3d630f711336d79dd6511b766a6afca9c5b7223",
+  "n": 20,
+  "not_assessed": 0,
+  "parameters": {
+    "scale": "1",
+    "shape": "0.25"
+  },
+  "peak_memory": {
+    "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+    "includes_child_processes": false,
+    "includes_native_memory": true,
+    "metric": "PEAK_PROCESS_WORKING_SET",
+    "scope": "current process since process start; child processes excluded",
+    "unit": "bytes",
+    "value": 274927616,
+    "value_mib": 262.19140625
+  },
+  "peak_memory_bytes": 274927616,
+  "peak_memory_mib": 262.19140625,
+  "reason_counts": {
+    "ASSESSMENT_COMPLETE": 20
+  },
+  "schema_version": "cp05-c1-performance-preflight-v1",
+  "statistic": "CVM",
+  "status_counts": {
+    "ASSESSED": 20
+  },
+  "wall_time_per_assessment_median_seconds": 3.7503541499900166,
+  "wall_time_per_assessment_p95_seconds": 4.297235139962868,
+  "wall_time_total_seconds": 73.82226999977138,
+  "work_item": "CP05-C1"
+}

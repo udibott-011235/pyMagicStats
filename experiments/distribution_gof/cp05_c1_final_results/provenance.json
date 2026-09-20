@@ -1,0 +1,36 @@
+{
+  "actual_head_sha": "858113cea684db65b68746e043a0dc719bbcadcf",
+  "authorized_branch": "experiments/cp05-c-performance-preflight",
+  "authorized_candidate_sha": "858113cea684db65b68746e043a0dc719bbcadcf",
+  "authorized_refs": [
+    {
+      "ref": "refs/heads/experiments/cp05-c-performance-preflight",
+      "sha": "858113cea684db65b68746e043a0dc719bbcadcf"
+    }
+  ],
+  "baseline_ancestor_of_head": true,
+  "baseline_main_sha": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+  "baseline_merge_base": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+  "baseline_sha": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+  "branch": "experiments/cp05-c-performance-preflight",
+  "branch_or_detached_state": "AUTHORIZED_BRANCH",
+  "checkout_mode": "AUTHORIZED_BRANCH",
+  "command": "C:\\Users\\ehudb\\Documents\\Codex\\2026-09-13\\cp05-b-fresh-isolated\\pyMagicStats\\experiments\\distribution_gof\\cp05_c1_preflight.py --output experiments\\distribution_gof\\cp05_c1_final_results",
+  "configuration_count": 16,
+  "environment": {
+    "implementation": "CPython",
+    "numpy": "2.5.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pyarrow": "25.0.1",
+    "python": "3.12.14",
+    "scipy": "1.18.1"
+  },
+  "executable": "C:\\Users\\ehudb\\Documents\\Codex\\2026-09-13\\cp05-b-fresh-isolated\\pyMagicStats\\.venv\\Scripts\\python.exe",
+  "execution_source_sha": "858113cea684db65b68746e043a0dc719bbcadcf",
+  "identity_limitation": null,
+  "merge_base": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+  "repository": "udibott-011235/pyMagicStats",
+  "schema_version": "cp05-c1-performance-preflight-v1",
+  "source_identity_status": "PASS",
+  "source_sha": "858113cea684db65b68746e043a0dc719bbcadcf"
+}

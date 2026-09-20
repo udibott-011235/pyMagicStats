@@ -1,0 +1,895 @@
+{
+  "configurations": [
+    {
+      "B": 199,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "exponential_scale_1__ad__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "exponential",
+      "manifest_digest": "46f8d530870edfe37aab8d50d7e89246a7ebc4fa1d3c8cde1bfe21031b2a4618",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 242380800,
+        "value_mib": 231.15234375
+      },
+      "peak_memory_bytes": 242380800,
+      "peak_memory_mib": 231.15234375,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 0.8138355500122998,
+      "wall_time_per_assessment_p95_seconds": 1.0828456850227668,
+      "wall_time_total_seconds": 17.24263620004058,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "exponential_scale_1__ad__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "exponential",
+      "manifest_digest": "39ecbace5fe59804e60893fccebf24e6d6d5d3f7a1354d282abc84243f363988",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 273375232,
+        "value_mib": 260.7109375
+      },
+      "peak_memory_bytes": 273375232,
+      "peak_memory_mib": 260.7109375,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 3.5540250999911223,
+      "wall_time_per_assessment_p95_seconds": 4.228429354995024,
+      "wall_time_total_seconds": 71.82063209993066,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 199,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "exponential_scale_1__cvm__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "exponential",
+      "manifest_digest": "50927ebda056e3b3cf6e8a69f7a94d6b882f9614a16965a73e2fa59be6584fb0",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 243269632,
+        "value_mib": 232.0
+      },
+      "peak_memory_bytes": 243269632,
+      "peak_memory_mib": 232.0,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 0.5755818000179715,
+      "wall_time_per_assessment_p95_seconds": 0.7158713650191205,
+      "wall_time_total_seconds": 12.129697399912402,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "exponential_scale_1__cvm__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "exponential",
+      "manifest_digest": "8fe42d05e6f17f5b725a9a95fc3ba3adff7963a401e3db56b6b9a2be89e03c3f",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 273780736,
+        "value_mib": 261.09765625
+      },
+      "peak_memory_bytes": 273780736,
+      "peak_memory_mib": 261.09765625,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 2.1716827499622013,
+      "wall_time_per_assessment_p95_seconds": 3.4637688299757428,
+      "wall_time_total_seconds": 48.38864759990247,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 199,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "gamma_shape_0p25_scale_1__ad__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "gamma",
+      "manifest_digest": "8185b4589d27f4335069e0c38a1c1cb8a96616f0f0e05665c3887d79cbf9975a",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1",
+        "shape": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 242954240,
+        "value_mib": 231.69921875
+      },
+      "peak_memory_bytes": 242954240,
+      "peak_memory_mib": 231.69921875,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 1.4767323000123724,
+      "wall_time_per_assessment_p95_seconds": 1.7514003500429682,
+      "wall_time_total_seconds": 29.91305909998482,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "gamma_shape_0p25_scale_1__ad__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "gamma",
+      "manifest_digest": "aa823c3d5133a8a03efaea516478076f2efd2b175d9c6d890cf1d05c9d9fc3a4",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1",
+        "shape": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 274776064,
+        "value_mib": 262.046875
+      },
+      "peak_memory_bytes": 274776064,
+      "peak_memory_mib": 262.046875,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 6.606902899977285,
+      "wall_time_per_assessment_p95_seconds": 7.908519159964635,
+      "wall_time_total_seconds": 133.2298623000388,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 199,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "gamma_shape_0p25_scale_1__cvm__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "gamma",
+      "manifest_digest": "dea106a9336b5cfec33033c76ac47f1c1ad5c24e903c26a3f91f15b9b8c48488",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1",
+        "shape": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 242741248,
+        "value_mib": 231.49609375
+      },
+      "peak_memory_bytes": 242741248,
+      "peak_memory_mib": 231.49609375,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 0.7734251500223763,
+      "wall_time_per_assessment_p95_seconds": 0.8955564150528517,
+      "wall_time_total_seconds": 15.19127600005595,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": null,
+      "NB_ineligibility_reason_histogram": null,
+      "NB_inner_retry_burden": null,
+      "NB_raw_outer_attempts": null,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "gamma_shape_0p25_scale_1__cvm__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "gamma",
+      "manifest_digest": "dad72a91583f5f9325275ef8d3d630f711336d79dd6511b766a6afca9c5b7223",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "scale": "1",
+        "shape": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 274927616,
+        "value_mib": 262.19140625
+      },
+      "peak_memory_bytes": 274927616,
+      "peak_memory_mib": 262.19140625,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 3.7503541499900166,
+      "wall_time_per_assessment_p95_seconds": 4.297235139962868,
+      "wall_time_total_seconds": 73.82226999977138,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 199,
+      "NB_eligibility_rate": 1.0,
+      "NB_ineligibility_reason_histogram": {},
+      "NB_inner_retry_burden": {
+        "eligible_inner": 3980,
+        "extra_attempts_per_assessed_outer": 9.15,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 183
+        },
+        "ineligible_inner": 183,
+        "raw_inner_attempts": 4163
+      },
+      "NB_raw_outer_attempts": 20,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "negative_binomial_r_0p25_p_0p1__ad__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "322507c58b3eacbfda0ce93b7f24140c80c070e55631d0877d0d69cc078786ac",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "p": "0.1",
+        "r": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 243937280,
+        "value_mib": 232.63671875
+      },
+      "peak_memory_bytes": 243937280,
+      "peak_memory_mib": 232.63671875,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 324.8119285500238,
+      "wall_time_per_assessment_p95_seconds": 539.0234460199968,
+      "wall_time_total_seconds": 6753.5536765,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": 1.0,
+      "NB_ineligibility_reason_histogram": {},
+      "NB_inner_retry_burden": {
+        "eligible_inner": 19980,
+        "extra_attempts_per_assessed_outer": 15.1,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 302
+        },
+        "ineligible_inner": 302,
+        "raw_inner_attempts": 20282
+      },
+      "NB_raw_outer_attempts": 20,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "negative_binomial_r_0p25_p_0p1__ad__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "7238f03e93273c09f54fc31a97f14ec54991dd7db0aa08e5fcc4b4d26e3f8f7c",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "p": "0.1",
+        "r": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 283168768,
+        "value_mib": 270.05078125
+      },
+      "peak_memory_bytes": 283168768,
+      "peak_memory_mib": 270.05078125,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 1814.4870180999987,
+      "wall_time_per_assessment_p95_seconds": 2779.294204970013,
+      "wall_time_total_seconds": 36619.63593030003,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 199,
+      "NB_eligibility_rate": 1.0,
+      "NB_ineligibility_reason_histogram": {},
+      "NB_inner_retry_burden": {
+        "eligible_inner": 3980,
+        "extra_attempts_per_assessed_outer": 1.75,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 35
+        },
+        "ineligible_inner": 35,
+        "raw_inner_attempts": 4015
+      },
+      "NB_raw_outer_attempts": 20,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "negative_binomial_r_0p25_p_0p1__cvm__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "9372f3aa930282ed22a93444c5b1008e59bd9e2a386de7aa18efa5054e20a2fc",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "p": "0.1",
+        "r": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 249958400,
+        "value_mib": 238.37890625
+      },
+      "peak_memory_bytes": 249958400,
+      "peak_memory_mib": 238.37890625,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 307.5401872500079,
+      "wall_time_per_assessment_p95_seconds": 394.40212282999784,
+      "wall_time_total_seconds": 6172.01069369998,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": 1.0,
+      "NB_ineligibility_reason_histogram": {},
+      "NB_inner_retry_burden": {
+        "eligible_inner": 19980,
+        "extra_attempts_per_assessed_outer": 13.55,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 271
+        },
+        "ineligible_inner": 271,
+        "raw_inner_attempts": 20251
+      },
+      "NB_raw_outer_attempts": 20,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 20,
+      "configuration_id": "negative_binomial_r_0p25_p_0p1__cvm__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "7b2b79842a1fbba99abeb2237c167357ea0be528f50f38c88e2ad4b5a62c5c4d",
+      "n": 20,
+      "not_assessed": 0,
+      "parameters": {
+        "p": "0.1",
+        "r": "0.25"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 280625152,
+        "value_mib": 267.625
+      },
+      "peak_memory_bytes": 280625152,
+      "peak_memory_mib": 267.625,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20
+      },
+      "wall_time_per_assessment_median_seconds": 1490.7939332499955,
+      "wall_time_per_assessment_p95_seconds": 4138.688061810033,
+      "wall_time_total_seconds": 72156.7166076,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 199,
+      "NB_eligibility_rate": 0.5263157894736842,
+      "NB_ineligibility_reason_histogram": {
+        "NoFiniteMLEError": 18
+      },
+      "NB_inner_retry_burden": {
+        "eligible_inner": 3980,
+        "extra_attempts_per_assessed_outer": 92.45,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 1849
+        },
+        "ineligible_inner": 1849,
+        "raw_inner_attempts": 5829
+      },
+      "NB_raw_outer_attempts": 38,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 38,
+      "configuration_id": "negative_binomial_r_20_p_0p9__ad__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "402a45a136f17d11be50d04a367ffbbaa16b67f96f170cf7f838fababc2a8b11",
+      "n": 20,
+      "not_assessed": 18,
+      "parameters": {
+        "p": "0.9",
+        "r": "20"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 242786304,
+        "value_mib": 231.5390625
+      },
+      "peak_memory_bytes": 242786304,
+      "peak_memory_mib": 231.5390625,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20,
+        "MATHEMATICAL_INELIGIBILITY": 18
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20,
+        "NOT_ASSESSED": 18
+      },
+      "wall_time_per_assessment_median_seconds": 285.2031385500013,
+      "wall_time_per_assessment_p95_seconds": 335.8440927600081,
+      "wall_time_total_seconds": 5681.5983287001145,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": 0.43478260869565216,
+      "NB_ineligibility_reason_histogram": {
+        "NoFiniteMLEError": 26
+      },
+      "NB_inner_retry_burden": {
+        "eligible_inner": 19980,
+        "extra_attempts_per_assessed_outer": 736.3,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 14726
+        },
+        "ineligible_inner": 14726,
+        "raw_inner_attempts": 34706
+      },
+      "NB_raw_outer_attempts": 46,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 46,
+      "configuration_id": "negative_binomial_r_20_p_0p9__ad__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "bfc17cdcc3c6baa0cc405995598be7724d9144441c1160decd485282861f2cf0",
+      "n": 20,
+      "not_assessed": 26,
+      "parameters": {
+        "p": "0.9",
+        "r": "20"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 318517248,
+        "value_mib": 303.76171875
+      },
+      "peak_memory_bytes": 318517248,
+      "peak_memory_mib": 303.76171875,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20,
+        "MATHEMATICAL_INELIGIBILITY": 26
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "AD",
+      "status_counts": {
+        "ASSESSED": 20,
+        "NOT_ASSESSED": 26
+      },
+      "wall_time_per_assessment_median_seconds": 1375.9596168999997,
+      "wall_time_per_assessment_p95_seconds": 1545.93119572999,
+      "wall_time_total_seconds": 27657.954780599946,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 199,
+      "NB_eligibility_rate": 0.35714285714285715,
+      "NB_ineligibility_reason_histogram": {
+        "NoFiniteMLEError": 36
+      },
+      "NB_inner_retry_burden": {
+        "eligible_inner": 3980,
+        "extra_attempts_per_assessed_outer": 126.8,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 2536
+        },
+        "ineligible_inner": 2536,
+        "raw_inner_attempts": 6516
+      },
+      "NB_raw_outer_attempts": 56,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 56,
+      "configuration_id": "negative_binomial_r_20_p_0p9__cvm__b199",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "efb5ab0545e3781089ec5b24c8dcf8bf21167614d005e0758262feef3c457cb9",
+      "n": 20,
+      "not_assessed": 36,
+      "parameters": {
+        "p": "0.9",
+        "r": "20"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 238686208,
+        "value_mib": 227.62890625
+      },
+      "peak_memory_bytes": 238686208,
+      "peak_memory_mib": 227.62890625,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20,
+        "MATHEMATICAL_INELIGIBILITY": 36
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20,
+        "NOT_ASSESSED": 36
+      },
+      "wall_time_per_assessment_median_seconds": 284.9941133000102,
+      "wall_time_per_assessment_p95_seconds": 316.23763400498865,
+      "wall_time_total_seconds": 5733.591341099935,
+      "work_item": "CP05-C1"
+    },
+    {
+      "B": 999,
+      "NB_eligibility_rate": 0.5882352941176471,
+      "NB_ineligibility_reason_histogram": {
+        "NoFiniteMLEError": 14
+      },
+      "NB_inner_retry_burden": {
+        "eligible_inner": 19980,
+        "extra_attempts_per_assessed_outer": 544.6,
+        "ineligibility_reason_histogram": {
+          "MATHEMATICAL_INELIGIBILITY": 10892
+        },
+        "ineligible_inner": 10892,
+        "raw_inner_attempts": 30872
+      },
+      "NB_raw_outer_attempts": 34,
+      "R_PREFLIGHT": 20,
+      "artifact_validation": "PASS",
+      "assessed_outer": 20,
+      "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+      "completed_outer": 34,
+      "configuration_id": "negative_binomial_r_20_p_0p9__cvm__b999",
+      "configuration_status": "PASS",
+      "eligible_outer": 20,
+      "failed": 0,
+      "failure": null,
+      "family": "negative_binomial",
+      "manifest_digest": "5cbf899f4b52ed38bf3ab871aef9bc007bbd69cfd20ec5fb9f113f083a4a64d0",
+      "n": 20,
+      "not_assessed": 14,
+      "parameters": {
+        "p": "0.9",
+        "r": "20"
+      },
+      "peak_memory": {
+        "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+        "includes_child_processes": false,
+        "includes_native_memory": true,
+        "metric": "PEAK_PROCESS_WORKING_SET",
+        "scope": "current process since process start; child processes excluded",
+        "unit": "bytes",
+        "value": 296738816,
+        "value_mib": 282.9921875
+      },
+      "peak_memory_bytes": 296738816,
+      "peak_memory_mib": 282.9921875,
+      "reason_counts": {
+        "ASSESSMENT_COMPLETE": 20,
+        "MATHEMATICAL_INELIGIBILITY": 14
+      },
+      "schema_version": "cp05-c1-performance-preflight-v1",
+      "statistic": "CVM",
+      "status_counts": {
+        "ASSESSED": 20,
+        "NOT_ASSESSED": 14
+      },
+      "wall_time_per_assessment_median_seconds": 1333.7200378499983,
+      "wall_time_per_assessment_p95_seconds": 4130.958519315032,
+      "wall_time_total_seconds": 78514.80144149993,
+      "work_item": "CP05-C1"
+    }
+  ],
+  "projected_peak_memory": {
+    "max_observed_peak_process_memory_bytes": 318517248,
+    "scaling_assumption": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE_NOT_MEASURED_SCALING",
+    "scenarios": {
+      "1": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 318517248,
+        "workers": 1
+      },
+      "16": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 5096275968,
+        "workers": 16
+      },
+      "4": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 1274068992,
+        "workers": 4
+      },
+      "8": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 2548137984,
+        "workers": 8
+      }
+    }
+  },
+  "schema_version": "cp05-c1-performance-preflight-v1"
+}

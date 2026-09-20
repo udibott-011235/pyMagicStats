@@ -1,0 +1,31 @@
+{
+  "B199_completed": true,
+  "B999_completed": true,
+  "R_PREFLIGHT": 20,
+  "actual_head_sha": "858113cea684db65b68746e043a0dc719bbcadcf",
+  "baseline_main_sha": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+  "baseline_sha": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+  "calibration_claim_made": false,
+  "cell_status": {
+    "exponential_scale_1": "PASS",
+    "gamma_shape_0p25_scale_1": "PASS",
+    "negative_binomial_r_0p25_p_0p1": "PASS",
+    "negative_binomial_r_20_p_0p9": "PASS"
+  },
+  "cells_executed": 4,
+  "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+  "configurations_executed": 16,
+  "cp05_d_executed": false,
+  "execution_source_sha": "858113cea684db65b68746e043a0dc719bbcadcf",
+  "failures": [],
+  "full_matrix_executed": false,
+  "holdout_accessed": false,
+  "method_selected": false,
+  "power_analysis_executed": false,
+  "resource_assessment": "AWAITING_OWNER_RESOURCE_BUDGET",
+  "resource_budget": "NOT_PREVIOUSLY_AUTHORIZED",
+  "schema_version": "cp05-c1-performance-preflight-v1",
+  "source_sha": "858113cea684db65b68746e043a0dc719bbcadcf",
+  "status": "COMPLETE",
+  "work_item": "CP05-C1"
+}

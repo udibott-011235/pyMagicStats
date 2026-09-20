@@ -1,0 +1,57 @@
+{
+  "B": 199,
+  "NB_eligibility_rate": 1.0,
+  "NB_ineligibility_reason_histogram": {},
+  "NB_inner_retry_burden": {
+    "eligible_inner": 3980,
+    "extra_attempts_per_assessed_outer": 9.15,
+    "ineligibility_reason_histogram": {
+      "MATHEMATICAL_INELIGIBILITY": 183
+    },
+    "ineligible_inner": 183,
+    "raw_inner_attempts": 4163
+  },
+  "NB_raw_outer_attempts": 20,
+  "R_PREFLIGHT": 20,
+  "artifact_validation": "PASS",
+  "assessed_outer": 20,
+  "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+  "completed_outer": 20,
+  "configuration_id": "negative_binomial_r_0p25_p_0p1__ad__b199",
+  "configuration_status": "PASS",
+  "eligible_outer": 20,
+  "failed": 0,
+  "failure": null,
+  "family": "negative_binomial",
+  "manifest_digest": "322507c58b3eacbfda0ce93b7f24140c80c070e55631d0877d0d69cc078786ac",
+  "n": 20,
+  "not_assessed": 0,
+  "parameters": {
+    "p": "0.1",
+    "r": "0.25"
+  },
+  "peak_memory": {
+    "backend": "Windows PSAPI GetProcessMemoryInfo.PeakWorkingSetSize",
+    "includes_child_processes": false,
+    "includes_native_memory": true,
+    "metric": "PEAK_PROCESS_WORKING_SET",
+    "scope": "current process since process start; child processes excluded",
+    "unit": "bytes",
+    "value": 243937280,
+    "value_mib": 232.63671875
+  },
+  "peak_memory_bytes": 243937280,
+  "peak_memory_mib": 232.63671875,
+  "reason_counts": {
+    "ASSESSMENT_COMPLETE": 20
+  },
+  "schema_version": "cp05-c1-performance-preflight-v1",
+  "statistic": "AD",
+  "status_counts": {
+    "ASSESSED": 20
+  },
+  "wall_time_per_assessment_median_seconds": 324.8119285500238,
+  "wall_time_per_assessment_p95_seconds": 539.0234460199968,
+  "wall_time_total_seconds": 6753.5536765,
+  "work_item": "CP05-C1"
+}

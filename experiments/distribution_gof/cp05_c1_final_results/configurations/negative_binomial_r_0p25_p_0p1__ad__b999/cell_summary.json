@@ -1,0 +1,13 @@
+{
+  "calibration_executed": false,
+  "canonical_cell_id": "{\"B\":999,\"canonical_parameters\":{\"p\":\"0.1\",\"r\":\"0.25\"},\"family\":\"negative_binomial\",\"n\":20,\"null_type\":\"composite\",\"phase\":\"CP05-B_NON_CALIBRATION\",\"statistic\":\"AD\"}",
+  "claim_status": "NON_CLAIMING",
+  "raw_outer_units": 20,
+  "reason_counts": {
+    "ASSESSMENT_COMPLETE": 20
+  },
+  "schema_version": "cp05-b-output-v1",
+  "status_counts": {
+    "ASSESSED": 20
+  }
+}
