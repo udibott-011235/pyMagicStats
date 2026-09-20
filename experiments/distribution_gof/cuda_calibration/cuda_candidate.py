@@ -29,7 +29,7 @@ def fit_gamma(a,iterations=96):
     return {"shape":shape,"scale":mean/shape,"converged":ok,"iterations":iterations}
 def fit_negative_binomial(a,iterations=128):
     """Batched real-r profiled likelihood solver; MoM only starts the bracket."""
-    a=_x(a); 
+    a=_x(a)
     if bool(cp.any(a<0)) or bool(cp.any(a!=cp.floor(a))): raise CudaCandidateError("NB integral sample required")
     mean=cp.mean(a,axis=-1); var=cp.var(a,axis=-1,ddof=1); allzero=cp.all(a==0,axis=-1); eligible=(~allzero)&(var>mean); r=cp.maximum(mean*mean/cp.maximum(var-mean,1e-300),1e-10)
     for i in range(iterations):

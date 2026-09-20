@@ -15,7 +15,7 @@ def test_fails_closed_for_wrong_contract_and_duplicate_identity():
 def test_artifact_contract_and_gpu_cli_are_non_claiming():
     bundle = artifact_skeleton(BASELINE_SHA)
     assert set(bundle) == set(REQUIRED_ARTIFACTS)
-    assert bundle["summary.json"] == {"equivalence_gate_passed": False, "calibration_claim": False}
+    assert bundle["summary.json"] == {"equivalence_gate_passed": False, "generator_sanity_passed": False, "calibration_claim": False}
     assert bundle["equivalence_manifest.json"]["BOOTSTRAP_FIXTURE_SOURCE"] == BOOTSTRAP_FIXTURE_SOURCE
     with pytest.raises(SystemExit): main(["--output", "x"])
 
@@ -36,7 +36,7 @@ def test_dual_engine_gate_uses_shared_input_and_requires_every_gate():
     def adapter(label):
         def run(_, value):
             seen.append((label,id(value)))
-            return {"classification":"ELIGIBLE","parameters":{"scale":1.0},"log_likelihood":None,"statistic":1.0,"evaluation_points":[1.0],"distribution_values":{"cdf":[.5],"sf":[.5],"logCDF":[-.7],"logSF":[-.7]}}
+            return {"classification":"ELIGIBLE","parameters":{"shape":1.0,"scale":1.0},"log_likelihood":None,"statistic":1.0,"evaluation_points":[1.0],"distribution_values":{"cdf":[.5],"sf":[.5],"logCDF":[-.7],"logSF":[-.7]}}
         return run
     row=evaluate_fixed_record(identity="i",record_type="observed",cell=cell,raw_outer_index=0,raw_inner_index=None,sample=sample,reference_adapter=adapter("cpu"),cuda_adapter=adapter("cuda"))
     assert seen[0][1] == seen[1][1] == id(sample)
@@ -45,8 +45,8 @@ def test_dual_engine_gate_uses_shared_input_and_requires_every_gate():
 
 def test_mc_mismatch_fails_outer():
     record={"classification_gate_pass":True,"fit_gate_pass":True,"distribution_value_gate_pass":True,"statistic_gate_pass":True,"cpu_statistic":1.,"cuda_statistic":1.}
-    boot=[dict(record) for _ in range(B_EQ)]; boot[0]["cuda_statistic"]=2.
-    assert aggregate_outer(record,boot)["outer_gate_pass"] is False
+    boot=[dict(record) for _ in range(B_EQ)]; boot[0]["cuda_statistic"]=.5
+    result=aggregate_outer(record,boot); assert result["b_cpu"] != result["b_cuda"] and result["outer_gate_pass"] is False
 
 def test_cuda_adapter_fails_closed_without_gpu_and_never_returns_reference_values():
     cell=primary_fixture_matrix()[0]; sample,_=fixed_observed(cell,0,"n")

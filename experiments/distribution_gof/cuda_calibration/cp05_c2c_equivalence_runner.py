@@ -82,7 +82,16 @@ def evaluate_reference_record(cell, sample):
         points=list(range(max(int(max(sample)),0)+1))
         values={"pmf":[float(bound.pmf(x)) for x in points],"logPMF":[float(bound.logpmf(x)) for x in points],"cdf":[float(bound.cdf(x)) for x in points],"sf":[float(bound.sf(x)) for x in points],"logCDF":[float(bound.logcdf(x)) for x in points],"logSF":[float(bound.logsf(x)) for x in points]}
     else: values={"cdf":[float(bound.cdf(x)) for x in points],"sf":[float(bound.sf(x)) for x in points],"logCDF":[float(bound.logcdf(x)) for x in points],"logSF":[float(bound.logsf(x)) for x in points]}
-    return {"classification":"ELIGIBLE","parameters":result["parameters"],"log_likelihood":None,"statistic":statistic,"evaluation_points":points,"distribution_values":values}
+    record={"classification":"ELIGIBLE","parameters":result["parameters"],"log_likelihood":None,"statistic":statistic,"evaluation_points":points,"distribution_values":values}
+    if cell.family=="negative_binomial":
+        values_np=sample
+        def likelihood(parameters):
+            r,p=float(parameters["r"]),float(parameters["p"])
+            if not (r>0 and 0<p<1): return float("-inf")
+            return math.fsum(math.lgamma(float(x)+r)-math.lgamma(r)-math.lgamma(float(x)+1)+r*math.log(p)+float(x)*math.log1p(-p) for x in values_np)
+        record["reference_log_likelihood"]=likelihood
+        record["log_likelihood"]=likelihood(record["parameters"])
+    return record
 
 
 def evaluate_cuda_record(cell, sample, *, certified_support=None, remainder_bound=None):
@@ -154,17 +163,20 @@ def evaluate_fixed_record(*, identity, record_type, cell, raw_outer_index, raw_i
     # Adapters supply the same fitted-point values; no result is shared between engines.
     for quantity, cpu_values in cpu.get("distribution_values",{}).items():
         cuda_values=cuda.get("distribution_values",{}).get(quantity,())
-        if len(cpu_values)!=len(cuda_values): raise C2CError("missing distribution-value evidence")
+        if len(cpu_values)!=len(cuda_values):
+            evidence.append({"quantity":quantity,"evaluation_point":None,"cpu_value":None,"cuda_value":None,"abs_error":float("inf"),"allowed_tolerance":None,"passed":False})
+            continue
         for point,left,right in zip(cpu.get("evaluation_points",()),cpu_values,cuda_values):
             error=abs(right-left); evidence.append({"quantity":quantity,"evaluation_point":point,"cpu_value":left,"cuda_value":right,"abs_error":error,"allowed_tolerance":_tol(left),"passed":distribution_value_agreement(left,right)})
     distribution_pass=bool(evidence) and all(item["passed"] for item in evidence)
-    statistic_error=abs(cuda["statistic"]-cpu["statistic"]); statistic_tol=2e-11*max(1,abs(cpu["statistic"])); statistic_pass=statistic_agreement(cpu["statistic"],cuda["statistic"])
+    statistic_error=abs(cuda["statistic"]-cpu["statistic"]); statistic_tol=2e-11*max(1,abs(cpu["statistic"])); statistic_pass=math.isfinite(cuda["statistic"]) and statistic_agreement(cpu["statistic"],cuda["statistic"])
     # NB's preregistered flat exception is only considered after downstream gates.
     downstream=classification and distribution_pass and statistic_pass
     kwargs={"cpu_log_likelihood":cpu.get("log_likelihood"),"cuda_log_likelihood":cuda.get("log_likelihood"),"same_eligibility":classification,"downstream_passed":downstream}
     if cell.family=="negative_binomial": kwargs["reference_log_likelihood"]=cpu["reference_log_likelihood"]
-    fit_pass, flat_used, diagnostic=fit_agreement(cell.family,cpu["parameters"],cuda["parameters"],**kwargs)
-    return {"identity":identity,"record_type":record_type,"cell_id":cell.canonical_id,"family":cell.family,"n":cell.n,"statistic":cell.statistic,"raw_outer_index":raw_outer_index,"raw_inner_index":raw_inner_index,"sample_digest":hashlib.sha256(sample.tobytes()).hexdigest(),"cpu_classification":cpu["classification"],"cuda_classification":cuda["classification"],"cpu_parameters":cpu["parameters"],"cuda_parameters":cuda["parameters"],"cpu_log_likelihood":cpu.get("log_likelihood"),"cuda_log_likelihood":cuda.get("log_likelihood"),"cpu_statistic":cpu["statistic"],"cuda_statistic":cuda["statistic"],"fit_gate_pass":fit_pass,"classification_gate_pass":classification,"distribution_value_gate_pass":distribution_pass,"statistic_gate_pass":statistic_pass,"distribution_evidence":evidence,"statistic_abs_error":statistic_error,"statistic_allowed_tolerance":statistic_tol,"flat_objective_used":flat_used,"flat_objective_diagnostic":diagnostic}
+    try: fit_pass, flat_used, diagnostic=fit_agreement(cell.family,cpu["parameters"],cuda["parameters"],**kwargs)
+    except Exception: fit_pass, flat_used, diagnostic=False, None, None
+    return {"identity":identity,"record_type":record_type,"cell_id":cell.canonical_id,"family":cell.family,"n":cell.n,"statistic":cell.statistic,"raw_outer_index":raw_outer_index,"raw_inner_index":raw_inner_index,"sample_digest":hashlib.sha256(sample.tobytes()).hexdigest(),"cpu_classification":cpu["classification"],"cuda_classification":cuda["classification"],"cuda_failure_reason":cuda.get("failure_reason"),"cpu_parameters":cpu["parameters"],"cuda_parameters":cuda["parameters"],"cpu_log_likelihood":cpu.get("log_likelihood"),"cuda_log_likelihood":cuda.get("log_likelihood"),"cpu_statistic":cpu["statistic"],"cuda_statistic":cuda["statistic"],"fit_gate_pass":fit_pass,"classification_gate_pass":classification,"distribution_value_gate_pass":distribution_pass,"statistic_gate_pass":statistic_pass,"distribution_evidence":evidence,"statistic_abs_error":statistic_error,"statistic_allowed_tolerance":statistic_tol,"flat_objective_used":flat_used,"flat_objective_diagnostic":diagnostic}
 
 
 def aggregate_outer(observed, bootstraps):
