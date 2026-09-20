@@ -226,8 +226,18 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if not args.require_gpu: raise SystemExit("--require-gpu is mandatory; no CPU fallback")
-    # The actual invocation remains separately authorized; partial PASS output is forbidden.
-    raise SystemExit("CUDA_CANDIDATE_UNIMPLEMENTED: authorized Quantum execution required")
+    # Dispatch is complete; A2-2 owns final persistence, so no partial PASS exists.
+    if args.mode == "equivalence":
+        from .a2_artifacts import run_adversarial_suite
+        run_adversarial_suite()
+        raise SystemExit("artifact-layer-not-complete")
+    if args.mode == "generator-sanity":
+        raise SystemExit("generator-sanity requires separately authorized Quantum execution")
+    if args.mode == "all":
+        from .a2_artifacts import run_adversarial_suite
+        run_adversarial_suite()
+        raise SystemExit("artifact-layer-not-complete")
+    raise SystemExit("invalid mode")
 
 
 if __name__ == "__main__": main()
