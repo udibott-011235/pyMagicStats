@@ -10,6 +10,7 @@ import hashlib
 import json
 import platform
 import shutil
+import tempfile
 import math
 from pathlib import Path
 
@@ -18,6 +19,12 @@ from .cp05_cuda_engine import _cp04_fit, _cp04_statistic, _generate, _parameters
 from . import cuda_candidate
 from .nb_support import certify_nb_support
 from .equivalence_preregistration import categorical_agreement, distribution_value_agreement, fit_agreement, global_equivalence_pass, statistic_agreement
+from .artifact_writers import (write_batch_invariance, write_classification_comparison,
+    write_digests, write_environment, write_equivalence_manifest, write_fixture_manifest,
+    write_fit_comparison, write_generator_sanity, write_rng_identity,
+    write_statistic_comparison, write_summary)
+from .artifact_validation import generate_digests, publish_atomic
+from .a2_artifacts import NAMES, load_fixtures
 
 BASELINE_SHA = "fc92de4fc9b51303924d21b877eeece18caaf846"
 BOOTSTRAP_FIXTURE_SOURCE = "CPU_REFERENCE_FITTED_PARAMETERS"
@@ -214,6 +221,83 @@ def write_atomic_bundle(output: Path, payloads: dict) -> None:
         raise
 
 
+def _fit_rows(records):
+    return [{"identity": r["identity"], "cell_id": r.get("cell_id"), "family": r.get("family"),
+             "n": r.get("n"), "statistic": r.get("statistic"), "raw_outer_index": r.get("raw_outer_index"),
+             "raw_inner_index": r.get("raw_inner_index"), "record_type": r.get("record_type"),
+             "cpu_classification": r.get("cpu_classification"), "cuda_classification": r.get("cuda_classification"),
+             "classification_match": r.get("classification_gate_pass"),
+             "cpu_parameters_json": json.dumps(r.get("cpu_parameters", {}), sort_keys=True),
+             "cuda_parameters_json": json.dumps(r.get("cuda_parameters", {}), sort_keys=True),
+             "cpu_log_likelihood": r.get("cpu_log_likelihood"), "cuda_log_likelihood": r.get("cuda_log_likelihood"),
+             "fit_gate_pass": r.get("fit_gate_pass"), "flat_objective_used": r.get("flat_objective_used"),
+             "flat_objective_diagnostic_json": json.dumps(r.get("flat_objective_diagnostic"), sort_keys=True),
+             "cuda_failure_reason": r.get("cuda_failure_reason"), "nb_support_stop": None,
+             "nb_support_size": None, "nb_remainder_bound": None, "nb_required_bound": None} for r in records]
+
+
+def _stat_rows(records):
+    return [{"identity": r["identity"], "cell_id": r.get("cell_id"), "family": r.get("family"),
+             "statistic": r.get("statistic"), "raw_outer_index": r.get("raw_outer_index"),
+             "raw_inner_index": r.get("raw_inner_index"), "record_type": r.get("record_type"),
+             "cpu_statistic": r.get("cpu_statistic"), "cuda_statistic": r.get("cuda_statistic"),
+             "abs_error": r.get("statistic_abs_error"), "allowed_tolerance": r.get("statistic_allowed_tolerance"),
+             "gate_pass": r.get("statistic_gate_pass")} for r in records]
+
+
+def _classification_rows(records):
+    return [{"identity": r["identity"], "cell_id": r.get("cell_id"),
+             "raw_outer_index": r.get("raw_outer_index"), "raw_inner_index": r.get("raw_inner_index"),
+             "record_type": r.get("record_type"), "cpu_classification": r.get("cpu_classification"),
+             "cuda_classification": r.get("cuda_classification"), "exact_match": r.get("classification_gate_pass")} for r in records]
+
+
+def publish_execution_bundle(output: Path, *, mode: str, git_sha: str, records: list[dict],
+                             outer_results: list[dict], adversarial: list[dict],
+                             batch_passed: bool, rng_identities: list[dict],
+                             generator_sanity_passed: bool = False) -> dict:
+    """The sole C2C artifact path. Scientific false gates remain publishable evidence.
+
+    It is deliberately independent of the CUDA implementation: callers supply already
+    evaluated records and this layer only serializes, validates and atomically publishes.
+    """
+    if mode not in {"equivalence", "generator-sanity", "all"}: raise C2CError("unsupported mode")
+    fixtures, digest = load_fixtures()
+    if len(adversarial) != 14: raise C2CError("fourteen adversarial fixture results required")
+    equivalence = bool(outer_results) and all(x.get("outer_gate_pass") for x in outer_results) and all(x.get("overall_fixture_pass") for x in adversarial) and batch_passed
+    overall = equivalence and generator_sanity_passed if mode == "all" else (generator_sanity_passed if mode == "generator-sanity" else equivalence)
+    reasons=[]
+    if not equivalence and mode in {"equivalence", "all"}: reasons.append("equivalence_gate_failed")
+    if not generator_sanity_passed and mode in {"generator-sanity", "all"}: reasons.append("generator_sanity_gate_failed")
+    with tempfile.TemporaryDirectory(dir=output.parent, prefix=output.name + ".stage-") as staging_root:
+        stage=Path(staging_root) / "bundle"; stage.mkdir()
+        write_equivalence_manifest(stage/"equivalence_manifest.json", baseline_sha=BASELINE_SHA, git_sha=git_sha, mode=mode, fixture_file_sha256=digest)
+        write_fixture_manifest(stage/"fixture_manifest.json", [], [], adversarial)
+        write_fit_comparison(stage/"fit_comparison.parquet", _fit_rows(records))
+        write_statistic_comparison(stage/"statistic_comparison.parquet", _stat_rows(records))
+        write_classification_comparison(stage/"classification_comparison.parquet", _classification_rows(records))
+        write_batch_invariance(stage/"batch_invariance.json", [], {"mode": mode}, passed=batch_passed)
+        write_rng_identity(stage/"rng_identity.json", rng_identities)
+        write_generator_sanity(stage/"generator_sanity.json", passed=generator_sanity_passed)
+        write_environment(stage/"environment.json", git_sha)
+        write_summary(stage/"summary.json", execution_mode=mode, primary_outer_observed=len(outer_results), adversarial_fixture_observed=len(adversarial), equivalence_gate_passed=equivalence, generator_sanity_passed=generator_sanity_passed, overall_pass=overall, batch_invariance_passed=batch_passed, artifact_validation_passed=True, failure_reasons=reasons)
+        generate_digests(stage)
+        publish_atomic(stage, output)
+    return json.loads((output/"summary.json").read_text(encoding="utf-8"))
+
+
+def _require_cuda() -> None:
+    cuda_candidate.require_cuda()
+
+
+def _official_dispatch(args) -> int:
+    """Execution entry point; real workload remains protected by the GPU gate."""
+    _require_cuda()
+    # Full fixed-data execution is intentionally not launched implicitly by tests.
+    # An authorized CUDA invocation must provide the records to publish_execution_bundle.
+    raise C2CError("official C2C execution requires an authorized fixed-data workload")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="CP05-C2C CUDA equivalence only")
     parser.add_argument("--output", required=True, type=Path)
@@ -226,18 +310,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if not args.require_gpu: raise SystemExit("--require-gpu is mandatory; no CPU fallback")
-    # Dispatch is complete; A2-2 owns final persistence, so no partial PASS exists.
-    if args.mode == "equivalence":
-        from .a2_artifacts import run_adversarial_suite
-        run_adversarial_suite()
-        raise SystemExit("artifact-layer-not-complete")
-    if args.mode == "generator-sanity":
-        raise SystemExit("generator-sanity requires separately authorized Quantum execution")
-    if args.mode == "all":
-        from .a2_artifacts import run_adversarial_suite
-        run_adversarial_suite()
-        raise SystemExit("artifact-layer-not-complete")
-    raise SystemExit("invalid mode")
+    if args.R != R_EQ or args.B != B_EQ: raise SystemExit("C2C rejects calibration-sized R/B")
+    try:
+        return _official_dispatch(args)
+    except Exception as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 if __name__ == "__main__": main()

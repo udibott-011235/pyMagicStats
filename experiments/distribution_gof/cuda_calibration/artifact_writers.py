@@ -20,7 +20,7 @@ def write_statistic_comparison(path,rows): _parquet(path,rows,STAT_COLUMNS)
 def write_classification_comparison(path,rows): _parquet(path,rows,CLASS_COLUMNS)
 def write_batch_invariance(path,subset,results,passed=False): _json(path,{"partitions":[[1,1],[2,3],[4,5]],"subset":subset,"results":results,"passed":bool(passed)})
 def write_rng_identity(path,rows): _json(path,{"backend_independent":True,"batch_independent":True,"execution_order_independent":True,"resume_boundary_independent":True,"identities":rows})
-def write_generator_sanity(path): _json(path,{"executed":False,"passed":False,"case_count":7,"N":1000000,"results":[]})
+def write_generator_sanity(path, *, passed=False, results=None): _json(path,{"executed":False,"passed":bool(passed),"case_count":7,"N":1000000,"results":list(results or [])})
 def write_environment(path,git_sha): _json(path,{"git_sha":git_sha,"python_version":sys.version,"platform":platform.platform(),"execution_environment":"NOT_EXECUTED","cuda_runtime":None,"nvidia_driver":None,"device_name":None,"compute_capability":None,"total_vram":None,"cupy_version":None,"numpy_version":None,"scipy_version":None,"cudf_version_or_null":None,"CUDA_VISIBLE_DEVICES":None,"float_precision":"float64"})
 def write_summary(path,**values):
     base={"execution_mode":"NOT_EXECUTED","primary_outer_expected":1152,"primary_outer_observed":0,"adversarial_fixture_expected":14,"adversarial_fixture_observed":0,"equivalence_gate_passed":False,"generator_sanity_passed":False,"overall_pass":False,"batch_invariance_passed":False,"artifact_validation_passed":False,"calibration_claim":False,"failure_reasons":[]}; base.update(values)

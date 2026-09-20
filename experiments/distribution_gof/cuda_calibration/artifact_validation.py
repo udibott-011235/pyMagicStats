@@ -21,6 +21,13 @@ def validate_bundle(directory):
     if set(digests)!=set(REQUIRED_ARTIFACTS)-{"digests.json"}: raise ArtifactValidationError("digest set mismatch")
     for name,digest in digests.items():
         if hashlib.sha256((directory/name).read_bytes()).hexdigest()!=digest: raise ArtifactValidationError("digest mismatch")
+    fixture=json.loads((directory/"fixture_manifest.json").read_text())
+    batch=json.loads((directory/"batch_invariance.json").read_text())
+    rng=json.loads((directory/"rng_identity.json").read_text())
+    validate_adversarial_identities(fixture)
+    validate_batch_invariance(batch)
+    validate_rng_identities(rng)
+    validate_summary(summary, primary=summary["primary_outer_observed"], adversarial=summary["adversarial_fixture_observed"])
     return True
 def publish_atomic(temp:Path, output:Path):
     if output.exists(): raise ArtifactValidationError("preexisting output protected")
@@ -43,7 +50,9 @@ def validate_adversarial_identities(manifest):
     return True
 def validate_batch_invariance(payload):
     if payload.get("partitions")!=[[1,1],[2,3],[4,5]]: raise ArtifactValidationError("batch partitions")
-    return bool(payload.get("passed"))
+    if not isinstance(payload.get("passed"), bool): raise ArtifactValidationError("batch invariance type")
+    # A false gate is valid scientific evidence, not structural corruption.
+    return True
 def validate_rng_identities(payload):
     rows=payload.get("identities",[]); keys=[(x.get("canonical_cell_id"),x.get("raw_outer_index"),x.get("purpose"),x.get("raw_inner_index")) for x in rows]
     if len(keys)!=len(set(keys)): raise ArtifactValidationError("RNG identity duplicate")
