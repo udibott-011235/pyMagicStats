@@ -11,6 +11,10 @@ discrete NB uses the certified-support formulas; bootstrap p-values use
 plus-one and `>=`; and NB all-zero / variance-not-greater-than-mean samples are
 mathematically ineligible rather than failures.
 
+NB discrete AD/CvM primitives require caller-provided certified support and
+truncation. The caller must demonstrate a DEC-014-compatible tail-remainder
+bound; the engine never silently extends or hides the support truncation.
+
 RNG identity is SHA-256 over namespace, canonical cell ID, raw outer index,
 purpose and raw inner index. GPU random generation is deliberately separate;
 bitwise CPU/GPU identity is not claimed. Batching is shaped as
@@ -29,4 +33,7 @@ python experiments/distribution_gof/cuda_calibration/cp05_cuda_engine.py --famil
 
 Known limitations: CuPy/RAPIDS is optional locally; C2A intentionally has no
 long-run executor, no CPU↔CUDA tolerances, no performance claim, and no
-equivalence or calibration result.
+equivalence or calibration result. R1's small composite fixture runner calls
+the CP04 reference MLE for observed samples and every bootstrap replicate;
+that preserves the objective and failure semantics but is not CPU↔CUDA
+equivalence evidence.
