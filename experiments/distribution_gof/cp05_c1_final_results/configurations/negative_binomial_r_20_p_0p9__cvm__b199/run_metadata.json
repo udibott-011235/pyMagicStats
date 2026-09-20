@@ -1,0 +1,53 @@
+{
+  "claim_status": "NON_CLAIMING",
+  "environment_digest": "8c39367c8c43b10439d4bb11102402da51ad6ae4be79e6fd7f00886f6345915a",
+  "manifest_digest": "efb5ab0545e3781089ec5b24c8dcf8bf21167614d005e0758262feef3c457cb9",
+  "normalized_command": "C:\\Users\\ehudb\\Documents\\Codex\\2026-09-13\\cp05-b-fresh-isolated\\pyMagicStats\\.venv\\Scripts\\python.exe -m experiments.distribution_gof.cp05_c1_preflight --single negative_binomial_r_20_p_0p9__cvm__b199 --output experiments\\distribution_gof\\cp05_c1_final_results",
+  "normalized_config": {
+    "B": 199,
+    "alpha": 0.05,
+    "batch_spec": {
+      "batch_size": 1
+    },
+    "canonical_parameters": {
+      "p": "0.9",
+      "r": "20"
+    },
+    "claim_status": "NON_CLAIMING",
+    "environment_requirements": {
+      "implementation": "CPython",
+      "numpy": "2.5.3",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "pyarrow": "25.0.1",
+      "python": "3.12.14",
+      "scipy": "1.18.1"
+    },
+    "family": "negative_binomial",
+    "n": 20,
+    "namespace_id": "pyMagicStats/STAGE-DIST-FAMILIES-001/CP05-C/v1",
+    "null_type": "composite",
+    "output_schema_version": "cp05-b-output-v1",
+    "phase": "CP05-B_NON_CALIBRATION",
+    "raw_outer_range": [
+      0,
+      2000
+    ],
+    "schema_version": "cp05-b-manifest-v1",
+    "shard_spec": {
+      "shard_count": 1,
+      "shard_id": 0
+    },
+    "source_repository": "udibott-011235/pyMagicStats",
+    "source_sha": "858113cea684db65b68746e043a0dc719bbcadcf",
+    "statistic": "CVM",
+    "worker_spec": {
+      "workers": 1
+    }
+  },
+  "output_schema_version": "cp05-b-output-v1",
+  "schema_version": "cp05-b-artifacts-v1",
+  "table_format": "parquet",
+  "timings": {
+    "elapsed_seconds": 5733.591341099935
+  }
+}

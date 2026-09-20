@@ -1,0 +1,323 @@
+{
+  "COMPARATOR_CONFIGURATION_COUNT": 480,
+  "COMPARATOR_PROJECTION_METHOD": "CONSERVATIVE_PRIMARY_MAX_PROXY",
+  "COMPARATOR_TIMINGS_DIRECTLY_MEASURED": false,
+  "FROZEN_PREFLIGHT_CONFIGURATION_COUNT": 16,
+  "FULL_DEVELOPMENT_CONFIGURATION_COUNT": 1056,
+  "NB_OBSERVED_INNER_RETRY_FACTOR": {
+    "199": 1.6371859296482412,
+    "999": 1.737037037037037
+  },
+  "NB_OBSERVED_OUTER_ELIGIBILITY_RATE": {
+    "199": 0.35714285714285715,
+    "999": 0.43478260869565216
+  },
+  "NB_RAW_WORKLOAD_PROJECTION_UNCERTAIN": true,
+  "NB_RAW_WORKLOAD_PROJECTION_UNCERTAINTY_REASON": "R_PREFLIGHT_20_EXTREME_CELLS_ONLY",
+  "N_EFFECT_MEASURED": false,
+  "PARALLEL_EFFICIENCY_MEASURED": false,
+  "PRACTICAL_PARALLEL_RUNTIME": "NOT_ESTABLISHED",
+  "PRIMARY_CONFIGURATION_COUNT": 576,
+  "PROJECTED_CP05_C_FULL_MATRIX_COMPUTE": {
+    "n20_equivalent_median_seconds": 1579355356.156013,
+    "n20_equivalent_p95_seconds": 3305909368.9381027,
+    "projection_basis": "N20_EQUIVALENT_COST_PROJECTION"
+  },
+  "PROJECTED_CP05_C_FULL_MATRIX_WALL_TIME": {
+    "detected_logical_cpus": 12,
+    "parallel_efficiency_measured": false,
+    "practical_parallel_runtime": "NOT_ESTABLISHED",
+    "projection_basis": "N20_EQUIVALENT_COST_PROJECTION",
+    "scenarios": {
+      "1": {
+        "IDEAL_LOWER_BOUND": {
+          "n20_equivalent_median_seconds": 1579355356.156013,
+          "n20_equivalent_p95_seconds": 3305909368.9381027
+        },
+        "PRACTICAL_ESTIMATE": "NOT_ESTABLISHED",
+        "parallel_efficiency_measured": false,
+        "workers": 1
+      },
+      "16": {
+        "IDEAL_LOWER_BOUND": {
+          "n20_equivalent_median_seconds": 98709709.75975081,
+          "n20_equivalent_p95_seconds": 206619335.55863142
+        },
+        "PRACTICAL_ESTIMATE": "NOT_ESTABLISHED",
+        "parallel_efficiency_measured": false,
+        "workers": 16
+      },
+      "4": {
+        "IDEAL_LOWER_BOUND": {
+          "n20_equivalent_median_seconds": 394838839.03900325,
+          "n20_equivalent_p95_seconds": 826477342.2345257
+        },
+        "PRACTICAL_ESTIMATE": "NOT_ESTABLISHED",
+        "parallel_efficiency_measured": false,
+        "workers": 4
+      },
+      "8": {
+        "IDEAL_LOWER_BOUND": {
+          "n20_equivalent_median_seconds": 197419419.51950163,
+          "n20_equivalent_p95_seconds": 413238671.11726284
+        },
+        "PRACTICAL_ESTIMATE": "NOT_ESTABLISHED",
+        "parallel_efficiency_measured": false,
+        "workers": 8
+      }
+    }
+  },
+  "PROJECTED_ELIGIBLE_OUTER_ASSESSMENTS": 2112000,
+  "PROJECTED_PEAK_MEMORY": {
+    "max_observed_peak_process_memory_bytes": 318517248,
+    "scaling_assumption": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE_NOT_MEASURED_SCALING",
+    "scenarios": {
+      "1": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 318517248,
+        "workers": 1
+      },
+      "16": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 5096275968,
+        "workers": 16
+      },
+      "4": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 1274068992,
+        "workers": 4
+      },
+      "8": {
+        "estimate_class": "UPPER_SIMPLE_CONCURRENCY_ESTIMATE",
+        "measured_concurrent_memory": false,
+        "naive_upper_concurrent_memory_bytes": 2548137984,
+        "workers": 8
+      }
+    }
+  },
+  "PROJECTION_BASIS": "N20_EQUIVALENT_COST_PROJECTION",
+  "RESOURCE_ASSESSMENT": "AWAITING_OWNER_RESOURCE_BUDGET",
+  "RESOURCE_BUDGET": "NOT_PREVIOUSLY_AUTHORIZED",
+  "SCALING_UNCERTAINTY": "UNMEASURED_N_EFFECT",
+  "assumptions": [
+    "AD and CVM costs are measured by CP05-C1 at n=20.",
+    "Comparator costs use the conservative maximum measured primary cost within family and B.",
+    "Comparator timings are proxy projections and are not direct measurements.",
+    "All n values use an n=20-equivalent cost; the effect of n is unmeasured.",
+    "R_C is 2000 eligible outer assessments for every full-matrix configuration.",
+    "Composite Negative Binomial raw attempts use the lowest observed outer eligibility rate by B.",
+    "Composite Negative Binomial inner attempts use the highest observed retry factor by B.",
+    "Parallel scenarios are ideal lower bounds only; practical efficiency is unmeasured.",
+    "Concurrent-memory scenarios are simple upper estimates, not measured scaling.",
+    "Artifact I/O and scheduler contention are not separately modeled.",
+    "This projection is not a runtime guarantee or calibration evidence."
+  ],
+  "budget_violations": [],
+  "claim_status": "NON_CALIBRATION_NON_CLAIMING",
+  "composite_refit_attempt_projection": 966220800.0,
+  "cost_basis_breakdown": {
+    "MEASURED_COST": {
+      "configuration_count": 576,
+      "eligible_outer_assessments": 1152000,
+      "n20_equivalent_median_seconds": 757147984.056005,
+      "n20_equivalent_p95_seconds": 1508810375.96993
+    },
+    "PROXY_PROJECTED_COST": {
+      "configuration_count": 480,
+      "eligible_outer_assessments": 960000,
+      "n20_equivalent_median_seconds": 822207372.100008,
+      "n20_equivalent_p95_seconds": 1797098992.9681728
+    }
+  },
+  "cost_basis_by_family_B_statistic": [
+    {
+      "B": 199,
+      "cost_class": "MEASURED_COST",
+      "family": "gamma",
+      "median_seconds": 1.4767323000123724,
+      "p95_seconds": 1.7514003500429682,
+      "statistic": "AD",
+      "timing_basis": "AD"
+    },
+    {
+      "B": 199,
+      "cost_class": "MEASURED_COST",
+      "family": "gamma",
+      "median_seconds": 0.7734251500223763,
+      "p95_seconds": 0.8955564150528517,
+      "statistic": "CVM",
+      "timing_basis": "CVM"
+    },
+    {
+      "B": 199,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "gamma",
+      "median_seconds": 1.4767323000123724,
+      "p95_seconds": 1.7514003500429682,
+      "statistic": "KS",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    },
+    {
+      "B": 999,
+      "cost_class": "MEASURED_COST",
+      "family": "gamma",
+      "median_seconds": 6.606902899977285,
+      "p95_seconds": 7.908519159964635,
+      "statistic": "AD",
+      "timing_basis": "AD"
+    },
+    {
+      "B": 999,
+      "cost_class": "MEASURED_COST",
+      "family": "gamma",
+      "median_seconds": 3.7503541499900166,
+      "p95_seconds": 4.297235139962868,
+      "statistic": "CVM",
+      "timing_basis": "CVM"
+    },
+    {
+      "B": 999,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "gamma",
+      "median_seconds": 6.606902899977285,
+      "p95_seconds": 7.908519159964635,
+      "statistic": "KS",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    },
+    {
+      "B": 199,
+      "cost_class": "MEASURED_COST",
+      "family": "exponential",
+      "median_seconds": 0.8138355500122998,
+      "p95_seconds": 1.0828456850227668,
+      "statistic": "AD",
+      "timing_basis": "AD"
+    },
+    {
+      "B": 199,
+      "cost_class": "MEASURED_COST",
+      "family": "exponential",
+      "median_seconds": 0.5755818000179715,
+      "p95_seconds": 0.7158713650191205,
+      "statistic": "CVM",
+      "timing_basis": "CVM"
+    },
+    {
+      "B": 199,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "exponential",
+      "median_seconds": 0.8138355500122998,
+      "p95_seconds": 1.0828456850227668,
+      "statistic": "KS",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    },
+    {
+      "B": 999,
+      "cost_class": "MEASURED_COST",
+      "family": "exponential",
+      "median_seconds": 3.5540250999911223,
+      "p95_seconds": 4.228429354995024,
+      "statistic": "AD",
+      "timing_basis": "AD"
+    },
+    {
+      "B": 999,
+      "cost_class": "MEASURED_COST",
+      "family": "exponential",
+      "median_seconds": 2.1716827499622013,
+      "p95_seconds": 3.4637688299757428,
+      "statistic": "CVM",
+      "timing_basis": "CVM"
+    },
+    {
+      "B": 999,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "exponential",
+      "median_seconds": 3.5540250999911223,
+      "p95_seconds": 4.228429354995024,
+      "statistic": "KS",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    },
+    {
+      "B": 199,
+      "cost_class": "MEASURED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 324.8119285500238,
+      "p95_seconds": 539.0234460199968,
+      "statistic": "AD",
+      "timing_basis": "AD"
+    },
+    {
+      "B": 199,
+      "cost_class": "MEASURED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 307.5401872500079,
+      "p95_seconds": 394.40212282999784,
+      "statistic": "CVM",
+      "timing_basis": "CVM"
+    },
+    {
+      "B": 199,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 324.8119285500238,
+      "p95_seconds": 539.0234460199968,
+      "statistic": "DISCRETE_KS",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    },
+    {
+      "B": 199,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 324.8119285500238,
+      "p95_seconds": 539.0234460199968,
+      "statistic": "PEARSON_HELPER",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    },
+    {
+      "B": 999,
+      "cost_class": "MEASURED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 1814.4870180999987,
+      "p95_seconds": 2779.294204970013,
+      "statistic": "AD",
+      "timing_basis": "AD"
+    },
+    {
+      "B": 999,
+      "cost_class": "MEASURED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 1490.7939332499955,
+      "p95_seconds": 4138.688061810033,
+      "statistic": "CVM",
+      "timing_basis": "CVM"
+    },
+    {
+      "B": 999,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 1814.4870180999987,
+      "p95_seconds": 4138.688061810033,
+      "statistic": "DISCRETE_KS",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    },
+    {
+      "B": 999,
+      "cost_class": "PROXY_PROJECTED_COST",
+      "family": "negative_binomial",
+      "median_seconds": 1814.4870180999987,
+      "p95_seconds": 4138.688061810033,
+      "statistic": "PEARSON_HELPER",
+      "timing_basis": "CONSERVATIVE_PRIMARY_MAX_PROXY"
+    }
+  ],
+  "eligible_outer_target": 2112000,
+  "guarantee": false,
+  "inner_bootstrap_attempt_projection": 1596518400.0,
+  "number_of_development_cells": 144,
+  "raw_outer_attempt_projection": 3302400.0,
+  "schema_version": "cp05-c1-performance-preflight-v1"
+}

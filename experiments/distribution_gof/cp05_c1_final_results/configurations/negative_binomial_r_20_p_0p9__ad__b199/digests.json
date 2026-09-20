@@ -1,0 +1,11 @@
+{
+  "files": {
+    "cell_summary.json": "8a34b44f729796c84d78f550a1c561a5452b50d651d7fd91e21114dd975144d1",
+    "environment.json": "5094faa71431c70421b5521eaa4cb2b30b7a35b390b47a26a5f647e3fd7db2d8",
+    "inner_accounting.parquet": "bb2bc925ea08012a19b72566537373bc0276c3d3258c5ff1adc4d0695da31ea1",
+    "manifest.json": "ce225d39212ca0b4f85b5931e689cfc9cbc38f84e985591ec6bb1b49b92eccc5",
+    "outer_results.parquet": "c1820b1344009cba303829601ad9d2c3d02623451af62ee10519ea3bb86e892a",
+    "run_metadata.json": "fe7436bb01636541607019190257406a4267547ad492bba0bde4e7f34e429f7e"
+  },
+  "schema_version": "cp05-b-artifacts-v1"
+}

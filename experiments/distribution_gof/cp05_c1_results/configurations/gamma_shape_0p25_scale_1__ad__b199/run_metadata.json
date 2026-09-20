@@ -1,0 +1,53 @@
+{
+  "claim_status": "NON_CLAIMING",
+  "environment_digest": "0e2cef4e5526409d201d5a5cc092b2a38f39b1bcf348bd678a61a62006c86271",
+  "manifest_digest": "bc7d121b3f0ed07a480384032b15c869beecd04260692aafdae982e296c62cb4",
+  "normalized_command": "C:\\Users\\ehudb\\Documents\\Codex\\2026-09-13\\cp05-b-fresh-isolated\\pyMagicStats\\.venv\\Scripts\\python.exe -m experiments.distribution_gof.cp05_c1_preflight --single gamma_shape_0p25_scale_1__ad__b199 --output experiments\\distribution_gof\\cp05_c1_results",
+  "normalized_config": {
+    "B": 199,
+    "alpha": 0.05,
+    "batch_spec": {
+      "batch_size": 1
+    },
+    "canonical_parameters": {
+      "scale": "1",
+      "shape": "0.25"
+    },
+    "claim_status": "NON_CLAIMING",
+    "environment_requirements": {
+      "implementation": "CPython",
+      "numpy": "2.5.3",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "pyarrow": "25.0.1",
+      "python": "3.12.14",
+      "scipy": "1.18.1"
+    },
+    "family": "gamma",
+    "n": 20,
+    "namespace_id": "pyMagicStats/STAGE-DIST-FAMILIES-001/CP05-C/v1",
+    "null_type": "composite",
+    "output_schema_version": "cp05-b-output-v1",
+    "phase": "CP05-B_NON_CALIBRATION",
+    "raw_outer_range": [
+      0,
+      20
+    ],
+    "schema_version": "cp05-b-manifest-v1",
+    "shard_spec": {
+      "shard_count": 1,
+      "shard_id": 0
+    },
+    "source_repository": "udibott-011235/pyMagicStats",
+    "source_sha": "6fe0bcf0a71170dd29c2605fc6d6e3feeffe7bce",
+    "statistic": "AD",
+    "worker_spec": {
+      "workers": 1
+    }
+  },
+  "output_schema_version": "cp05-b-output-v1",
+  "schema_version": "cp05-b-artifacts-v1",
+  "table_format": "parquet",
+  "timings": {
+    "elapsed_seconds": 17.538864300004207
+  }
+}
