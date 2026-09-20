@@ -37,3 +37,12 @@ equivalence or calibration result. R1's small composite fixture runner calls
 the CP04 reference MLE for observed samples and every bootstrap replicate;
 that preserves the objective and failure semantics but is not CPU↔CUDA
 equivalence evidence.
+
+CP05-C2C adds `cp05_c2c_equivalence_runner.py`: a fail-closed, fixed-data
+DEC-016 runner contract. It accepts only the frozen `R_EQ=8`, `B_EQ=15`,
+144-cell/1152-outer identity design and records that bootstrap fixtures are
+constructed with `CPU_REFERENCE_FITTED_PARAMETERS`. It exposes exactly the
+preregistered artifact bundle, three fixed batch partitions, fixture digests,
+and the seven-case `N=1_000_000` generator-sanity path. It has no calibration
+mode, no partial PASS artifact, and requires `--require-gpu`; execution on a
+CUDA/Quantum host remains separately authorized.
