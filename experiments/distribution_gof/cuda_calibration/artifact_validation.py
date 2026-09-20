@@ -37,3 +37,17 @@ def generate_digests(directory):
     values={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in directory.iterdir() if p.name!="digests.json"}
     if set(values)!=set(REQUIRED_ARTIFACTS)-{"digests.json"}: raise ArtifactValidationError("digest generation set")
     (directory/"digests.json").write_text(json.dumps(values,sort_keys=True),encoding="utf-8"); return values
+def validate_adversarial_identities(manifest):
+    rows=manifest.get("adversarial",[])
+    if len(rows)!=14 or len({x.get("fixture_name") for x in rows})!=14: raise ArtifactValidationError("adversarial identities")
+    return True
+def validate_batch_invariance(payload):
+    if payload.get("partitions")!=[[1,1],[2,3],[4,5]]: raise ArtifactValidationError("batch partitions")
+    return bool(payload.get("passed"))
+def validate_rng_identities(payload):
+    rows=payload.get("identities",[]); keys=[(x.get("canonical_cell_id"),x.get("raw_outer_index"),x.get("purpose"),x.get("raw_inner_index")) for x in rows]
+    if len(keys)!=len(set(keys)): raise ArtifactValidationError("RNG identity duplicate")
+    return True
+def validate_summary(summary, *, primary, adversarial):
+    if summary.get("primary_outer_observed")!=primary or summary.get("adversarial_fixture_observed")!=adversarial or summary.get("calibration_claim") is not False: raise ArtifactValidationError("summary inconsistency")
+    return True
