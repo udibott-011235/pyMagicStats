@@ -82,7 +82,7 @@ def evaluate_reference_record(cell, sample):
         points=list(range(max(int(max(sample)),0)+1))
         values={"pmf":[float(bound.pmf(x)) for x in points],"logPMF":[float(bound.logpmf(x)) for x in points],"cdf":[float(bound.cdf(x)) for x in points],"sf":[float(bound.sf(x)) for x in points],"logCDF":[float(bound.logcdf(x)) for x in points],"logSF":[float(bound.logsf(x)) for x in points]}
     else: values={"cdf":[float(bound.cdf(x)) for x in points],"sf":[float(bound.sf(x)) for x in points],"logCDF":[float(bound.logcdf(x)) for x in points],"logSF":[float(bound.logsf(x)) for x in points]}
-    record={"classification":"ELIGIBLE","parameters":result["parameters"],"log_likelihood":None,"statistic":statistic,"evaluation_points":points,"distribution_values":values}
+    record={"classification":"ELIGIBLE","parameters":result["parameters"],"log_likelihood":None,"statistic":statistic,"evaluation_points":points,"distribution_values":values,"bound":bound}
     if cell.family=="negative_binomial":
         values_np=sample
         def likelihood(parameters):
