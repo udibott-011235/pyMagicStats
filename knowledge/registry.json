@@ -636,6 +636,27 @@
       ]
     },
     {
+      "id": "DEC-016",
+      "kind": "decision",
+      "title": "CP05-C2B CPU/CUDA equivalence preregistration",
+      "status": "accepted",
+      "scope": "Frozen float64 fixed-data CPU/CUDA equivalence gates, fixture matrix, tolerances and future evaluator artifacts; no GPU execution or statistical calibration",
+      "path": "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+      "evidence_paths": [
+        "experiments/distribution_gof/cuda_calibration/equivalence_preregistration.py",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2b_adversarial_fixtures.json",
+        "tests/research/test_cp05_cuda_equivalence_preregistration.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["cp05", "cuda", "rapids", "equivalence", "preregistration", "float64"]
+    },
+    {
       "id": "EV-013",
       "kind": "evidence",
       "title": "CP05-A GOF architecture baseline and preregistration",

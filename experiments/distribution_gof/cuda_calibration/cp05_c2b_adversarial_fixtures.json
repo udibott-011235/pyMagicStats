@@ -1,0 +1,20 @@
+{
+  "schema": "cp05-c2b-adversarial-fixtures-v1",
+  "precision": "float64",
+  "fixtures": {
+    "nb_all_zero": {"family": "negative_binomial", "sample": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
+    "nb_variance_equal_mean": {"family": "negative_binomial", "sample": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
+    "nb_variance_just_below_mean": {"family": "negative_binomial", "sample": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
+    "nb_variance_just_above_mean": {"family": "negative_binomial", "sample": [10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
+    "nb_very_sparse": {"family": "negative_binomial", "sample": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5]},
+    "nb_heavy_tail": {"family": "negative_binomial", "sample": [0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 50]},
+    "gamma_shape_0p25": {"family": "gamma", "sample": [0.000001, 0.00003, 0.0002, 0.001, 0.004, 0.02, 0.08, 0.3, 1.1, 4.2]},
+    "very_small_observations": {"family": "continuous", "sample": [5e-324, 1e-300, 1e-200, 1e-100, 1e-20]},
+    "large_observations": {"family": "continuous", "sample": [100.0, 1000.0, 10000.0, 1000000.0, 100000000.0]},
+    "ad_extreme_tails": {"family": "continuous", "cdf": [1e-300, 1e-100, 0.5, 0.9999999999999999]},
+    "cdf_near_zero": {"family": "continuous", "cdf": [5e-324, 1e-300, 1e-200]},
+    "cdf_near_one": {"family": "continuous", "cdf": [0.999999999999, 0.9999999999999999]},
+    "mc_exact_tie": {"T_obs": 1.0, "bootstrap": [0.5, 1.0, 1.5]},
+    "mc_near_comparison_cliff": {"T_obs": 1.0, "below": 0.9999999999999999, "equal": 1.0, "above": 1.0000000000000002}
+  }
+}

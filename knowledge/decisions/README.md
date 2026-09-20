@@ -26,5 +26,7 @@ Decisiones iniciales indexadas:
 - `DEC-015`: separa validación de implementación, calibración estadística,
   selección del motor experimental y frontera de ejecución de agentes; CP05-C2A
   es un prototipo CUDA/RAPIDS aislado, sin equivalencia ni calibración.
+- `DEC-016`: prerregistra el gate CPU↔CUDA CP05-C2B sobre datos fijos y sus
+  tolerancias; no constituye ejecución GPU, calibración ni benchmark.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
