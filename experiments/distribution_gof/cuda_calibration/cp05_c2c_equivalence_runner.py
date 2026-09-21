@@ -16,7 +16,7 @@ import subprocess
 from pathlib import Path
 
 from .equivalence_preregistration import B_EQ, GENERATOR_SANITY_CASES, GENERATOR_SANITY_N, PRIMARY_CELL_COUNT, R_EQ, REQUIRED_ARTIFACTS, primary_fixture_matrix, initial_summary
-from .cp05_cuda_engine import _cp04_fit, _cp04_statistic, _generate, _parameters, derive_seed, mc_pvalue, nb_eligibility
+from .cp05_cuda_engine import EngineContractError, _cp04_fit, _cp04_statistic, _generate, _parameters, derive_seed, mc_pvalue, nb_eligibility
 from . import cuda_candidate
 from .nb_support import certify_nb_support
 from .equivalence_preregistration import categorical_agreement, distribution_value_agreement, fit_agreement, generator_sanity_check, global_equivalence_pass, statistic_agreement
@@ -215,7 +215,10 @@ def fixed_bootstraps(cell, observed, raw_outer_index, namespace):
         seed=derive_seed(namespace,cell.canonical_id,raw_outer_index,"inner_bootstrap",raw_inner_index)
         sample=_generate(cell.family,cpu["parameters"],cell.n,seed); record={"raw_inner_index":raw_inner_index,"seed_identity":seed,"sample":sample,"sample_digest":hashlib.sha256(sample.tobytes()).hexdigest()}
         try: reference_fit(cell.family,sample); record["canonical_status"]="ELIGIBLE"; eligible.append(record)
-        except Exception: record["canonical_status"]="INELIGIBLE"
+        except EngineContractError as exc:
+            if not str(exc).startswith("NB_NOT_ASSESSED:"):
+                raise
+            record["canonical_status"]="INELIGIBLE"
         attempts.append(record)
         if len(eligible)==B_EQ: return cpu, attempts, eligible
     raise C2CError("NB retry cap exhaustion")

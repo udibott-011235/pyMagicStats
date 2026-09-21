@@ -464,3 +464,36 @@ def test_bootstrap_reference_gate_uses_canonical_population_semantics():
     # The same adapter used by the retry loop rejects this inner draw as ineligible.
     with pytest.raises(EngineContractError, match="NB_NOT_ASSESSED"):
         _cp04_fit("negative_binomial", np.asarray([0, 2], dtype=np.int64))
+
+
+def _bootstrap_exception_harness(monkeypatch, injected):
+    cell = SimpleNamespace(family="negative_binomial", canonical_id="nb|bootstrap", n=2)
+    calls, generated = [], []
+    def reference(*args):
+        calls.append(args)
+        if len(calls) == 1:
+            return {"parameters": {"r": 1.0, "p": .5}}
+        if len(calls) == 2:
+            raise injected
+        return {"parameters": {"r": 1.0, "p": .5}}
+    monkeypatch.setattr(runner, "reference_fit", reference)
+    monkeypatch.setattr(runner, "_generate", lambda *args: generated.append(args[-1]) or np.asarray([0, 3], dtype=np.int64))
+    return cell, generated
+
+
+@pytest.mark.parametrize("reason", ["ALL_ZERO_NON_IDENTIFYING", "VARIANCE_NOT_GREATER_THAN_MEAN"])
+def test_only_canonical_nb_ineligibility_is_redrawn(monkeypatch, reason):
+    cell, generated = _bootstrap_exception_harness(monkeypatch, EngineContractError(f"NB_NOT_ASSESSED:{reason}"))
+    _, attempts, eligible = runner.fixed_bootstraps(cell, np.asarray([0, 3], dtype=np.int64), 0, "fixture")
+    assert attempts[0]["canonical_status"] == "INELIGIBLE"
+    assert [row["raw_inner_index"] for row in attempts] == list(range(16))
+    assert [row["raw_inner_index"] for row in eligible] == list(range(1, 16))
+    assert len(set(generated)) == len(generated) == 16
+
+
+@pytest.mark.parametrize("injected", [EngineContractError("SOME_OTHER_CONTRACT_FAILURE"), TypeError("synthetic programming defect"), RuntimeError("synthetic backend failure")])
+def test_nonmathematical_bootstrap_errors_propagate_without_redraw(monkeypatch, injected):
+    cell, generated = _bootstrap_exception_harness(monkeypatch, injected)
+    with pytest.raises(type(injected), match=str(injected)):
+        runner.fixed_bootstraps(cell, np.asarray([0, 3], dtype=np.int64), 0, "fixture")
+    assert len(generated) == 1
