@@ -203,11 +203,23 @@ def evaluate_fixed_record(*, identity, record_type, cell, raw_outer_index, raw_i
 
 def aggregate_outer(observed, bootstraps):
     if len(bootstraps)!=B_EQ: raise C2CError("B_EQ eligible bootstrap results required")
-    cpu_b,cpu_p=mc_pvalue(observed["cpu_statistic"],[x["cpu_statistic"] for x in bootstraps]); cuda_b,cuda_p=mc_pvalue(observed["cuda_statistic"],[x["cuda_statistic"] for x in bootstraps])
-    mc=cpu_b==cuda_b and (cpu_p<=.05)==(cuda_p<=.05)
+    cpu_b,cpu_p=mc_pvalue(observed["cpu_statistic"],[x["cpu_statistic"] for x in bootstraps])
+    cuda_records=[observed,*bootstraps]
+    unavailable=[]
+    for record in cuda_records:
+        if record.get("cuda_classification") != "ELIGIBLE" or not math.isfinite(record.get("cuda_statistic", float("nan"))):
+            unavailable.append({"identity":record.get("identity"), "record_type":record.get("record_type"),
+                                "raw_inner_index":record.get("raw_inner_index"),
+                                "cuda_classification":record.get("cuda_classification"),
+                                "cuda_failure_reason":record.get("cuda_failure_reason")})
+    if unavailable:
+        cuda_b=cuda_p=reject_cuda=None; mc=False; mc_evaluable=False
+    else:
+        cuda_b,cuda_p=mc_pvalue(observed["cuda_statistic"],[x["cuda_statistic"] for x in bootstraps])
+        reject_cuda=cuda_p<=.05; mc=cpu_b==cuda_b and (cpu_p<=.05)==reject_cuda; mc_evaluable=True
     required=("classification_gate_pass","fit_gate_pass","distribution_value_gate_pass","statistic_gate_pass")
     passed=all(observed[key] for key in required) and all(all(row[key] for key in required) for row in bootstraps) and mc
-    return {"b_cpu":cpu_b,"b_cuda":cuda_b,"p_cpu":cpu_p,"p_cuda":cuda_p,"reject_cpu":cpu_p<=.05,"reject_cuda":cuda_p<=.05,"mc_gate_pass":mc,"outer_gate_pass":passed}
+    return {"b_cpu":cpu_b,"b_cuda":cuda_b,"p_cpu":cpu_p,"p_cuda":cuda_p,"reject_cpu":cpu_p<=.05,"reject_cuda":reject_cuda,"mc_gate_pass":mc,"mc_evaluable":mc_evaluable,"cuda_mc_unavailable_records":unavailable,"outer_gate_pass":passed}
 
 
 def provisional_global(outer_results):

@@ -246,3 +246,69 @@ def test_summary_expected_count_validation_rejects_wrong_counts():
         validate_summary(dict(valid, primary_outer_expected=1151), generator=generator)
     with pytest.raises(ArtifactValidationError, match="generator"):
         validate_summary(dict(valid, execution_mode="generator-sanity", primary_outer_observed=0, adversarial_fixture_observed=0), generator={"case_count": 6, "results": _generator(6)})
+
+
+def _mc_record(*, cuda_statistic=1.0, cuda_classification="ELIGIBLE", failure_reason=None, inner=None):
+    return {"identity": f"row-{inner}", "record_type": "observed" if inner is None else "bootstrap",
+            "raw_inner_index": inner, "cuda_classification": cuda_classification,
+            "cuda_failure_reason": failure_reason, "cpu_statistic": 1.0,
+            "cuda_statistic": cuda_statistic, "classification_gate_pass": cuda_classification == "ELIGIBLE",
+            "fit_gate_pass": cuda_classification == "ELIGIBLE", "distribution_value_gate_pass": cuda_classification == "ELIGIBLE",
+            "statistic_gate_pass": cuda_classification == "ELIGIBLE"}
+
+
+def test_observed_cuda_failure_is_scientific_evidence_not_mc_crash():
+    observed = _mc_record(cuda_statistic=float("nan"), cuda_classification="FAILED", failure_reason="solver non-convergence")
+    aggregate = runner.aggregate_outer(observed, [_mc_record(inner=index) for index in range(15)])
+    assert aggregate["b_cpu"] == 15 and aggregate["p_cpu"] == 1.0
+    assert aggregate["b_cuda"] is aggregate["p_cuda"] is aggregate["reject_cuda"] is None
+    assert aggregate["mc_evaluable"] is False and aggregate["mc_gate_pass"] is False and aggregate["outer_gate_pass"] is False
+    assert aggregate["cuda_mc_unavailable_records"][0]["cuda_failure_reason"] == "solver non-convergence"
+
+
+def test_bootstrap_cuda_failure_preserves_cpu_mc_and_finite_case_semantics():
+    observed = _mc_record()
+    bootstraps = [_mc_record(inner=index) for index in range(15)]
+    bootstraps[4] = _mc_record(inner=4, cuda_statistic=float("nan"), cuda_classification="FAILED", failure_reason="candidate statistic nonfinite")
+    aggregate = runner.aggregate_outer(observed, bootstraps)
+    assert aggregate["b_cpu"] == 15 and aggregate["p_cpu"] == 1.0
+    assert aggregate["b_cuda"] is None and aggregate["mc_evaluable"] is False
+    finite = runner.aggregate_outer(_mc_record(), [_mc_record(inner=index) for index in range(15)])
+    assert finite["mc_evaluable"] is True and finite["b_cuda"] == 15 and finite["reject_cuda"] is False
+
+
+def test_failed_gamma_outer_is_checkpointable_without_nan_mc(monkeypatch, tmp_path):
+    cell = runner.primary_fixture_matrix()[0]
+    def failed_cuda(*args, **kwargs):
+        return {"classification": "FAILED", "parameters": {}, "log_likelihood": None,
+                "statistic": float("nan"), "evaluation_points": [], "distribution_values": {},
+                "solver_converged": False, "iterations": 0, "dtype": "float64",
+                "failure_reason": "quantum regression failure"}
+    completed = runner.execute_primary_outer(cell, 0, "fixture", cuda_adapter=failed_cuda)
+    assert completed["outer"]["outer_gate_pass"] is False
+    assert completed["outer"]["mc_evaluable"] is False
+    checkpoint = ExecutionCheckpoint.open(tmp_path / "checkpointable", _contract(), resume=False)
+    checkpoint.store_primary(completed["identity"], completed)
+    assert ExecutionCheckpoint.open(tmp_path / "checkpointable", _contract(), resume=True).has_primary(completed["identity"])
+
+
+def test_campaign_continues_after_scientific_failure(monkeypatch, tmp_path):
+    cell = runner.primary_fixture_matrix()[0]
+    checkpoint = ExecutionCheckpoint.open(tmp_path / "resume", _contract(), resume=False)
+    seen = []
+    def failed_outer(cell, index, namespace):
+        seen.append(index); identity = f"{cell.canonical_id}|raw_outer={index}"
+        return {"identity": identity, "cell_id": cell.canonical_id, "raw_outer_index": index,
+                "observed_sample_digest": str(index), "raw_bootstrap_attempts": [], "eligible_bootstrap_identities": [],
+                "records": [], "outer": {"identity": identity, "outer_gate_pass": False, "mc_evaluable": False}}
+    monkeypatch.setattr(runner, "primary_fixture_matrix", lambda: (cell,))
+    monkeypatch.setattr(runner, "execute_primary_outer", failed_outer)
+    monkeypatch.setattr(runner, "run_adversarial_fixture", lambda name, fixture, digest: {"fixture_name": name, "overall_fixture_pass": False})
+    runner._execute_equivalence(type("Args", (), {"namespace": "fixture"})(), checkpoint)
+    assert seen == list(range(8))
+
+
+def test_complete_scientific_failure_bundle_is_publishable(tmp_path):
+    summary = _publish(tmp_path, outer=False, adversarial=False, batch=False)
+    assert summary["equivalence_gate_passed"] is False and summary["overall_pass"] is False
+    assert validate_bundle(tmp_path / "bundle") is True
