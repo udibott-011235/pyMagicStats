@@ -16,6 +16,7 @@ from experiments.distribution_gof.cuda_calibration.artifact_validation import Ar
 from experiments.distribution_gof.cuda_calibration.artifact_writers import write_fixture_manifest
 from experiments.distribution_gof.cuda_calibration.execution_checkpoint import CheckpointError, ExecutionCheckpoint
 from experiments.distribution_gof.cuda_calibration.equivalence_preregistration import REQUIRED_ARTIFACTS
+from experiments.distribution_gof.cuda_calibration.cp05_cuda_engine import EngineContractError, _cp04_fit, nb_eligibility
 
 
 def _adversarial(passed=True):
@@ -388,6 +389,8 @@ def test_complete_bundle_with_ineligible_outer_identities_is_publishable(tmp_pat
 
 FROZEN_QUANTUM_NB_SAMPLE = np.asarray([28, 34, 54, 29, 40, 75, 27, 52, 44, 47,
                                         46, 17, 85, 60, 12, 23, 35, 24, 30, 19], dtype=np.int64)
+FROZEN_DDOF_DISAGREEMENT_SAMPLE = np.asarray([4, 4, 7, 10, 3, 6, 4, 4, 8, 3,
+                                                3, 4, 4, 2, 4, 3, 2, 3, 2, 3], dtype=np.int64)
 
 
 def test_frozen_quantum_nb_probe_fixture_and_cpu_reference_are_stable():
@@ -420,3 +423,44 @@ def test_nb_classification_labels_are_python_metadata_not_cupy_strings():
     assert runner.cuda_candidate._nb_classification_metadata(1) == "ELIGIBLE"
     assert runner.cuda_candidate._nb_classification_metadata(2) == "VARIANCE_NOT_GREATER_THAN_MEAN"
     assert runner.cuda_candidate._nb_classification_metadata([[0, 1], [2, 1]]) == [["ALL_ZERO_NON_IDENTIFYING", "ELIGIBLE"], ["VARIANCE_NOT_GREATER_THAN_MEAN", "ELIGIBLE"]]
+
+
+def test_cp04_population_variance_gate_handles_frozen_ddof_disagreement():
+    sample = FROZEN_DDOF_DISAGREEMENT_SAMPLE
+    assert hashlib.sha256(sample.tobytes()).hexdigest() == "60b8682025d844c2a7999084b3d01dc3786de3aa205d94348a7615a0b0a1956a"
+    assert np.var(sample, ddof=0) <= np.mean(sample) < np.var(sample, ddof=1)
+    assert nb_eligibility(sample) == (False, "VARIANCE_NOT_GREATER_THAN_MEAN")
+    with pytest.raises(EngineContractError, match="NB_NOT_ASSESSED:VARIANCE_NOT_GREATER_THAN_MEAN"):
+        _cp04_fit("negative_binomial", sample)
+
+
+def test_population_variance_nb_boundary_classes_are_preserved():
+    assert nb_eligibility(np.zeros(20, dtype=np.int64)) == (False, "ALL_ZERO_NON_IDENTIFYING")
+    assert nb_eligibility(np.asarray([0, 2], dtype=np.int64)) == (False, "VARIANCE_NOT_GREATER_THAN_MEAN")
+    assert nb_eligibility(np.asarray([0] * 19 + [100], dtype=np.int64)) == (True, None)
+
+
+def test_cuda_population_variance_contract_is_independent_and_string_free():
+    runner_source = Path(runner.__file__).read_text(encoding="utf-8")
+    candidate_source = Path("experiments/distribution_gof/cuda_calibration/cuda_candidate.py").read_text(encoding="utf-8")
+    classifier = runner_source[runner_source.index("def _cuda_nb_classification"):runner_source.index("def _ineligible_observed_outer")]
+    assert "cp.var(values, ddof=0) > cp.mean(values)" in runner_source
+    assert "_cpu_nb_classification" not in classifier and "nb_eligibility(" not in classifier
+    assert "var=cp.var(a,axis=-1,ddof=0)" in candidate_source
+
+
+def test_frozen_ddof_outer_takes_categorical_path_without_fit_or_bootstrap(monkeypatch):
+    cell = _nb_cell(); meta = {"sample_digest_sha256": "60b8682025d844c2a7999084b3d01dc3786de3aa205d94348a7615a0b0a1956a"}
+    monkeypatch.setattr(runner, "fixed_observed", lambda *args: (FROZEN_DDOF_DISAGREEMENT_SAMPLE, meta))
+    monkeypatch.setattr(runner, "fixed_bootstraps", lambda *args: (_ for _ in ()).throw(AssertionError("no bootstrap")))
+    completed = runner.execute_primary_outer(cell, 0, "CP05-C2C", cuda_nb_classifier=lambda _: "VARIANCE_NOT_GREATER_THAN_MEAN")
+    record, outer = completed["records"][0], completed["outer"]
+    assert record["classification_gate_pass"] is True
+    assert record["fit_gate_pass"] is record["distribution_value_gate_pass"] is record["statistic_gate_pass"] is None
+    assert outer["mc_evaluable"] is False and outer["outer_gate_pass"] is True
+
+
+def test_bootstrap_reference_gate_uses_canonical_population_semantics():
+    # The same adapter used by the retry loop rejects this inner draw as ineligible.
+    with pytest.raises(EngineContractError, match="NB_NOT_ASSESSED"):
+        _cp04_fit("negative_binomial", np.asarray([0, 2], dtype=np.int64))

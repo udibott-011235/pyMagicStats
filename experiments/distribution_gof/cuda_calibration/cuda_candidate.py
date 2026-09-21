@@ -41,7 +41,7 @@ def fit_negative_binomial(a,iterations=128):
     """Batched real-r profiled likelihood solver; MoM only starts the bracket."""
     a=_x(a)
     if bool(cp.any(a<0)) or bool(cp.any(a!=cp.floor(a))): raise CudaCandidateError("NB integral sample required")
-    mean=cp.mean(a,axis=-1); var=cp.var(a,axis=-1,ddof=1); allzero=cp.all(a==0,axis=-1); eligible=(~allzero)&(var>mean); r=cp.maximum(mean*mean/cp.maximum(var-mean,1e-300),1e-10)
+    mean=cp.mean(a,axis=-1); var=cp.var(a,axis=-1,ddof=0); allzero=cp.all(a==0,axis=-1); eligible=(~allzero)&(var>mean); r=cp.maximum(mean*mean/cp.maximum(var-mean,1e-300),1e-10)
     # cupyx.polygamma requires a device-side order to avoid Python-bool dispatch.
     # This remains exactly trigamma ψ₁(a+r) - ψ₁(r), evaluated on CUDA.
     trigamma_order=cp.asarray(1,dtype=cp.int32)
