@@ -24,10 +24,11 @@ def validate_bundle(directory):
     fixture=json.loads((directory/"fixture_manifest.json").read_text())
     batch=json.loads((directory/"batch_invariance.json").read_text())
     rng=json.loads((directory/"rng_identity.json").read_text())
+    generator=json.loads((directory/"generator_sanity.json").read_text())
     validate_adversarial_identities(fixture)
     validate_batch_invariance(batch)
     validate_rng_identities(rng)
-    validate_summary(summary, primary=summary["primary_outer_observed"], adversarial=summary["adversarial_fixture_observed"])
+    validate_summary(summary, generator=generator)
     return True
 def publish_atomic(temp:Path, output:Path):
     if output.exists(): raise ArtifactValidationError("preexisting output protected")
@@ -57,6 +58,14 @@ def validate_rng_identities(payload):
     rows=payload.get("identities",[]); keys=[(x.get("canonical_cell_id"),x.get("raw_outer_index"),x.get("purpose"),x.get("raw_inner_index")) for x in rows]
     if len(keys)!=len(set(keys)): raise ArtifactValidationError("RNG identity duplicate")
     return True
-def validate_summary(summary, *, primary, adversarial):
-    if summary.get("primary_outer_observed")!=primary or summary.get("adversarial_fixture_observed")!=adversarial or summary.get("calibration_claim") is not False: raise ArtifactValidationError("summary inconsistency")
+def validate_summary(summary, *, generator):
+    mode=summary.get("execution_mode")
+    if summary.get("primary_outer_expected") != 1152 or summary.get("adversarial_fixture_expected") != 14 or summary.get("calibration_claim") is not False:
+        raise ArtifactValidationError("summary expected count inconsistency")
+    if mode in {"equivalence", "all"} and (summary.get("primary_outer_observed") != 1152 or summary.get("adversarial_fixture_observed") != 14):
+        raise ArtifactValidationError("summary incomplete equivalence workload")
+    if mode == "generator-sanity" and (summary.get("primary_outer_observed") != 0 or summary.get("adversarial_fixture_observed") != 0):
+        raise ArtifactValidationError("summary generator-only workload")
+    if mode in {"generator-sanity", "all"} and (generator.get("case_count") != 7 or len(generator.get("results", [])) != 7):
+        raise ArtifactValidationError("summary incomplete generator workload")
     return True

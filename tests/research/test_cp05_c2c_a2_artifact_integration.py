@@ -7,8 +7,9 @@ from pathlib import Path
 import pytest
 
 from experiments.distribution_gof.cuda_calibration import cp05_c2c_equivalence_runner as runner
-from experiments.distribution_gof.cuda_calibration.a2_artifacts import NAMES
-from experiments.distribution_gof.cuda_calibration.artifact_validation import ArtifactValidationError, validate_bundle
+from experiments.distribution_gof.cuda_calibration.a2_artifacts import NAMES, load_fixtures, run_adversarial_fixture, to_json_safe
+from experiments.distribution_gof.cuda_calibration.artifact_validation import ArtifactValidationError, validate_bundle, validate_summary
+from experiments.distribution_gof.cuda_calibration.artifact_writers import write_fixture_manifest
 from experiments.distribution_gof.cuda_calibration.execution_checkpoint import CheckpointError, ExecutionCheckpoint
 from experiments.distribution_gof.cuda_calibration.equivalence_preregistration import REQUIRED_ARTIFACTS
 
@@ -22,15 +23,20 @@ def _rng():
              "purpose": "outer_observed", "raw_inner_index": None}]
 
 
-def _outer(passed=True):
-    return [{"identity": "cell|raw_outer=0", "outer_gate_pass": passed}]
+def _outer(passed=True, count=runner.PRIMARY_OUTER_TARGET):
+    return [{"identity": f"cell|raw_outer={index}", "outer_gate_pass": passed} for index in range(count)]
 
 
-def _publish(tmp_path, *, outer=True, adversarial=True, batch=True, generator=False, mode="equivalence"):
+def _generator(passed=True, count=7):
+    return [{"identity": f"generator-{index}", "passed": passed} for index in range(count)]
+
+
+def _publish(tmp_path, *, outer=True, adversarial=True, batch=True, generator=False, mode="equivalence", generator_count=7):
     return runner.publish_execution_bundle(
         tmp_path / "bundle", mode=mode, git_sha=runner.BASELINE_SHA, records=[],
         outer_results=_outer(outer), adversarial=_adversarial(adversarial),
         batch_passed=batch, rng_identities=_rng(), generator_sanity_passed=generator,
+        generator_results=_generator(generator, generator_count) if mode in {"generator-sanity", "all"} else None,
     )
 
 
@@ -126,7 +132,7 @@ def test_official_dispatch_invokes_real_workloads_and_finalizes_only_when_comple
     monkeypatch.setattr(runner, "_require_cuda", lambda: seen.append("cuda"))
     monkeypatch.setattr(runner, "_execution_sha", lambda: "a" * 40)
     monkeypatch.setattr(runner, "_execute_equivalence", lambda args, cp: ([], _outer(), _adversarial(), True, _rng()))
-    monkeypatch.setattr(runner, "_execute_generator_sanity", lambda args, cp: ([{"identity": "g", "passed": True}], True))
+    monkeypatch.setattr(runner, "_execute_generator_sanity", lambda args, cp: (_generator(), True))
     assert runner.main(["--output", str(tmp_path / "bundle"), "--require-gpu", "--namespace", "fixture", "--mode", "all"]) == 0
     assert seen == ["cuda"]
     assert (tmp_path / "bundle" / "summary.json").exists()
@@ -189,3 +195,54 @@ def test_software_failure_leaves_checkpoint_but_never_publishes_final_bundle(mon
 def test_runner_has_no_interactive_tty_dependency():
     source = Path(runner.__file__).read_text(encoding="utf-8")
     assert "input(" not in source and "isatty(" not in source
+
+
+@pytest.mark.parametrize("name", ["nb_very_sparse", "nb_heavy_tail"])
+def test_real_adversarial_records_are_checkpoint_and_json_safe(name, tmp_path):
+    fixtures, digest = load_fixtures()
+    record = run_adversarial_fixture(name, fixtures[name], digest)
+    assert json.loads(json.dumps(record)) == record
+    checkpoint = ExecutionCheckpoint.open(tmp_path / name, _contract(), resume=False)
+    checkpoint.store_adversarial(name, record)
+    write_fixture_manifest(tmp_path / f"{name}.json", [], [], [record])
+    assert (tmp_path / f"{name}.json").exists()
+
+
+def test_non_json_safe_adversarial_payload_is_rejected():
+    with pytest.raises(Exception, match="non-JSON-safe"):
+        to_json_safe({"fixture_name": "x", "bad": object()})
+
+
+def test_workload_cardinality_and_unique_identity_gates(tmp_path):
+    complete = _outer()
+    runner.validate_required_workload_complete(mode="equivalence", outer_results=complete, adversarial=_adversarial(), batch_passed=True, generator_results=None)
+    for count in (1151, 1153):
+        with pytest.raises(runner.C2CError, match="primary"):
+            runner.validate_required_workload_complete(mode="equivalence", outer_results=_outer(count=count), adversarial=_adversarial(), batch_passed=True, generator_results=None)
+    duplicate = _outer(); duplicate[-1] = dict(duplicate[0])
+    with pytest.raises(runner.C2CError, match="duplicate"):
+        runner.validate_required_workload_complete(mode="equivalence", outer_results=duplicate, adversarial=_adversarial(), batch_passed=True, generator_results=None)
+    with pytest.raises(runner.C2CError, match="primary"):
+        runner.publish_execution_bundle(tmp_path / "incomplete", mode="equivalence", git_sha=runner.BASELINE_SHA, records=[], outer_results=_outer(count=1151), adversarial=_adversarial(), batch_passed=True, rng_identities=_rng())
+    assert not (tmp_path / "incomplete").exists()
+
+
+def test_generator_and_mode_specific_completeness_gates():
+    runner.validate_required_workload_complete(mode="generator-sanity", outer_results=[], adversarial=_adversarial(), batch_passed=False, generator_results=_generator())
+    for count in (6, 8):
+        with pytest.raises(runner.C2CError, match="generator"):
+            runner.validate_required_workload_complete(mode="generator-sanity", outer_results=[], adversarial=_adversarial(), batch_passed=False, generator_results=_generator(count=count))
+    runner.validate_required_workload_complete(mode="all", outer_results=_outer(), adversarial=_adversarial(), batch_passed=True, generator_results=_generator())
+    with pytest.raises(runner.C2CError, match="primary"):
+        runner.validate_required_workload_complete(mode="all", outer_results=[], adversarial=_adversarial(), batch_passed=True, generator_results=_generator())
+
+
+def test_summary_expected_count_validation_rejects_wrong_counts():
+    generator = {"case_count": 7, "results": _generator()}
+    valid = {"execution_mode": "equivalence", "primary_outer_expected": 1152, "primary_outer_observed": 1152,
+             "adversarial_fixture_expected": 14, "adversarial_fixture_observed": 14, "calibration_claim": False}
+    assert validate_summary(valid, generator=generator) is True
+    with pytest.raises(ArtifactValidationError, match="expected count"):
+        validate_summary(dict(valid, primary_outer_expected=1151), generator=generator)
+    with pytest.raises(ArtifactValidationError, match="generator"):
+        validate_summary(dict(valid, execution_mode="generator-sanity", primary_outer_observed=0, adversarial_fixture_observed=0), generator={"case_count": 6, "results": _generator(6)})

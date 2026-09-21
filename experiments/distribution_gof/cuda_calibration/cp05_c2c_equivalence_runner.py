@@ -267,6 +267,29 @@ def _classification_rows(records):
              "cuda_classification": r.get("cuda_classification"), "exact_match": r.get("classification_gate_pass")} for r in records]
 
 
+def validate_required_workload_complete(*, mode: str, outer_results: list[dict], adversarial: list[dict],
+                                        batch_passed: bool | None, generator_results: list[dict] | None) -> None:
+    """Reject incomplete workloads before any final artifact directory is published."""
+    if mode not in {"equivalence", "generator-sanity", "all"}:
+        raise C2CError("unsupported mode")
+    if mode in {"equivalence", "all"}:
+        identities = [row.get("identity") for row in outer_results]
+        if len(outer_results) != PRIMARY_OUTER_TARGET:
+            raise C2CError("incomplete primary outer workload")
+        if len(set(identities)) != PRIMARY_OUTER_TARGET or None in identities:
+            raise C2CError("duplicate primary outer identity")
+        fixture_names = [row.get("fixture_name") for row in adversarial]
+        if len(adversarial) != len(NAMES) or set(fixture_names) != set(NAMES):
+            raise C2CError("incomplete adversarial workload")
+        if not isinstance(batch_passed, bool):
+            raise C2CError("missing batch invariance workload")
+    if mode in {"generator-sanity", "all"}:
+        values = list(generator_results or [])
+        identities = [row.get("identity") for row in values]
+        if len(values) != len(GENERATOR_SANITY_CASES) or len(set(identities)) != len(GENERATOR_SANITY_CASES) or None in identities:
+            raise C2CError("incomplete generator sanity workload")
+
+
 def publish_execution_bundle(output: Path, *, mode: str, git_sha: str, records: list[dict],
                              outer_results: list[dict], adversarial: list[dict],
                              batch_passed: bool, rng_identities: list[dict],
@@ -277,10 +300,12 @@ def publish_execution_bundle(output: Path, *, mode: str, git_sha: str, records: 
     It is deliberately independent of the CUDA implementation: callers supply already
     evaluated records and this layer only serializes, validates and atomically publishes.
     """
-    if mode not in {"equivalence", "generator-sanity", "all"}: raise C2CError("unsupported mode")
+    validate_required_workload_complete(mode=mode, outer_results=outer_results, adversarial=adversarial,
+                                        batch_passed=batch_passed, generator_results=generator_results)
     fixtures, digest = load_fixtures()
     if len(adversarial) != 14: raise C2CError("fourteen adversarial fixture results required")
-    equivalence = bool(outer_results) and all(x.get("outer_gate_pass") for x in outer_results) and all(x.get("overall_fixture_pass") for x in adversarial) and batch_passed
+    equivalence = mode not in {"equivalence", "all"} or (all(x.get("outer_gate_pass") for x in outer_results) and all(x.get("overall_fixture_pass") for x in adversarial) and batch_passed)
+    generator_sanity_passed = all(row.get("passed") is True for row in (generator_results or [])) if mode in {"generator-sanity", "all"} else False
     overall = equivalence and generator_sanity_passed if mode == "all" else (generator_sanity_passed if mode == "generator-sanity" else equivalence)
     reasons=[]
     if not equivalence and mode in {"equivalence", "all"}: reasons.append("equivalence_gate_failed")
@@ -296,7 +321,8 @@ def publish_execution_bundle(output: Path, *, mode: str, git_sha: str, records: 
         write_rng_identity(stage/"rng_identity.json", rng_identities)
         write_generator_sanity(stage/"generator_sanity.json", passed=generator_sanity_passed, results=generator_results)
         write_environment(stage/"environment.json", git_sha)
-        write_summary(stage/"summary.json", execution_mode=mode, primary_outer_observed=len(outer_results), adversarial_fixture_observed=len(adversarial) if adversarial_observed is None else adversarial_observed, equivalence_gate_passed=equivalence, generator_sanity_passed=generator_sanity_passed, overall_pass=overall, batch_invariance_passed=batch_passed, artifact_validation_passed=True, failure_reasons=reasons)
+        observed_adversarial = len(adversarial) if mode in {"equivalence", "all"} else 0
+        write_summary(stage/"summary.json", execution_mode=mode, primary_outer_observed=len(outer_results), adversarial_fixture_observed=observed_adversarial if adversarial_observed is None else adversarial_observed, equivalence_gate_passed=equivalence, generator_sanity_passed=generator_sanity_passed, overall_pass=overall, batch_invariance_passed=batch_passed, artifact_validation_passed=True, failure_reasons=reasons)
         generate_digests(stage)
         publish_atomic(stage, output)
     return json.loads((output/"summary.json").read_text(encoding="utf-8"))
@@ -308,7 +334,10 @@ def _require_cuda() -> None:
 
 def _execution_sha() -> str:
     root = Path(__file__).resolve().parents[3]
-    return subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    try:
+        return subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    except FileNotFoundError as exc:
+        raise C2CError("git executable not available in PATH") from exc
 
 
 def _checkpoint_contract(args) -> dict:
@@ -373,7 +402,7 @@ def _official_dispatch(args) -> int:
             records, outer, adversarial, batch, rng = _execute_equivalence(args, checkpoint)
         if args.mode in {"generator-sanity", "all"}:
             generator_results, generator_pass = _execute_generator_sanity(args, checkpoint)
-        publish_execution_bundle(args.output, mode=args.mode, git_sha=checkpoint.contract["execution_sha"], records=records, outer_results=outer, adversarial=adversarial, batch_passed=batch, rng_identities=rng, generator_sanity_passed=generator_pass, generator_results=generator_results, adversarial_observed=len(checkpoint.data["adversarial"]))
+        publish_execution_bundle(args.output, mode=args.mode, git_sha=checkpoint.contract["execution_sha"], records=records, outer_results=outer, adversarial=adversarial, batch_passed=batch, rng_identities=rng, generator_sanity_passed=generator_pass, generator_results=generator_results)
         checkpoint.close_after_publication()
         return 0
     except Exception:
