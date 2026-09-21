@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 from experiments.distribution_gof.cuda_calibration import cp05_c2c_equivalence_runner as runner
@@ -312,3 +314,71 @@ def test_complete_scientific_failure_bundle_is_publishable(tmp_path):
     summary = _publish(tmp_path, outer=False, adversarial=False, batch=False)
     assert summary["equivalence_gate_passed"] is False and summary["overall_pass"] is False
     assert validate_bundle(tmp_path / "bundle") is True
+
+
+def _nb_cell():
+    return SimpleNamespace(family="negative_binomial", statistic="AD", canonical_id="negative_binomial|fixture|n=20|AD|composite", n=20)
+
+
+def _ineligible_outer(monkeypatch, sample, cpu_classification, cuda_classification):
+    cell = _nb_cell()
+    meta = {"sample_digest_sha256": "synthetic"}
+    monkeypatch.setattr(runner, "fixed_observed", lambda *args: (np.asarray(sample, dtype=np.int64), meta))
+    def no_bootstrap(*args, **kwargs):
+        raise AssertionError("ineligible observed NB must not bootstrap")
+    monkeypatch.setattr(runner, "fixed_bootstraps", no_bootstrap)
+    return runner.execute_primary_outer(cell, 0, "CP05-C2C", cpu_nb_classifier=lambda _: cpu_classification,
+                                        cuda_nb_classifier=lambda _: cuda_classification)
+
+
+def test_quantum_nb_variance_case_is_completed_without_fit_or_bootstrap(monkeypatch, tmp_path):
+    cell = next(item for item in runner.primary_fixture_matrix() if item.family == "negative_binomial" and dict(item.parameters) == {"r": .25, "p": .5} and item.n == 20 and item.statistic == "AD")
+    sample, _ = runner.fixed_observed(cell, 0, "CP05-C2C")
+    assert runner._cpu_nb_classification(sample) == "VARIANCE_NOT_GREATER_THAN_MEAN"
+    completed = _ineligible_outer(monkeypatch, sample, "VARIANCE_NOT_GREATER_THAN_MEAN", "VARIANCE_NOT_GREATER_THAN_MEAN")
+    outer = completed["outer"]
+    assert outer["outer_gate_pass"] is True and outer["mc_evaluable"] is False
+    assert outer["b_cpu"] is outer["b_cuda"] is None
+    checkpoint = ExecutionCheckpoint.open(tmp_path / "nb", _contract(), resume=False)
+    checkpoint.store_primary(completed["identity"], completed)
+    assert ExecutionCheckpoint.open(tmp_path / "nb", _contract(), resume=True).has_primary(completed["identity"])
+
+
+def test_all_zero_and_classification_disagreement_are_completed_categorical_outers(monkeypatch):
+    matching = _ineligible_outer(monkeypatch, [0] * 20, "ALL_ZERO_NON_IDENTIFYING", "ALL_ZERO_NON_IDENTIFYING")
+    assert matching["outer"]["outer_gate_pass"] is True
+    assert matching["records"][0]["fit_gate_pass"] is None
+    assert matching["records"][0]["distribution_value_gate_pass"] is None
+    assert matching["records"][0]["statistic_gate_pass"] is None
+    mismatch = _ineligible_outer(monkeypatch, [0, 1] * 10, "VARIANCE_NOT_GREATER_THAN_MEAN", "ALL_ZERO_NON_IDENTIFYING")
+    assert mismatch["records"][0]["classification_gate_pass"] is False
+    assert mismatch["outer"]["outer_gate_pass"] is False
+
+
+def test_eligible_nb_path_reaches_existing_bootstrap_pipeline(monkeypatch):
+    cell = _nb_cell(); sample = np.asarray([0] * 19 + [100], dtype=np.int64)
+    meta = {"sample_digest_sha256": "eligible"}; seen = []
+    monkeypatch.setattr(runner, "fixed_observed", lambda *args: (sample, meta))
+    monkeypatch.setattr(runner, "reference_fit", lambda *args: {"bound": object()})
+    monkeypatch.setattr(runner, "certify_nb_support", lambda *args: SimpleNamespace(indices=[0], remainder_bound=0.0))
+    def fake_bootstrap(*args):
+        seen.append("bootstrap")
+        rows = [{"raw_inner_index": index, "seed_identity": index, "sample_digest": str(index), "sample": sample,
+                 "canonical_status": "ELIGIBLE"} for index in range(15)]
+        return None, rows, rows
+    monkeypatch.setattr(runner, "fixed_bootstraps", fake_bootstrap)
+    def reference(candidate_cell, value):
+        return {"classification": "ELIGIBLE", "parameters": {"r": 1.0, "p": .5}, "log_likelihood": -1.0,
+                "reference_log_likelihood": lambda _: -1.0, "statistic": 1.0, "evaluation_points": [0.0],
+                "distribution_values": {"pmf": [.5], "logPMF": [-.7], "cdf": [.5], "sf": [.5], "logCDF": [-.7], "logSF": [-.7]}}
+    def cuda_from_reference(candidate_cell, value, **kwargs):
+        cpu = reference(candidate_cell, value)
+        return {"classification": "ELIGIBLE", "parameters": cpu["parameters"], "log_likelihood": cpu["log_likelihood"], "statistic": cpu["statistic"], "evaluation_points": cpu["evaluation_points"], "distribution_values": cpu["distribution_values"], "solver_converged": True, "iterations": 1, "dtype": "float64", "failure_reason": None}
+    completed = runner.execute_primary_outer(cell, 0, "fixture", reference_adapter=reference, cuda_adapter=cuda_from_reference,
+                                             cpu_nb_classifier=lambda _: "ELIGIBLE", cuda_nb_classifier=lambda _: "ELIGIBLE")
+    assert seen == ["bootstrap"] and len(completed["records"]) == 16
+
+
+def test_complete_bundle_with_ineligible_outer_identities_is_publishable(tmp_path):
+    summary = _publish(tmp_path, outer=True, adversarial=True, batch=True)
+    assert summary["equivalence_gate_passed"] is True

@@ -16,7 +16,7 @@ import subprocess
 from pathlib import Path
 
 from .equivalence_preregistration import B_EQ, GENERATOR_SANITY_CASES, GENERATOR_SANITY_N, PRIMARY_CELL_COUNT, R_EQ, REQUIRED_ARTIFACTS, primary_fixture_matrix, initial_summary
-from .cp05_cuda_engine import _cp04_fit, _cp04_statistic, _generate, _parameters, derive_seed, mc_pvalue
+from .cp05_cuda_engine import _cp04_fit, _cp04_statistic, _generate, _parameters, derive_seed, mc_pvalue, nb_eligibility
 from . import cuda_candidate
 from .nb_support import certify_nb_support
 from .equivalence_preregistration import categorical_agreement, distribution_value_agreement, fit_agreement, generator_sanity_check, global_equivalence_pass, statistic_agreement
@@ -132,9 +132,57 @@ def traverse_primary(namespace, *, reference_adapter=evaluate_reference_record, 
     return records,outers
 
 
-def execute_primary_outer(cell, raw_outer_index, namespace, *, reference_adapter=evaluate_reference_record, cuda_adapter=evaluate_cuda_record):
+def _cpu_nb_classification(sample) -> str:
+    eligible, reason = nb_eligibility(sample)
+    return "ELIGIBLE" if eligible else str(reason)
+
+
+def _cuda_nb_classification(sample) -> str:
+    """Independent CUDA eligibility classification; it deliberately does not fit."""
+    cp = cuda_candidate.require_cuda()
+    values = cp.asarray(sample, dtype=cp.float64)
+    if bool(cp.all(values == 0)):
+        return "ALL_ZERO_NON_IDENTIFYING"
+    return "ELIGIBLE" if bool(cp.var(values, ddof=1) > cp.mean(values)) else "VARIANCE_NOT_GREATER_THAN_MEAN"
+
+
+def _ineligible_observed_outer(cell, raw_outer_index, observed, meta, cpu_classification, cuda_classification):
+    identity = f"{cell.canonical_id}|raw_outer={raw_outer_index}"
+    classification_pass = cpu_classification == cuda_classification
+    reason = cpu_classification if cpu_classification != "ELIGIBLE" else cuda_classification
+    observed_record = {"identity": identity, "record_type": "observed", "cell_id": cell.canonical_id,
+                       "family": cell.family, "n": cell.n, "statistic": cell.statistic,
+                       "raw_outer_index": raw_outer_index, "raw_inner_index": None,
+                       "sample_digest": meta["sample_digest_sha256"], "cpu_classification": cpu_classification,
+                       "cuda_classification": cuda_classification, "cuda_failure_reason": None,
+                       "cpu_parameters": {}, "cuda_parameters": {}, "cpu_log_likelihood": None,
+                       "cuda_log_likelihood": None, "cpu_statistic": None, "cuda_statistic": None,
+                       "fit_gate_pass": None, "classification_gate_pass": classification_pass,
+                       "distribution_value_gate_pass": None, "statistic_gate_pass": None,
+                       "distribution_evidence": [], "statistic_abs_error": None,
+                       "statistic_allowed_tolerance": None, "flat_objective_used": None,
+                       "flat_objective_diagnostic": None, "observed_ineligible": cpu_classification != "ELIGIBLE",
+                       "eligibility_reason": reason}
+    aggregate = {"b_cpu": None, "b_cuda": None, "p_cpu": None, "p_cuda": None,
+                 "reject_cpu": None, "reject_cuda": None, "mc_gate_pass": None,
+                 "mc_evaluable": False, "cuda_mc_unavailable_records": [],
+                 "outer_gate_pass": classification_pass, "observed_ineligible": cpu_classification != "ELIGIBLE",
+                 "eligibility_reason": reason}
+    return {"identity": identity, "cell_id": cell.canonical_id, "raw_outer_index": raw_outer_index,
+            "observed_sample_digest": meta["sample_digest_sha256"], "raw_bootstrap_attempts": [],
+            "eligible_bootstrap_identities": [], "records": [observed_record], "outer": {"identity": identity, **aggregate}}
+
+
+def execute_primary_outer(cell, raw_outer_index, namespace, *, reference_adapter=evaluate_reference_record,
+                          cuda_adapter=evaluate_cuda_record, cpu_nb_classifier=_cpu_nb_classification,
+                          cuda_nb_classifier=_cuda_nb_classification):
     """Execute exactly one canonical outer identity for checkpointing or traversal."""
     observed, meta = fixed_observed(cell, raw_outer_index, namespace)
+    if cell.family == "negative_binomial":
+        cpu_classification = cpu_nb_classifier(observed)
+        cuda_classification = cuda_nb_classifier(observed)
+        if cpu_classification != "ELIGIBLE" or cuda_classification != "ELIGIBLE":
+            return _ineligible_observed_outer(cell, raw_outer_index, observed, meta, cpu_classification, cuda_classification)
     support = certify_nb_support(observed, reference_fit(cell.family, observed)["bound"], cell.statistic) if cell.family == "negative_binomial" else None
     cuda = lambda c, s: cuda_adapter(c, s, certified_support=support.indices if support else None, remainder_bound=support.remainder_bound if support else None)
     identity = f"{cell.canonical_id}|raw_outer={raw_outer_index}"
