@@ -23,8 +23,10 @@ def fit_exponential(a):
     return {"scale":scale,"converged":cp.isfinite(scale)&(scale>0),"iterations":0}
 def fit_gamma(a,iterations=96):
     a=_x(a,True); mean=cp.mean(a,axis=-1); s=cp.log(mean)-cp.mean(cp.log(a),axis=-1); shape=cp.maximum((3-s+cp.sqrt((s-3)**2+24*s))/(12*s),1e-12)
+    # Same device-native ψ₁ order representation as the R5 NB compatibility fix.
+    trigamma_order=cp.asarray(1,dtype=cp.int32)
     for i in range(iterations):
-        f=cp.log(shape)-csp.digamma(shape)-s; d=1/shape-csp.polygamma(1,shape); proposal=shape-f/d; shape=cp.where((proposal>0)&cp.isfinite(proposal),proposal,shape/2)
+        f=cp.log(shape)-csp.digamma(shape)-s; d=1/shape-csp.polygamma(trigamma_order,shape); proposal=shape-f/d; shape=cp.where((proposal>0)&cp.isfinite(proposal),proposal,shape/2)
     ok=cp.abs(cp.log(shape)-csp.digamma(shape)-s)<=1e-12*cp.maximum(1,cp.abs(s))
     return {"shape":shape,"scale":mean/shape,"converged":ok,"iterations":iterations}
 def fit_negative_binomial(a,iterations=128):

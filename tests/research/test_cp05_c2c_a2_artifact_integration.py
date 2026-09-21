@@ -405,5 +405,7 @@ def test_trigamma_order_is_device_native_and_has_no_cpu_fallback():
     source = Path("experiments/distribution_gof/cuda_calibration/cuda_candidate.py").read_text(encoding="utf-8")
     assert "trigamma_order=cp.asarray(1,dtype=cp.int32)" in source
     assert "csp.polygamma(trigamma_order,a+r[...,None])" in source
+    assert "csp.polygamma(trigamma_order,shape)" in source
+    assert source.count("trigamma_order=cp.asarray(1,dtype=cp.int32)") == 2
     assert "scipy.special.polygamma" not in source
     assert "cp.asnumpy" not in source
