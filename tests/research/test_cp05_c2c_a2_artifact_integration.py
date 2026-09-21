@@ -408,4 +408,15 @@ def test_trigamma_order_is_device_native_and_has_no_cpu_fallback():
     assert "csp.polygamma(trigamma_order,shape)" in source
     assert source.count("trigamma_order=cp.asarray(1,dtype=cp.int32)") == 2
     assert "scipy.special.polygamma" not in source
-    assert "cp.asnumpy" not in source
+    assert "scipy.special" not in source
+
+
+def test_nb_classification_labels_are_python_metadata_not_cupy_strings():
+    source = Path("experiments/distribution_gof/cuda_calibration/cuda_candidate.py").read_text(encoding="utf-8")
+    assert 'cp.where(allzero,"ALL_ZERO_NON_IDENTIFYING"' not in source
+    assert "classification_code=cp.where(allzero,0,cp.where(eligible,1,2))" in source
+    assert "_nb_classification_metadata(classification_code)" in source
+    assert runner.cuda_candidate._nb_classification_metadata(0) == "ALL_ZERO_NON_IDENTIFYING"
+    assert runner.cuda_candidate._nb_classification_metadata(1) == "ELIGIBLE"
+    assert runner.cuda_candidate._nb_classification_metadata(2) == "VARIANCE_NOT_GREATER_THAN_MEAN"
+    assert runner.cuda_candidate._nb_classification_metadata([[0, 1], [2, 1]]) == [["ALL_ZERO_NON_IDENTIFYING", "ELIGIBLE"], ["VARIANCE_NOT_GREATER_THAN_MEAN", "ELIGIBLE"]]

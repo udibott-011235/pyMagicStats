@@ -6,6 +6,14 @@ try:
 except ImportError: cp = csp = None
 
 class CudaCandidateError(RuntimeError): pass
+_NB_CLASSIFICATION_LABELS={0:"ALL_ZERO_NON_IDENTIFYING",1:"ELIGIBLE",2:"VARIANCE_NOT_GREATER_THAN_MEAN"}
+
+def _nb_classification_metadata(device_codes):
+    """Map already-computed CUDA integer codes to JSON-safe labels outside CUDA math."""
+    def labels(value):
+        if isinstance(value,list): return [labels(item) for item in value]
+        return _NB_CLASSIFICATION_LABELS[int(value)]
+    return labels(device_codes.tolist() if hasattr(device_codes,"tolist") else device_codes)
 def require_cuda():
     if cp is None: raise CudaCandidateError("CUDA_CANDIDATE_UNIMPLEMENTED: CuPy unavailable")
     try:
@@ -40,7 +48,9 @@ def fit_negative_binomial(a,iterations=128):
     for i in range(iterations):
         p=r/(r+mean); score=cp.sum(csp.digamma(a+r[...,None])-csp.digamma(r[...,None]),axis=-1)+a.shape[-1]*cp.log(p); deriv=cp.sum(csp.polygamma(trigamma_order,a+r[...,None])-csp.polygamma(trigamma_order,r[...,None]),axis=-1)+a.shape[-1]*(1/r-1/(r+mean)); proposal=r-score/deriv; r=cp.where((proposal>0)&cp.isfinite(proposal),proposal,r/2)
     p=r/(r+mean); ll=cp.sum(csp.gammaln(a+r[...,None])-csp.gammaln(r[...,None])-csp.gammaln(a+1)+r[...,None]*cp.log(p[...,None])+a*cp.log1p(-p[...,None]),axis=-1); ok=eligible&cp.isfinite(r)&cp.isfinite(p)&cp.isfinite(ll)
-    return {"r":r,"p":p,"log_likelihood":ll,"converged":ok,"iterations":iterations,"classification":cp.where(allzero,"ALL_ZERO_NON_IDENTIFYING",cp.where(eligible,"ELIGIBLE","VARIANCE_NOT_GREATER_THAN_MEAN"))}
+    # CuPy expressions remain numeric; labels are exported only after predicates resolve.
+    classification_code=cp.where(allzero,0,cp.where(eligible,1,2))
+    return {"r":r,"p":p,"log_likelihood":ll,"converged":ok,"iterations":iterations,"classification":_nb_classification_metadata(classification_code)}
 def fit(family, sample):
     if family=="exponential": return fit_exponential(sample)
     if family=="gamma": return fit_gamma(sample)
