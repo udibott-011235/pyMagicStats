@@ -32,8 +32,11 @@ def fit_negative_binomial(a,iterations=128):
     a=_x(a)
     if bool(cp.any(a<0)) or bool(cp.any(a!=cp.floor(a))): raise CudaCandidateError("NB integral sample required")
     mean=cp.mean(a,axis=-1); var=cp.var(a,axis=-1,ddof=1); allzero=cp.all(a==0,axis=-1); eligible=(~allzero)&(var>mean); r=cp.maximum(mean*mean/cp.maximum(var-mean,1e-300),1e-10)
+    # cupyx.polygamma requires a device-side order to avoid Python-bool dispatch.
+    # This remains exactly trigamma ψ₁(a+r) - ψ₁(r), evaluated on CUDA.
+    trigamma_order=cp.asarray(1,dtype=cp.int32)
     for i in range(iterations):
-        p=r/(r+mean); score=cp.sum(csp.digamma(a+r[...,None])-csp.digamma(r[...,None]),axis=-1)+a.shape[-1]*cp.log(p); deriv=cp.sum(csp.polygamma(1,a+r[...,None])-csp.polygamma(1,r[...,None]),axis=-1)+a.shape[-1]*(1/r-1/(r+mean)); proposal=r-score/deriv; r=cp.where((proposal>0)&cp.isfinite(proposal),proposal,r/2)
+        p=r/(r+mean); score=cp.sum(csp.digamma(a+r[...,None])-csp.digamma(r[...,None]),axis=-1)+a.shape[-1]*cp.log(p); deriv=cp.sum(csp.polygamma(trigamma_order,a+r[...,None])-csp.polygamma(trigamma_order,r[...,None]),axis=-1)+a.shape[-1]*(1/r-1/(r+mean)); proposal=r-score/deriv; r=cp.where((proposal>0)&cp.isfinite(proposal),proposal,r/2)
     p=r/(r+mean); ll=cp.sum(csp.gammaln(a+r[...,None])-csp.gammaln(r[...,None])-csp.gammaln(a+1)+r[...,None]*cp.log(p[...,None])+a*cp.log1p(-p[...,None]),axis=-1); ok=eligible&cp.isfinite(r)&cp.isfinite(p)&cp.isfinite(ll)
     return {"r":r,"p":p,"log_likelihood":ll,"converged":ok,"iterations":iterations,"classification":cp.where(allzero,"ALL_ZERO_NON_IDENTIFYING",cp.where(eligible,"ELIGIBLE","VARIANCE_NOT_GREATER_THAN_MEAN"))}
 def fit(family, sample):

@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import math
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -382,3 +384,26 @@ def test_eligible_nb_path_reaches_existing_bootstrap_pipeline(monkeypatch):
 def test_complete_bundle_with_ineligible_outer_identities_is_publishable(tmp_path):
     summary = _publish(tmp_path, outer=True, adversarial=True, batch=True)
     assert summary["equivalence_gate_passed"] is True
+
+
+FROZEN_QUANTUM_NB_SAMPLE = np.asarray([28, 34, 54, 29, 40, 75, 27, 52, 44, 47,
+                                        46, 17, 85, 60, 12, 23, 35, 24, 30, 19], dtype=np.int64)
+
+
+def test_frozen_quantum_nb_probe_fixture_and_cpu_reference_are_stable():
+    assert hashlib.sha256(FROZEN_QUANTUM_NB_SAMPLE.tobytes()).hexdigest() == "36e6c8d854094357aaabc466a8ef14917380d576df9d330cc62e0de25c07d4bb"
+    assert np.mean(FROZEN_QUANTUM_NB_SAMPLE) == 39.05
+    assert np.var(FROZEN_QUANTUM_NB_SAMPLE, ddof=1) == pytest.approx(366.68157894736834)
+    cell = SimpleNamespace(family="negative_binomial", statistic="AD", canonical_id="quantum-nb", n=20)
+    reference = runner.evaluate_reference_record(cell, FROZEN_QUANTUM_NB_SAMPLE)
+    assert reference["classification"] == "ELIGIBLE"
+    assert all(math.isfinite(value) for value in reference["parameters"].values())
+    assert math.isfinite(reference["log_likelihood"])
+
+
+def test_trigamma_order_is_device_native_and_has_no_cpu_fallback():
+    source = Path("experiments/distribution_gof/cuda_calibration/cuda_candidate.py").read_text(encoding="utf-8")
+    assert "trigamma_order=cp.asarray(1,dtype=cp.int32)" in source
+    assert "csp.polygamma(trigamma_order,a+r[...,None])" in source
+    assert "scipy.special.polygamma" not in source
+    assert "cp.asnumpy" not in source
