@@ -28,5 +28,8 @@ Decisiones iniciales indexadas:
   es un prototipo CUDA/RAPIDS aislado, sin equivalencia ni calibración.
 - `DEC-016`: prerregistra el gate CPU↔CUDA CP05-C2B sobre datos fijos y sus
   tolerancias; no constituye ejecución GPU, calibración ni benchmark.
+- `DEC-018`: propone la certificación R10-A-R2 de la raíz Negative Binomial
+  mediante bracket final, adyacencia float64 y residual derivado del bracket;
+  no modifica ni reemplaza DEC-016 y no constituye ejecución GPU o calibración.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

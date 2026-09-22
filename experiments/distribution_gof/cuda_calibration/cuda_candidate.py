@@ -182,14 +182,16 @@ def _fit_negative_binomial_impl(a,xp,special,*,bracket_steps=_NB_BRACKET_STEPS,s
         root_valid=root_valid&finite
         low=xp.where(root_valid&(middle_score>=0),middle,low)
         high=xp.where(root_valid&(middle_score<0),middle,high)
+    final_low_score=score(low); final_high_score=score(high)
+    final_scores_finite=xp.isfinite(final_low_score)&xp.isfinite(final_high_score)
+    sign_ok=final_scores_finite&(final_low_score>=0)&(final_high_score<=0)
+    precision_ok=(low==high)|(xp.nextafter(low,high)==high)
     eta=(low+high)/2; r=xp.exp(eta)
     p=r/(r+safe_mean)
     residual=score(eta)
-    probe=1e-7
-    probe_left=score(eta-probe); probe_right=score(eta+probe)
-    probe_inside=(eta-probe>original_low)&(eta+probe<original_high)
-    sign_ok=probe_inside&(probe_left>0)&(probe_right<0)
-    residual_ok=xp.abs(residual)<=xp.maximum(xp.abs(probe_left),xp.abs(probe_right))*1e-4
+    residual_ok=xp.isfinite(residual)&(
+        xp.abs(residual)<=xp.maximum(xp.abs(final_low_score),xp.abs(final_high_score))
+    )
     inside=(eta>original_low)&(eta<original_high)
     log_factorial_mean=xp.mean(special.gammaln(flat+1),axis=-1)
     ll=_nb_profile_log_likelihood(r,safe_mean,survival,log_factorial_mean,n,xp)
@@ -201,13 +203,14 @@ def _fit_negative_binomial_impl(a,xp,special,*,bracket_steps=_NB_BRACKET_STEPS,s
     objective_budget=64*xp.finfo(xp.float64).eps*xp.maximum(1,xp.maximum(xp.abs(ll),xp.abs(competitor)))
     objective_ok=xp.isfinite(ll)&xp.isfinite(competitor)&(ll+objective_budget>=competitor)
     finite_pair=xp.isfinite(r)&(r>0)&xp.isfinite(p)&(p>0)&(p<1)
-    converged=(flat_codes==1)&root_valid&found&inside&sign_ok&residual_ok&finite_pair&objective_ok
+    converged=(flat_codes==1)&root_valid&found&inside&sign_ok&precision_ok&residual_ok&finite_pair&objective_ok
     shape=batch_shape
     result={"r":r.reshape(shape),"p":p.reshape(shape),"log_likelihood":ll.reshape(shape),
             "converged":converged.reshape(shape),"iterations":bracket_iterations+solver_iterations,
             "classification":_nb_classification_metadata(codes),
             "bracket_found":found.reshape(shape),"root_inside_bracket":inside.reshape(shape),
-            "root_sign_check":sign_ok.reshape(shape),"root_residual_check":residual_ok.reshape(shape),
+            "root_sign_check":sign_ok.reshape(shape),"root_precision_check":precision_ok.reshape(shape),
+            "root_residual_check":residual_ok.reshape(shape),
             "objective_valid":objective_ok.reshape(shape)}
     return result
 

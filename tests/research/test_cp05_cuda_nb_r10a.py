@@ -3,7 +3,6 @@
 These tests exercise the backend-generic numerical kernel with NumPy/SciPy.
 They are not evidence of real CUDA execution or C2C equivalence.
 """
-from collections import Counter
 from decimal import Decimal, localcontext
 import math
 
@@ -14,7 +13,6 @@ from scipy import special
 from experiments.distribution_gof.cuda_calibration import cuda_candidate
 from experiments.distribution_gof.cuda_calibration import cp05_c2c_equivalence_runner as runner
 from experiments.distribution_gof.cuda_calibration.cp05_cuda_engine import _cp04_fit, _parameters, nb_eligibility
-from pyMagicStat.distributions.families import _fitting
 
 
 ESCAPE_TO_P1 = np.asarray(
@@ -34,6 +32,49 @@ R025_LIKE = np.asarray(
 def _solve(sample, **kwargs):
     return cuda_candidate._fit_negative_binomial_impl(
         np.asarray(sample, dtype=np.int64), np, special, **kwargs
+    )
+
+
+def _result_at(result, index):
+    item={}
+    for key,value in result.items():
+        array=np.asarray(value)
+        item[key]=value if array.ndim==0 else value[index]
+    return item
+
+
+def _assert_root_certification(result, context=""):
+    assert bool(result["bracket_found"]), context
+    assert bool(result["root_inside_bracket"]), context
+    assert bool(result["root_sign_check"]), context
+    assert bool(result["root_precision_check"]), context
+    assert bool(result["root_residual_check"]), context
+    assert bool(result["objective_valid"]), context
+    assert bool(result["converged"]), context
+
+
+def _assert_dec016_fit(sample, result, context=""):
+    reference=_cp04_fit("negative_binomial",sample)
+    parameters=_parameters(reference.fitted_distribution)
+    candidate_r=float(result["r"]); candidate_p=float(result["p"])
+    candidate_ll=float(result["log_likelihood"])
+    assert math.isfinite(candidate_r) and candidate_r>0, context
+    assert math.isfinite(candidate_p) and 0<candidate_p<1, context
+    assert math.isfinite(candidate_ll), context
+    assert abs(math.log(candidate_r)-math.log(parameters["r"]))<=1e-8, context
+    logit=lambda p: math.log(p/(1-p))
+    assert abs(logit(candidate_p)-logit(parameters["p"]))<=1e-8, context
+    assert abs(candidate_ll-reference.log_likelihood)<=1e-9*max(
+        1.0,abs(reference.log_likelihood)
+    ), context
+
+
+def _primary_nb_cell(*, r, p, n, statistic):
+    return next(
+        cell for cell in runner.primary_fixture_matrix()
+        if cell.family=="negative_binomial"
+        and dict(cell.parameters)=={"r":float(r),"p":float(p)}
+        and cell.n==n and cell.statistic==statistic
     )
 
 
@@ -130,31 +171,14 @@ def test_small_z_cancellation_helper_matches_decimal_oracle():
 def test_bracketed_solver_matches_cp04_parameters_and_objective(sample):
     assert nb_eligibility(sample)[0]
     result=_solve(sample)
-    reference=_cp04_fit("negative_binomial",sample)
-    parameters=_parameters(reference.fitted_distribution)
-    assert bool(result["converged"])
-    assert bool(result["bracket_found"])
-    assert bool(result["root_inside_bracket"])
-    assert bool(result["root_sign_check"])
-    assert bool(result["root_residual_check"])
-    assert bool(result["objective_valid"])
-    assert abs(math.log(float(result["r"]))-math.log(parameters["r"]))<=1e-8
-    logit=lambda p: math.log(p/(1-p))
-    assert abs(logit(float(result["p"]))-logit(parameters["p"]))<=1e-8
-    assert abs(float(result["log_likelihood"])-reference.log_likelihood)<=1e-9*max(
-        1.0,abs(reference.log_likelihood)
-    )
+    _assert_root_certification(result)
+    _assert_dec016_fit(sample,result)
 
 
-def test_score_has_certified_sign_change_around_root():
+def test_final_bracket_certifies_root_at_float64_precision():
     result=_solve(FALSE_CONVERGENCE)
     r=float(result["r"]); mean=float(np.mean(FALSE_CONVERGENCE))
-    counts=tuple(sorted(Counter(map(int,FALSE_CONVERGENCE)).items()))
-    n=len(FALSE_CONVERGENCE); total=int(np.sum(FALSE_CONVERGENCE))
-    center=math.log(r)
-    assert _fitting._profile_score(center-1e-7,counts,n,total)>0
-    assert _fitting._profile_score(center+1e-7,counts,n,total)<0
-    assert float(result["root_residual_check"])
+    _assert_root_certification(result)
     assert math.isclose(float(result["p"]),r/(r+mean),rel_tol=0.0,abs_tol=2e-16)
 
 
@@ -170,10 +194,63 @@ def test_old_escape_and_hard_nonconvergence_cannot_silently_pass():
 def test_old_false_convergence_is_rejected_by_root_and_objective_contract():
     old_r,old_p,old_ll=_old_unbracketed_newton(FALSE_CONVERGENCE)
     result=_solve(FALSE_CONVERGENCE)
-    assert old_r>1e9 and 0.999999999<old_p<1.0 and math.isfinite(old_ll)
-    assert bool(result["converged"]) and bool(result["objective_valid"])
-    assert float(result["log_likelihood"])>old_ll+1.0
+    assert old_r>1e9 and old_p>0.999999999
+    _assert_root_certification(result)
+    _assert_dec016_fit(FALSE_CONVERGENCE,result)
+    if math.isfinite(old_ll):
+        assert float(result["log_likelihood"])>old_ll+1.0
+    else:
+        assert not math.isfinite(old_ll)
     assert float(result["r"])<1.0 and float(result["p"])<0.9
+
+
+def test_exact_r10a_blocker_cell_is_certified_and_matches_dec016():
+    cell=_primary_nb_cell(r=5,p=0.9,n=250,statistic="AD")
+    sample,_=runner.fixed_observed(cell,2,"CP05-C2C")
+    assert runner._cpu_nb_classification(sample)=="ELIGIBLE"
+    result=_solve(sample)
+    assert result["classification"]=="ELIGIBLE"
+    _assert_root_certification(result,cell.canonical_id)
+    _assert_dec016_fit(sample,result,cell.canonical_id)
+
+
+def test_all_primary_nb_observed_samples_are_certified_or_classified_exactly():
+    samples_by_n={}
+    for cell in runner.primary_fixture_matrix():
+        if cell.family!="negative_binomial":
+            continue
+        for raw_outer_index in range(runner.R_EQ):
+            context=f"{cell.canonical_id}|raw_outer={raw_outer_index}"
+            sample,_=runner.fixed_observed(cell,raw_outer_index,"CP05-C2C")
+            samples_by_n.setdefault(cell.n,[]).append((context,sample))
+
+    for entries in samples_by_n.values():
+        batched=_solve(np.stack([sample for _,sample in entries]))
+        for index,(context,sample) in enumerate(entries):
+            cpu_classification=runner._cpu_nb_classification(sample)
+            result=_result_at(batched,index)
+            assert result["classification"]==cpu_classification, context
+            if cpu_classification=="ELIGIBLE":
+                _assert_root_certification(result,context)
+                _assert_dec016_fit(sample,result,context)
+            else:
+                assert not bool(result["converged"]), context
+
+
+def test_exact_r10a_blocker_bootstraps_are_certified_and_match_dec016():
+    cell=_primary_nb_cell(r=5,p=0.9,n=250,statistic="AD")
+    observed,_=runner.fixed_observed(cell,2,"CP05-C2C")
+    _,attempts,eligible=runner.fixed_bootstraps(cell,observed,2,"CP05-C2C")
+    assert len(eligible)==runner.B_EQ==15
+    assert len(attempts)>=len(eligible)
+    batched=_solve(np.stack([record["sample"] for record in eligible]))
+    for index,record in enumerate(eligible):
+        context=f"{cell.canonical_id}|raw_outer=2|raw_inner={record['raw_inner_index']}"
+        assert record["canonical_status"]=="ELIGIBLE", context
+        result=_result_at(batched,index)
+        assert result["classification"]=="ELIGIBLE", context
+        _assert_root_certification(result,context)
+        _assert_dec016_fit(record["sample"],result,context)
 
 
 def test_solver_is_batch_compatible():
