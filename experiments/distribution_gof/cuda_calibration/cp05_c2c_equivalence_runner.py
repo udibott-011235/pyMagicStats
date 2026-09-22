@@ -140,10 +140,8 @@ def _cpu_nb_classification(sample) -> str:
 def _cuda_nb_classification(sample) -> str:
     """Independent CUDA eligibility classification; it deliberately does not fit."""
     cp = cuda_candidate.require_cuda()
-    values = cp.asarray(sample, dtype=cp.float64)
-    if bool(cp.all(values == 0)):
-        return "ALL_ZERO_NON_IDENTIFYING"
-    return "ELIGIBLE" if bool(cp.var(values, ddof=0) > cp.mean(values)) else "VARIANCE_NOT_GREATER_THAN_MEAN"
+    codes = cuda_candidate._nb_classification_codes(sample, cp)
+    return cuda_candidate._nb_classification_metadata(codes)
 
 
 def _ineligible_observed_outer(cell, raw_outer_index, observed, meta, cpu_classification, cuda_classification):

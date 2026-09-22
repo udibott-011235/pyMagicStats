@@ -407,9 +407,10 @@ def test_frozen_quantum_nb_probe_fixture_and_cpu_reference_are_stable():
 def test_trigamma_order_is_device_native_and_has_no_cpu_fallback():
     source = Path("experiments/distribution_gof/cuda_calibration/cuda_candidate.py").read_text(encoding="utf-8")
     assert "trigamma_order=cp.asarray(1,dtype=cp.int32)" in source
-    assert "csp.polygamma(trigamma_order,a+r[...,None])" in source
     assert "csp.polygamma(trigamma_order,shape)" in source
-    assert source.count("trigamma_order=cp.asarray(1,dtype=cp.int32)") == 2
+    assert source.count("trigamma_order=cp.asarray(1,dtype=cp.int32)") == 1
+    assert "csp.digamma(a+r" not in source
+    assert "csp.polygamma(trigamma_order,a+r" not in source
     assert "scipy.special.polygamma" not in source
     assert "scipy.special" not in source
 
@@ -417,8 +418,8 @@ def test_trigamma_order_is_device_native_and_has_no_cpu_fallback():
 def test_nb_classification_labels_are_python_metadata_not_cupy_strings():
     source = Path("experiments/distribution_gof/cuda_calibration/cuda_candidate.py").read_text(encoding="utf-8")
     assert 'cp.where(allzero,"ALL_ZERO_NON_IDENTIFYING"' not in source
-    assert "classification_code=cp.where(allzero,0,cp.where(eligible,1,2))" in source
-    assert "_nb_classification_metadata(classification_code)" in source
+    assert "return xp.where(allzero,0,xp.where(eligible,1,2)).astype(xp.int8)" in source
+    assert '"classification":_nb_classification_metadata(codes)' in source
     assert runner.cuda_candidate._nb_classification_metadata(0) == "ALL_ZERO_NON_IDENTIFYING"
     assert runner.cuda_candidate._nb_classification_metadata(1) == "ELIGIBLE"
     assert runner.cuda_candidate._nb_classification_metadata(2) == "VARIANCE_NOT_GREATER_THAN_MEAN"
@@ -444,9 +445,11 @@ def test_cuda_population_variance_contract_is_independent_and_string_free():
     runner_source = Path(runner.__file__).read_text(encoding="utf-8")
     candidate_source = Path("experiments/distribution_gof/cuda_calibration/cuda_candidate.py").read_text(encoding="utf-8")
     classifier = runner_source[runner_source.index("def _cuda_nb_classification"):runner_source.index("def _ineligible_observed_outer")]
-    assert "cp.var(values, ddof=0) > cp.mean(values)" in runner_source
+    assert "_nb_classification_codes(sample, cp)" in classifier
     assert "_cpu_nb_classification" not in classifier and "nb_eligibility(" not in classifier
-    assert "var=cp.var(a,axis=-1,ddof=0)" in candidate_source
+    assert "left=n*sum_squares" in candidate_source
+    assert "rhs_overflow=total_square>(_INT64_MAX-linear)" in candidate_source
+    assert "cp.var(values, ddof=0) > cp.mean(values)" not in runner_source
 
 
 def test_frozen_ddof_outer_takes_categorical_path_without_fit_or_bootstrap(monkeypatch):
