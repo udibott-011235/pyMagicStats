@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-22",
+  "last_updated": "2026-09-23",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -790,6 +790,26 @@
         "no-calibration-run",
         "no-holdout-access"
       ]
+    },
+    {
+      "id": "EV-016",
+      "kind": "evidence",
+      "title": "CP05-C2C R10-A targeted replay harness R1 audited artifact materialization",
+      "status": "validated_with_limits",
+      "scope": "Byte-identical materialization of the externally audited targeted replay harness, CRLF execution manifest and fail-fast mock tests on DEC-019 base b8255f4fdebe59bf534003b2fdcdaac687bd6543; local Git EOL protection and scoped pytest validation only; no GPU execution, CUDA equivalence, calibration or production claim",
+      "path": "knowledge/evidence/cp05-c2c-r10a-targeted-replay-harness-r1.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-identities.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/.gitattributes",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/targeted_gpu_replay.py",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/test_harness_r1_fail_fast.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a", "targeted-replay", "harness-r1", "fail-fast", "byte-identity", "no-gpu-execution"]
     },
     {
       "id": "BR-017",
