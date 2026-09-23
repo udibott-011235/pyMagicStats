@@ -31,5 +31,8 @@ Decisiones iniciales indexadas:
 - `DEC-018`: propone la certificación R10-A-R2 de la raíz Negative Binomial
   mediante bracket final, adyacencia float64 y residual derivado del bracket;
   no modifica ni reemplaza DEC-016 y no constituye ejecución GPU o calibración.
+- `DEC-019`: prerregistra el replay GPU focalizado R10-A sobre la unión R9
+  persistida C/F/S/H y 12 reconstrucciones MC completas; no ejecuta CUDA ni
+  afirma equivalencia, calibración o cierre completo de fallos históricos.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

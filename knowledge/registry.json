@@ -678,6 +678,27 @@
       "tags": ["cp05", "cuda", "negative-binomial", "root-certification", "float64", "preregistration"]
     },
     {
+      "id": "DEC-019",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay preregistration",
+      "status": "proposed",
+      "scope": "Targeted future replay of the authenticated R9 persisted C/F/S/H failure union and complete reconstruction of 12 historical MC discrepancy outers; no CUDA execution, equivalence or calibration claim",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r2-root-certification.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-identities.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["cp05", "cuda", "targeted-replay", "negative-binomial", "monte-carlo", "preregistration"]
+    },
+    {
       "id": "EV-013",
       "kind": "evidence",
       "title": "CP05-A GOF architecture baseline and preregistration",
