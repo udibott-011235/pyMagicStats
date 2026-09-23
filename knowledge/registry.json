@@ -699,6 +699,40 @@
       "tags": ["cp05", "cuda", "targeted-replay", "negative-binomial", "monte-carlo", "preregistration"]
     },
     {
+      "id": "DEC-020",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A-R3 distribution-value grid / GOF-support separation",
+      "status": "proposed",
+      "scope": "Separate the existing canonical distribution-value grid from unchanged DEC-014 certified statistic support; fail closed on point identity mismatch; no solver, tolerance, GPU equivalence or calibration change",
+      "path": "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2c_equivalence_runner.py",
+        "tests/research/test_cp05_c2c_r10a_r3_value_grid.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a-r3", "value-grid", "statistic-support", "fail-closed"]
+    },
+    {
+      "id": "EV-017",
+      "kind": "evidence",
+      "title": "DEC-019 targeted replay R1 Owner-reported failure",
+      "status": "proposed",
+      "scope": "Owner-reported external failed replay and archive checksum, not independently archive-verified; local deterministic reconstruction supports the value-grid/support diagnosis without GPU execution or numerical equivalence claims",
+      "path": "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+        "tests/research/test_cp05_c2c_r10a_r3_value_grid.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "dec019", "owner-reported", "external-evidence", "value-grid", "no-gpu-execution"]
+    },
+    {
       "id": "EV-013",
       "kind": "evidence",
       "title": "CP05-A GOF architecture baseline and preregistration",

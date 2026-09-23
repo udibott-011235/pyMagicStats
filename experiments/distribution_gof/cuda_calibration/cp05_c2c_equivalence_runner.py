@@ -82,13 +82,19 @@ def reference_fit(family, sample):
             "parameters": _parameters(fit.fitted_distribution)}
 
 
+def canonical_distribution_value_points(cell, sample):
+    """DEC-020 value grid, independent of DEC-014 statistic tail support."""
+    if cell.family == "negative_binomial":
+        return tuple(range(int(max(sample)) + 1))
+    return tuple(sorted(set(float(x) for x in sample)))
+
+
 def evaluate_reference_record(cell, sample):
     result=reference_fit(cell.family,sample); bound=result["bound"]
     statistic=_cp04_statistic(sample,bound,cell.family,cell.statistic)
     # Values are deliberately CPU_REFERENCE evidence only.
-    points=sorted(set(float(x) for x in sample))
+    points=canonical_distribution_value_points(cell, sample)
     if cell.family=="negative_binomial":
-        points=list(range(max(int(max(sample)),0)+1))
         values={"pmf":[float(bound.pmf(x)) for x in points],"logPMF":[float(bound.logpmf(x)) for x in points],"cdf":[float(bound.cdf(x)) for x in points],"sf":[float(bound.sf(x)) for x in points],"logCDF":[float(bound.logcdf(x)) for x in points],"logSF":[float(bound.logsf(x)) for x in points]}
     else: values={"cdf":[float(bound.cdf(x)) for x in points],"sf":[float(bound.sf(x)) for x in points],"logCDF":[float(bound.logcdf(x)) for x in points],"logSF":[float(bound.logsf(x)) for x in points]}
     record={"classification":"ELIGIBLE","parameters":result["parameters"],"log_likelihood":None,"statistic":statistic,"evaluation_points":points,"distribution_values":values,"bound":bound}
@@ -111,10 +117,10 @@ def evaluate_cuda_record(cell, sample, *, certified_support=None, remainder_boun
             raise C2CError("CUDA solver non-convergence")
         # Candidate primitives own fitting/statistics; adapter never calls CP04 here.
         params={key:float(cuda_candidate.cp.asnumpy(value)) for key,value in fitted.items() if key in {"shape","scale","r","p"}}
-        points=sorted(set(float(x) for x in sample)) if cell.family!="negative_binomial" else list(certified_support or [])
-        if cell.family=="negative_binomial" and not points: raise C2CError("uncertified NB tail")
+        points=canonical_distribution_value_points(cell, sample)
+        if cell.family=="negative_binomial" and (certified_support is None or len(certified_support)==0): raise C2CError("uncertified NB tail")
         q=cuda_candidate.distribution_values(cell.family, points, params)
-        statistic=float(cuda_candidate.cp.asnumpy(cuda_candidate.candidate_statistic(cell.family,sample,params,cell.statistic,support=points if cell.family=="negative_binomial" else None,remainder_bound=remainder_bound)))
+        statistic=float(cuda_candidate.cp.asnumpy(cuda_candidate.candidate_statistic(cell.family,sample,params,cell.statistic,support=certified_support if cell.family=="negative_binomial" else None,remainder_bound=remainder_bound)))
         values={name:[float(x) for x in cuda_candidate.cp.asnumpy(value)] for name,value in q.items()}
         return {"classification":"ELIGIBLE","parameters":params,"log_likelihood":float(cuda_candidate.cp.asnumpy(fitted.get("log_likelihood",cuda_candidate.cp.asarray(float("nan"))))),"statistic":statistic,"evaluation_points":points,"distribution_values":values,"solver_converged":True,"iterations":fitted["iterations"],"dtype":"float64","failure_reason":None}
     except Exception as exc:
@@ -231,15 +237,23 @@ def evaluate_fixed_record(*, identity, record_type, cell, raw_outer_index, raw_i
     cpu=reference_adapter(cell, sample); cuda=cuda_adapter(cell, sample)
     classification=categorical_agreement(cpu["classification"],cuda["classification"])
     evidence=[]
-    # Adapters supply the same fitted-point values; no result is shared between engines.
+    # Point identity precedes numerical comparison; no result is shared between engines.
+    cpu_points=tuple(cpu.get("evaluation_points",()))
+    cuda_points=tuple(cuda.get("evaluation_points",()))
+    points_match=cpu_points==cuda_points
     for quantity, cpu_values in cpu.get("distribution_values",{}).items():
         cuda_values=cuda.get("distribution_values",{}).get(quantity,())
-        if len(cpu_values)!=len(cuda_values):
-            evidence.append({"quantity":quantity,"evaluation_point":None,"cpu_value":None,"cuda_value":None,"abs_error":float("inf"),"allowed_tolerance":None,"passed":False})
+        failure_reason=None
+        if not points_match:
+            failure_reason="EVALUATION_POINT_IDENTITY_MISMATCH"
+        elif len(cpu_values)!=len(cpu_points) or len(cuda_values)!=len(cpu_points):
+            failure_reason="DISTRIBUTION_VALUE_LENGTH_MISMATCH"
+        if failure_reason is not None:
+            evidence.append({"quantity":quantity,"evaluation_point":None,"cpu_value":None,"cuda_value":None,"abs_error":float("inf"),"allowed_tolerance":None,"passed":False,"failure_reason":failure_reason})
             continue
-        for point,left,right in zip(cpu.get("evaluation_points",()),cpu_values,cuda_values):
+        for point,left,right in zip(cpu_points,cpu_values,cuda_values):
             error=abs(right-left); evidence.append({"quantity":quantity,"evaluation_point":point,"cpu_value":left,"cuda_value":right,"abs_error":error,"allowed_tolerance":_tol(left),"passed":distribution_value_agreement(left,right)})
-    distribution_pass=bool(evidence) and all(item["passed"] for item in evidence)
+    distribution_pass=points_match and bool(evidence) and all(item["passed"] for item in evidence)
     statistic_error=abs(cuda["statistic"]-cpu["statistic"]); statistic_tol=2e-11*max(1,abs(cpu["statistic"])); statistic_pass=math.isfinite(cuda["statistic"]) and statistic_agreement(cpu["statistic"],cuda["statistic"])
     # NB's preregistered flat exception is only considered after downstream gates.
     downstream=classification and distribution_pass and statistic_pass

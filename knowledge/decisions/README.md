@@ -35,4 +35,8 @@ Decisiones iniciales indexadas:
   persistida C/F/S/H y 12 reconstrucciones MC completas; no ejecuta CUDA ni
   afirma equivalencia, calibración o cierre completo de fallos históricos.
 
+- `DEC-020`: propone separar los puntos de evaluación de valores de distribución
+  del soporte GOF certificado; preserva DEC-014/016/018/019 y no afirma
+  equivalencia GPU ni calibración.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
