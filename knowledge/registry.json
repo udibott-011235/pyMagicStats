@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-23",
+  "last_updated": "2026-09-24",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -765,6 +765,29 @@
       "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
       "supersedes": [],
       "tags": ["cp05-c2c", "r10-a-r3", "independent-audit", "historical-fail", "agy-qa-r3-01"]
+    },
+    {
+      "id": "DEC-022",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay R2 preregistration",
+      "status": "proposed",
+      "scope": "Documentary R2 preregistration for scientific candidate d2abd57e65bb7433eff81872a4f6510144d7c267: unchanged ordered R1 workloads, 134 R9 C/F/S/H identities and 12 complete MC outers, explicit DEC-020/021 structural gates and fresh execution; no DEC-019 authorization reuse, harness implementation or GPU execution",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-identities.json",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r2-root-certification.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-identities.json",
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md",
+        "knowledge/evidence/cp05-c2c-r10a-r3-required-quantities-audit-failure.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a", "targeted-replay-r2", "preregistration", "frozen-identities", "fail-closed", "no-gpu-execution"]
     },
     {
       "id": "EV-013",

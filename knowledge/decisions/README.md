@@ -43,4 +43,10 @@ Decisiones iniciales indexadas:
   comprobación fail-closed; registra la remediación de AGY-QA-R3-01 sin borrar
   el FAIL independiente del primer candidato DEC-020 ni autorizar replay.
 
+- [`DEC-022`](cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md):
+  propone un replay R2 del mismo conjunto histórico 134 + 12, vinculado al
+  candidato científico R3-R1 exacto y a los contratos DEC-020/021; preserva
+  DEC-019 como ejecución consumida y fallida, sin reutilizar su autorización
+  ni ejecutar GPU o implementar el harness R2.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
