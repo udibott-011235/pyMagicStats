@@ -39,4 +39,8 @@ Decisiones iniciales indexadas:
   del soporte GOF certificado; preserva DEC-014/016/018/019 y no afirma
   equivalencia GPU ni calibración.
 
+- `DEC-021`: propone el conjunto obligatorio de cantidades por familia y su
+  comprobación fail-closed; registra la remediación de AGY-QA-R3-01 sin borrar
+  el FAIL independiente del primer candidato DEC-020 ni autorizar replay.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

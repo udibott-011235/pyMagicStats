@@ -733,6 +733,40 @@
       "tags": ["cp05-c2c", "dec019", "owner-reported", "external-evidence", "value-grid", "no-gpu-execution"]
     },
     {
+      "id": "DEC-021",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A-R3-R1 required distribution quantity completeness",
+      "status": "proposed",
+      "scope": "Family-defined exact required distribution quantity sets and fail-closed missing/extra-key evidence; remediation of AGY-QA-R3-01 preserving DEC-020 grid/support separation and historical FAIL; no GPU or independent audit approval",
+      "path": "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-r3-required-quantities-audit-failure.md",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2c_equivalence_runner.py",
+        "tests/research/test_cp05_c2c_r10a_r3_r1_required_quantities.py",
+        "tests/research/test_cp05_c2c_r10a_r3_value_grid.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a-r3-r1", "required-quantities", "fail-closed", "agy-qa-r3-01"]
+    },
+    {
+      "id": "EV-018",
+      "kind": "evidence",
+      "title": "R10-A-R3 independent audit failure - missing required quantities",
+      "status": "proposed",
+      "scope": "Antigravity independent QA reported MAJOR AGY-QA-R3-01 and FAIL for candidate 3d13ac4ae5410cc6957f68cf4a60ebf34c22729f; missing CPU/both quantities incorrectly pass the gate; not ready for next preregistration; recorded by Cortex, not a Cortex audit",
+      "path": "knowledge/evidence/cp05-c2c-r10a-r3-required-quantities-audit-failure.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a-r3", "independent-audit", "historical-fail", "agy-qa-r3-01"]
+    },
+    {
       "id": "EV-013",
       "kind": "evidence",
       "title": "CP05-A GOF architecture baseline and preregistration",

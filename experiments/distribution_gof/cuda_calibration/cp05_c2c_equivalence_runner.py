@@ -231,6 +231,15 @@ def fixed_bootstraps(cell, observed, raw_outer_index, namespace):
 def _tol(cpu): return max(5e-13, 5e-11*abs(cpu))
 
 
+def required_distribution_quantities(family):
+    """DEC-021: the family contract, never adapter output, owns the universe."""
+    if family == "negative_binomial":
+        return ("pmf", "logPMF", "cdf", "sf", "logCDF", "logSF")
+    if family in {"gamma", "exponential"}:
+        return ("cdf", "sf", "logCDF", "logSF")
+    raise C2CError("unknown distribution-value family")
+
+
 def evaluate_fixed_record(*, identity, record_type, cell, raw_outer_index, raw_inner_index, sample,
                           reference_adapter, cuda_adapter):
     """Evaluate the two engines independently on the *same* canonical array."""
@@ -241,19 +250,37 @@ def evaluate_fixed_record(*, identity, record_type, cell, raw_outer_index, raw_i
     cpu_points=tuple(cpu.get("evaluation_points",()))
     cuda_points=tuple(cuda.get("evaluation_points",()))
     points_match=cpu_points==cuda_points
-    for quantity, cpu_values in cpu.get("distribution_values",{}).items():
-        cuda_values=cuda.get("distribution_values",{}).get(quantity,())
-        failure_reason=None
-        if not points_match:
-            failure_reason="EVALUATION_POINT_IDENTITY_MISMATCH"
-        elif len(cpu_values)!=len(cpu_points) or len(cuda_values)!=len(cpu_points):
-            failure_reason="DISTRIBUTION_VALUE_LENGTH_MISMATCH"
-        if failure_reason is not None:
-            evidence.append({"quantity":quantity,"evaluation_point":None,"cpu_value":None,"cuda_value":None,"abs_error":float("inf"),"allowed_tolerance":None,"passed":False,"failure_reason":failure_reason})
-            continue
-        for point,left,right in zip(cpu_points,cpu_values,cuda_values):
-            error=abs(right-left); evidence.append({"quantity":quantity,"evaluation_point":point,"cpu_value":left,"cuda_value":right,"abs_error":error,"allowed_tolerance":_tol(left),"passed":distribution_value_agreement(left,right)})
-    distribution_pass=points_match and bool(evidence) and all(item["passed"] for item in evidence)
+    required=required_distribution_quantities(cell.family)
+    cpu_values=cpu.get("distribution_values",{})
+    cuda_values=cuda.get("distribution_values",{})
+    cpu_quantities=set(cpu_values); cuda_quantities=set(cuda_values)
+    quantities_match=cpu_quantities==set(required) and cuda_quantities==set(required)
+
+    def structural_failure(quantity, reason, **details):
+        evidence.append({"quantity":quantity,"evaluation_point":None,"cpu_value":None,"cuda_value":None,"abs_error":float("inf"),"allowed_tolerance":None,"passed":False,"failure_reason":reason,**details})
+
+    if not points_match:
+        for quantity in required:
+            structural_failure(quantity,"EVALUATION_POINT_IDENTITY_MISMATCH")
+    for quantity in required:
+        missing_cpu=quantity not in cpu_quantities
+        missing_cuda=quantity not in cuda_quantities
+        if missing_cpu or missing_cuda:
+            engine="BOTH" if missing_cpu and missing_cuda else "CPU" if missing_cpu else "CUDA"
+            structural_failure(quantity,f"MISSING_{engine}_DISTRIBUTION_QUANTITY")
+    for quantity in sorted((cpu_quantities|cuda_quantities)-set(required)):
+        engines=[engine for engine, quantities in (("CPU",cpu_quantities),("CUDA",cuda_quantities)) if quantity in quantities]
+        structural_failure(quantity,"UNEXPECTED_DISTRIBUTION_QUANTITY",engines=engines)
+    if points_match and quantities_match:
+        for quantity in required:
+            if len(cpu_values[quantity])!=len(cpu_points) or len(cuda_values[quantity])!=len(cpu_points):
+                structural_failure(quantity,"DISTRIBUTION_VALUE_LENGTH_MISMATCH")
+    # Complete structural preflight precedes every numerical comparison.
+    if not evidence:
+        for quantity in required:
+            for point,left,right in zip(cpu_points,cpu_values[quantity],cuda_values[quantity]):
+                error=abs(right-left); evidence.append({"quantity":quantity,"evaluation_point":point,"cpu_value":left,"cuda_value":right,"abs_error":error,"allowed_tolerance":_tol(left),"passed":distribution_value_agreement(left,right)})
+    distribution_pass=points_match and quantities_match and bool(evidence) and all(item["passed"] for item in evidence)
     statistic_error=abs(cuda["statistic"]-cpu["statistic"]); statistic_tol=2e-11*max(1,abs(cpu["statistic"])); statistic_pass=math.isfinite(cuda["statistic"]) and statistic_agreement(cpu["statistic"],cuda["statistic"])
     # NB's preregistered flat exception is only considered after downstream gates.
     downstream=classification and distribution_pass and statistic_pass
