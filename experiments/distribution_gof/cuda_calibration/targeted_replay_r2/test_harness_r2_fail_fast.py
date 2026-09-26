@@ -360,6 +360,7 @@ def test_structural_reason_item_and_record_views_force_failure(synthetic, reason
     assert summary["TARGETED_REPLAY_PASS"] == "NO"
     assert summary["STRUCTURAL_REASON_ITEM_COUNTS"][reason] == 2
     assert summary["STRUCTURAL_REASON_RECORD_COUNTS"][reason] == 1
+    assert summary["UNEXPLAINED_DISCREPANCY"] == 0
     failure = read(s.output / "failure.json")
     assert failure["identity"] == bad["identity"] and failure["phase"] == "workload_a"
     assert failure["structural_failure_reasons"] == [reason]
@@ -406,6 +407,7 @@ def test_a_gate_fail_fast_persists_before_remaining_work(synthetic, gate):
     assert s.a_eval.call_count == 1 and s.b_eval.call_count == 0
     assert s.runtime.runner.fixed_bootstraps.call_count == 0
     assert read(s.output / "summary.json")[h.GATES[gate]] == 1
+    assert read(s.output / "summary.json")["UNEXPLAINED_DISCREPANCY"] == 0
     failure = read(s.output / "failure.json")
     assert gate in failure["failed_gates"]
     assert all(key in failure for key in ("phase", "identity", "record_type", "cell_id",
@@ -552,3 +554,158 @@ def test_record_count_view_deduplicates_identity_across_workloads(manifest, tmp_
             h.consume_record(state, tmp_path, phase, item, row)
     assert state["STRUCTURAL_REASON_ITEM_COUNTS"][reason] == 2
     assert state["STRUCTURAL_REASON_RECORD_COUNTS"][reason] == 1
+
+
+def test_pure_distribution_numeric_failure_has_complete_schema(synthetic):
+    s = synthetic
+    bad = passing_record(s.manifest["persisted_failure_record_identities"][0])
+    bad["distribution_evidence"][0].update(cuda_value=0.6, abs_error=0.1, passed=False)
+    bad["distribution_value_gate_pass"] = False
+    assert h.numeric_evidence_schema_complete(bad)
+    s.a_eval.side_effect = lambda *args: copy.deepcopy(bad)
+    assert h.execute(s.args) == 1
+    summary = read(s.output / "summary.json")
+    assert summary["DISTRIBUTION_VALUE_GATE_FAILURE"] == 1
+    assert summary["UNEXPLAINED_DISCREPANCY"] == 0
+    assert s.a_eval.call_count == 1 and s.b_eval.call_count == 0
+    assert rows(s.output / "workload_a_records.jsonl")[0]["distribution_evidence"][0]["passed"] is False
+    assert_digests(s.output)
+
+
+@pytest.mark.parametrize("gate,counter", [
+    ("fit_gate_pass", "FIT_GATE_FAILURE"),
+    ("statistic_gate_pass", "STATISTIC_GATE_FAILURE"),
+])
+def test_pure_fit_or_finite_statistic_failure_is_explained(synthetic, gate, counter):
+    s = synthetic
+    bad = passing_record(s.manifest["persisted_failure_record_identities"][0])
+    bad[gate] = False
+    if gate == "fit_gate_pass":
+        bad["cuda_parameters"] = {"r": 2.0, "p": 0.5}
+    else:
+        bad.update(cuda_statistic=2.0, statistic_abs_error=1.0)
+    s.a_eval.side_effect = lambda *args: copy.deepcopy(bad)
+    assert h.execute(s.args) == 1
+    summary = read(s.output / "summary.json")
+    assert summary[counter] == 1 and summary["UNEXPLAINED_DISCREPANCY"] == 0
+    assert all(summary[key] == int(key == counter) for key in h.GATES.values())
+
+
+@pytest.mark.parametrize("with_structural_reason", [False, True])
+def test_known_cuda_nonconvergence_and_consequent_gates_are_explained(synthetic, with_structural_reason):
+    s = synthetic
+    bad = passing_record(s.manifest["persisted_failure_record_identities"][0])
+    bad.update(cuda_classification="FAILED", cuda_failure_reason="CUDA solver non-convergence",
+               cuda_parameters={}, cuda_log_likelihood=None, cuda_statistic=float("nan"),
+               cuda_evaluation_points=[], distribution_evidence=[],
+               **{gate: False for gate in h.GATES})
+    if with_structural_reason:
+        bad["distribution_evidence"] = [{"failure_reason": reason} for reason in (
+            "EVALUATION_POINT_IDENTITY_MISMATCH", "MISSING_CUDA_DISTRIBUTION_QUANTITY")]
+    s.a_eval.side_effect = lambda *args: copy.deepcopy(bad)
+    assert h.execute(s.args) == 1
+    summary = read(s.output / "summary.json")
+    assert summary["CUDA_NONCONVERGENCE"] == 1
+    assert all(summary[key] == 1 for key in h.GATES.values())
+    assert summary["UNEXPLAINED_DISCREPANCY"] == 0
+    assert s.a_eval.call_count == 1 and s.b_eval.call_count == 0
+    assert_digests(s.output)
+
+
+def test_classification_only_failure_is_explained(synthetic):
+    s = synthetic
+    bad = passing_record(s.manifest["persisted_failure_record_identities"][0])
+    bad.update(cuda_classification="FAILED", classification_gate_pass=False)
+    s.a_eval.side_effect = lambda *args: copy.deepcopy(bad)
+    assert h.execute(s.args) == 1
+    summary = read(s.output / "summary.json")
+    assert summary["CLASSIFICATION_MISMATCH"] == 1
+    assert summary["UNEXPLAINED_DISCREPANCY"] == 0
+
+
+@pytest.mark.parametrize("fault", ["identity", "missing_field", "missing_quantity", "passed_type"])
+def test_known_gate_does_not_mask_independent_schema_inconsistency(synthetic, fault):
+    s = synthetic
+    bad = passing_record(s.manifest["persisted_failure_record_identities"][0])
+    bad["fit_gate_pass"] = False
+    if fault == "identity": bad["identity"] += "wrong"
+    elif fault == "missing_field": del bad["cpu_parameters"]
+    elif fault == "missing_quantity": bad["distribution_evidence"] = bad["distribution_evidence"][2:]
+    else: bad["distribution_evidence"][0]["passed"] = 1
+    s.a_eval.side_effect = lambda *args: copy.deepcopy(bad)
+    assert h.execute(s.args) == 1
+    summary = read(s.output / "summary.json")
+    assert summary["FIT_GATE_FAILURE"] == 1 and summary["UNEXPLAINED_DISCREPANCY"] == 1
+
+
+def test_failed_numeric_row_with_true_gate_remains_fail_closed(synthetic):
+    s = synthetic
+    bad = passing_record(s.manifest["persisted_failure_record_identities"][0])
+    bad["distribution_evidence"][0]["passed"] = False
+    assert h.numeric_evidence_schema_complete(bad)
+    s.a_eval.side_effect = lambda *args: copy.deepcopy(bad)
+    assert h.execute(s.args) == 1
+    summary = read(s.output / "summary.json")
+    assert summary["DISTRIBUTION_VALUE_GATE_FAILURE"] == 0
+    assert summary["UNEXPLAINED_DISCREPANCY"] == 1
+
+
+@pytest.mark.parametrize("reason_kind", ["structural", "cuda"])
+def test_unknown_failure_reason_remains_unexplained(synthetic, reason_kind):
+    s = synthetic
+    bad = passing_record(s.manifest["persisted_failure_record_identities"][0])
+    if reason_kind == "structural":
+        bad["distribution_evidence"] = [{"failure_reason": "UNKNOWN_REASON"}]
+    else:
+        bad["cuda_failure_reason"] = "unknown CUDA failure"
+    s.a_eval.side_effect = lambda *args: copy.deepcopy(bad)
+    assert h.execute(s.args) == 1
+    assert read(s.output / "summary.json")["UNEXPLAINED_DISCREPANCY"] == 1
+
+
+def test_mc_count_mismatch_with_own_plus_one_values_is_explained(synthetic):
+    s = synthetic
+    def aggregate(obs, boots):
+        result = synthetic_aggregate(obs, boots)
+        result.update(b_cuda=14, p_cuda=15 / 16, mc_gate_pass=False, outer_gate_pass=False)
+        return result
+    s.runtime.runner.aggregate_outer.side_effect = aggregate
+    assert h.execute(s.args) == 1
+    summary = read(s.output / "summary.json")
+    assert summary["MC_EXCEEDANCE_COUNT_MISMATCH"] == 1
+    assert summary["UNEXPLAINED_DISCREPANCY"] == 0
+    assert s.b_eval.call_count == 16
+    result = read(s.output / "mc_results.json")[0]
+    assert result["p_cpu"] == (result["b_cpu"] + 1) / 16
+    assert result["p_cuda"] == (result["b_cuda"] + 1) / 16
+    assert_digests(s.output)
+
+
+def test_mc_reject_mismatch_is_specific_not_generic_unexplained():
+    aggregate = dict(b_cpu=15, b_cuda=15, p_cpu=1.0, p_cuda=1.0,
+                     reject_cpu=False, reject_cuda=True,
+                     mc_evaluable=True, mc_gate_pass=False, outer_gate_pass=False)
+    state = h.initial_state()
+    with pytest.raises(h.HarnessContractError):
+        h.check_mc(state, aggregate)
+    assert state["counters"]["MC_REJECT_DECISION_MISMATCH"] == 1
+    assert state["counters"]["UNEXPLAINED_DISCREPANCY"] == 0
+
+
+@pytest.mark.parametrize("fault", ["different_p_equal_b", "same_invalid_p", "different_b_invalid_p",
+                                  "aggregate_gate", "not_evaluable", "both_wrong_reject", "reject_type"])
+def test_true_mc_inconsistency_counts_once(fault):
+    aggregate = dict(b_cpu=15, b_cuda=15, p_cpu=1.0, p_cuda=1.0,
+                     reject_cpu=False, reject_cuda=False,
+                     mc_evaluable=True, mc_gate_pass=True, outer_gate_pass=True)
+    if fault == "different_p_equal_b": aggregate["p_cuda"] = 15 / 16
+    elif fault == "same_invalid_p": aggregate.update(p_cpu=15 / 16, p_cuda=15 / 16)
+    elif fault == "different_b_invalid_p": aggregate.update(b_cuda=14, p_cuda=1.0)
+    elif fault == "aggregate_gate": aggregate["outer_gate_pass"] = False
+    elif fault == "not_evaluable": aggregate["mc_evaluable"] = False
+    elif fault == "both_wrong_reject": aggregate.update(reject_cpu=True, reject_cuda=True)
+    else: aggregate["reject_cuda"] = 0
+    state = h.initial_state()
+    with pytest.raises(h.HarnessContractError):
+        h.check_mc(state, aggregate)
+    assert state["counters"]["UNEXPLAINED_DISCREPANCY"] == 1

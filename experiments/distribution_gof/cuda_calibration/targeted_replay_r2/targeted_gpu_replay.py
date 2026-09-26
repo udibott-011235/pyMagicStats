@@ -440,8 +440,8 @@ def workload_a_record(runtime, cell, item):
                               if k.startswith("r9_") or k in {"cpu_classification", "cuda_classification"}}}
 
 
-def numeric_evidence_complete(record):
-    """Schema sanity only; all numerical comparisons/tolerances belong to the frozen evaluator."""
+def numeric_evidence_schema_complete(record):
+    """Check evidence shape, not agreement; a boolean False is a valid numerical result."""
     points = record.get("evaluation_points")
     maximum = record.get("sample_max")
     if not integer(maximum) or points != list(range(maximum + 1)):
@@ -456,7 +456,7 @@ def numeric_evidence_complete(record):
               "abs_error", "allowed_tolerance", "passed"}
     return all(
         isinstance(row, dict) and fields <= row.keys() and not row.get("failure_reason")
-        and (row["quantity"], row["evaluation_point"]) == pair and row["passed"] is True
+        and (row["quantity"], row["evaluation_point"]) == pair and type(row["passed"]) is bool
         for row, pair in zip(evidence, expected)
     )
 
@@ -510,13 +510,30 @@ def consume_record(state, output, phase, expected, record):
         failed.append("cuda_failure_reason")
     if not unassessed:
         eligible = all(record.get(k) == "ELIGIBLE" for k in ("cpu_classification", "cuda_classification"))
-        if not eligible or not numeric_evidence_complete(record):
+        if not eligible and record.get("classification_gate_pass") is not False:
+            counts["UNEXPLAINED_DISCREPANCY"] += 1
+            failed.append("unexplained_classification")
+        schema_complete = numeric_evidence_schema_complete(record)
+        # Structural evidence replaces numerical rows in the frozen runner. A known
+        # CUDA failure can likewise prevent them; neither is a second unexplained fault.
+        schema_explained = bool(reasons) or "unknown_structural_reason" in failed or (
+            failure == "CUDA solver non-convergence"
+            and record.get("distribution_value_gate_pass") is False
+        )
+        if not schema_complete and not schema_explained:
             counts["UNEXPLAINED_DISCREPANCY"] += 1
             failed.append("required_quantity_evidence_schema")
-        if any(not isinstance(record.get(k), (int, float)) or not math.isfinite(record[k])
-               for k in ("cpu_statistic", "cuda_statistic")):
+        if schema_complete and any(row["passed"] is False for row in evidence) and record.get("distribution_value_gate_pass") is not False:
             counts["UNEXPLAINED_DISCREPANCY"] += 1
-            failed.append("finite_statistics")
+            failed.append("distribution_agreement_gate_inconsistency")
+        for key in ("cpu_statistic", "cuda_statistic"):
+            value = record.get(key)
+            if not isinstance(value, (int, float)):
+                counts["UNEXPLAINED_DISCREPANCY"] += 1
+                failed.append("statistic_schema")
+            elif not math.isfinite(value) and record.get("statistic_gate_pass") is not False:
+                counts["UNEXPLAINED_DISCREPANCY"] += 1
+                failed.append("finite_statistics")
     elif evidence or any(record.get(k) is not None for k in ("cpu_statistic", "cuda_statistic")):
         counts["UNEXPLAINED_DISCREPANCY"] += 1
         failed.append("unassessed_schema")
@@ -539,21 +556,33 @@ def run_workload_a(runtime, manifest, cells, output, state):
 def check_mc(state, aggregate):
     counts = state["counters"]
     failed = []
+    unexplained = []
     for field, counter in (("b", "MC_EXCEEDANCE_COUNT_MISMATCH"), ("reject", "MC_REJECT_DECISION_MISMATCH")):
         if aggregate.get(field + "_cpu") != aggregate.get(field + "_cuda"):
             counts[counter] += 1
             failed.append(counter)
-    if aggregate.get("p_cpu") != aggregate.get("p_cuda"):
-        counts["UNEXPLAINED_DISCREPANCY"] += 1
-        failed.append("MC_PVALUE_MISMATCH")
+    count_mismatch = "MC_EXCEEDANCE_COUNT_MISMATCH" in failed
+    reject_mismatch = "MC_REJECT_DECISION_MISMATCH" in failed
+    if not count_mismatch and aggregate.get("p_cpu") != aggregate.get("p_cuda"):
+        unexplained.append("MC_PVALUE_MISMATCH")
     for engine in ("cpu", "cuda"):
         b, p, reject = (aggregate.get(k + "_" + engine) for k in ("b", "p", "reject"))
-        if not integer(b, B_EQ + 1) or p != (b + 1) / (B_EQ + 1) or type(reject) is not bool or reject != (p <= 0.05):
-            counts["UNEXPLAINED_DISCREPANCY"] += 1
-            failed.append("MC_SCHEMA")
-    if any(aggregate.get(k) is not True for k in ("mc_evaluable", "mc_gate_pass", "outer_gate_pass")):
+        valid_p = integer(b, B_EQ + 1) and type(p) in (int, float) and p == (b + 1) / (B_EQ + 1)
+        if not valid_p or type(reject) is not bool:
+            unexplained.append("MC_SCHEMA")
+        elif reject != (p <= 0.05) and not reject_mismatch:
+            unexplained.append("MC_REJECT_INVARIANCE")
+    if aggregate.get("mc_evaluable") is not True:
+        unexplained.append("MC_NOT_EVALUABLE")
+    for gate in ("mc_gate_pass", "outer_gate_pass"):
+        value = aggregate.get(gate)
+        if value is not True and not (value is False and (count_mismatch or reject_mismatch)):
+            unexplained.append("MC_AGGREGATE_GATE")
+    # One inconsistent aggregate is one unexplained discrepancy, even when the
+    # same invalid p also violates equality and the derived plus-one invariant.
+    if unexplained:
         counts["UNEXPLAINED_DISCREPANCY"] += 1
-        failed.append("MC_AGGREGATE_GATE")
+        failed.extend(unexplained)
     state["context"]["failed_gates"] = list(dict.fromkeys(failed))
     require(not failed, "new CPU/CUDA MC discrepancy")
 
