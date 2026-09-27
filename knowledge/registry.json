@@ -13,6 +13,64 @@
   ],
   "records": [
     {
+      "id": "DEC-024",
+      "kind": "decision",
+      "title": "Canonical CPU reference exact-tie adjudication for CPU/CUDA Monte Carlo equivalence",
+      "status": "proposed",
+      "scope": "Prospective individual exact CPU-reference tie certification for MC equivalence adjudication; unchanged statistical comparator and tolerances, preserved raw results and exact reject agreement; consumed failed R3 is not reclassified; no implementation or R4 execution authorization",
+      "path": "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-r3-mc-comparison-cliff.md",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2b_adversarial_fixtures.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "mc-equivalence",
+        "cpu-reference-exact-tie",
+        "prospective-adjudication",
+        "raw-results-preserved",
+        "no-execution"
+      ]
+    },
+    {
+      "id": "EV-020",
+      "kind": "evidence",
+      "title": "R3 MC comparison cliff reported by the Project Owner / Quantum",
+      "status": "proposed",
+      "scope": "Attributed single consumed R3 failure, archive checksum, exact CPU tie crossing and raw MC count mismatch; R9 manifest topology locally verified, external R3 archive and execution not independently verified; no R3 PASS or replay claim",
+      "path": "knowledge/evidence/cp05-c2c-r10a-r3-mc-comparison-cliff.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/targeted_gpu_replay.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "targeted-replay-r3",
+        "mc-comparison-cliff",
+        "owner-reported",
+        "external-evidence",
+        "no-gpu-execution"
+      ]
+    },
+    {
       "id": "TH-001",
       "kind": "theory",
       "title": "Principios de inferencia vigentes",

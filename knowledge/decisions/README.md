@@ -55,4 +55,10 @@ Decisiones iniciales indexadas:
   CUDA 13/NVRTC antes de crear output científico. La evidencia Owner/Quantum
   queda atribuida en EV-019; no implementa harness ni autoriza ejecución.
 
+- [`DEC-024`](cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md):
+  propone adjudicación prospectiva de equivalencia MC sólo para crossings
+  certificados de empate exacto del CPU reference; conserva comparador `>=`,
+  tolerancias, resultados raw y decisiones de rechazo idénticas. EV-020 atribuye
+  la evidencia Owner/Quantum; R3 permanece FAILED y consumido. No autoriza R4.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
