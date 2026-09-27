@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-24",
+  "last_updated": "2026-09-27",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -788,6 +788,44 @@
       "reviewer_roles": ["statistical-software-architecture", "implementation-engineering", "adversarial-statistical-qa"],
       "supersedes": [],
       "tags": ["cp05-c2c", "r10-a", "targeted-replay-r2", "preregistration", "frozen-identities", "fail-closed", "no-gpu-execution"]
+    },
+    {
+      "id": "DEC-023",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay R3 environment-remediated preregistration",
+      "status": "proposed",
+      "scope": "Documentary R3 contract on unchanged scientific SHA d2abd57e65bb7433eff81872a4f6510144d7c267 and exact ordered R2 workloads; preserves consumed failed R2 and requires strong CUDA 13/NVRTC preflight before scientific output; no harness implementation, execution or independent audit claim",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-identities.json",
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r2-environment-remediation.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r2/frozen_identity_manifest.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a", "targeted-replay-r3", "preregistration", "frozen-identities", "nvrtc", "no-gpu-execution"]
+    },
+    {
+      "id": "EV-019",
+      "kind": "evidence",
+      "title": "R2 failure and environment remediation reported by the Project Owner",
+      "status": "proposed",
+      "scope": "Attributed Owner/Quantum report of one consumed R2 loader failure, temporary CUDA wheel library visibility remediation, strong smoke and one historical-record probe; external archives not independently verified; no Cortex GPU execution or equivalence claim",
+      "path": "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r2-environment-remediation.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "targeted-replay-r2", "owner-reported", "external-evidence", "environment", "nvrtc", "no-gpu-execution"]
     },
     {
       "id": "EV-013",

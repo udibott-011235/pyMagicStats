@@ -49,4 +49,10 @@ Decisiones iniciales indexadas:
   DEC-019 como ejecución consumida y fallida, sin reutilizar su autorización
   ni ejecutar GPU o implementar el harness R2.
 
+- [`DEC-023`](cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md):
+  propone R3 con el mismo contrato científico y workloads ordenados de R2,
+  preserva la única ejecución R2 fallida y consumida y exige preflight fuerte
+  CUDA 13/NVRTC antes de crear output científico. La evidencia Owner/Quantum
+  queda atribuida en EV-019; no implementa harness ni autoriza ejecución.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
