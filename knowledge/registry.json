@@ -13,6 +13,41 @@
   ],
   "records": [
     {
+      "id": "DEC-025",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay R4 preregistration",
+      "status": "proposed",
+      "scope": "Documentary R4 preregistration on frozen scientific d2abd57 and exact ordered R3/R2 workloads; sole future delta is accepted DEC-024 MC adjudication with signed accounting and preserved raw results; inherits strong preflight and requires fresh separately authorized execution; no R4 harness or EV-021 created",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-identities.json",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r2-root-certification.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/evidence/cp05-c2c-r10a-r3-mc-comparison-cliff.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/frozen_identity_manifest.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "r10-a",
+        "targeted-replay-r4",
+        "preregistration",
+        "frozen-identities",
+        "signed-mc-accounting",
+        "no-gpu-execution"
+      ]
+    },
+    {
       "id": "DEC-024",
       "kind": "decision",
       "title": "Canonical CPU reference exact-tie adjudication for CPU/CUDA Monte Carlo equivalence",
