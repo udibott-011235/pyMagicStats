@@ -16,7 +16,7 @@
       "id": "DEC-024",
       "kind": "decision",
       "title": "Canonical CPU reference exact-tie adjudication for CPU/CUDA Monte Carlo equivalence",
-      "status": "proposed",
+      "status": "accepted",
       "scope": "Prospective individual exact CPU-reference tie certification for MC equivalence adjudication; unchanged statistical comparator and tolerances, preserved raw results and exact reject agreement; consumed failed R3 is not reclassified; no implementation or R4 execution authorization",
       "path": "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
       "evidence_paths": [
@@ -45,8 +45,8 @@
       "id": "EV-020",
       "kind": "evidence",
       "title": "R3 MC comparison cliff reported by the Project Owner / Quantum",
-      "status": "proposed",
-      "scope": "Attributed single consumed R3 failure, archive checksum, exact CPU tie crossing and raw MC count mismatch; R9 manifest topology locally verified, external R3 archive and execution not independently verified; no R3 PASS or replay claim",
+      "status": "validated_with_limits",
+      "scope": "Frozen R9 Git provenance independently verified and DEC-024 reasoning independently audited per Owner-supplied Antigravity PASS; R3 runtime/output/archive and checksum remain Owner/Quantum-reported, archive bytes not independently retrieved or hashed by Cortex/Antigravity; no R3 PASS or replay claim",
       "path": "knowledge/evidence/cp05-c2c-r10a-r3-mc-comparison-cliff.md",
       "evidence_paths": [
         "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",

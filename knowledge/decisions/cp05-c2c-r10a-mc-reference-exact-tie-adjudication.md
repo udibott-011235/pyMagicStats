@@ -1,15 +1,44 @@
 # DEC-024 — Canonical CPU reference exact-tie adjudication for CPU/CUDA Monte Carlo equivalence
 
-- Status: `proposed`; no acceptance or independent audit is asserted.
+- Status: `accepted` by explicit Project Owner decision after architecture review and independent QA.
 - Date recorded: 2026-09-27.
 - Owner: Project Owner — Ehud Bottaro.
 - Architecture: ChatGPT; documentary implementation: Cortex.
 - Reviewers: ChatGPT architecture and Antigravity independent QA.
-- Supersedes: none at proposal time. This is a prospective, narrowly scoped MC
-  equivalence-adjudication proposal, not an edit or retroactive replacement of
+- Supersedes: none. This is a prospective, narrowly scoped MC
+  equivalence-adjudication decision, not an edit or retroactive replacement of
   accepted DEC-016 or historical DEC-023/R3.
 - Repository: `udibott-011235/pyMagicStats`.
 - Branch: `docs/cp05-c2c-r10a-mc-reference-exact-tie-adjudication`.
+
+## Acceptance record
+
+The Project Owner supplied the completed architecture/Antigravity review and
+explicitly accepted DEC-024. This closure records that authority; Cortex does
+not issue its own independent audit. The reviewed candidate was:
+
+```text
+REVIEWED_SHA=843d932a8f63282d4dfc1e7f70b4a0a7b7b2b6b2
+REVIEWED_TREE=bc885233840ece806c35b7b1738967c3f7dedf96
+REMOTE_IDENTITY=EXACT_MATCH
+DIFF_SCOPE=EXACT_FOUR_FILES
+BLOCKER=NONE
+MAJOR=NONE
+MINOR=NONE
+NOTE=NONE
+VERDICT=PASS
+READY_FOR_DEC024_ACCEPTANCE=YES
+ARCHITECTURE_REVIEW=PASS
+ADVERSARIAL_QA=PASS
+OWNER_ACCEPTANCE=YES
+DEC024_OWNER_DECISION=ACCEPT
+```
+
+Acceptance preserves the complete rule below without a tolerance or comparator
+change. EV-020 is `validated_with_limits`, not `accepted`: its R3 archive remains
+Owner/Quantum-reported. R3 remains FAILED and consumed. This documentary closure
+does not authorize R4 implementation or execution, and the recorded review is
+bound to the reviewed SHA, not an independent audit of this new closure commit.
 
 ## Context, scope and frozen identities
 
@@ -30,7 +59,7 @@ discontinuity: individually equivalent statistics can give different raw
 `>=` indicators when the canonical CPU reference has an exact tie.
 The question here is software equivalence on the same fixed observed/bootstrap
 samples, not Type-I calibration, power, performance or production suitability.
-This proposal changes only prospective equivalence adjudication; it does not
+This decision changes only prospective equivalence adjudication; it does not
 change the statistical test or either engine's raw results.
 
 ```text
@@ -122,7 +151,7 @@ above > T_obs
 ```
 
 Only `equal` is an exact tie. `mc_exact_tie` retains exact `>=` semantics.
-This proposal cannot waive a gate failure or absorb a non-tie mismatch merely
+This decision cannot waive a gate failure or absorb a non-tie mismatch merely
 because individual statistic errors are small.
 
 ## Prospective MC equivalence adjudication
@@ -204,7 +233,7 @@ EV-020 motivates and supplies the reported design case; it is not a Cortex
 re-execution, independent archive verification or completed certification under
 this future rule. DEC-024 is prospective and must never convert R3 to PASS.
 
-A future targeted PASS under an accepted/audited DEC-024 may claim only:
+A future targeted PASS under this accepted/audited DEC-024 may claim only:
 
 > CPU/CUDA targeted equivalence passed on the frozen workload,
 > with any raw MC count differences limited to certified canonical
@@ -232,11 +261,11 @@ Fuzzy/rounded/ULP comparisons and a widened MC tolerance are rejected because
 they would change or blur the statistical comparator. A count-only allowance
 is rejected because it hides individual unexplained mismatches. Retrospective
 R3 acceptance is rejected because the R3 contract and consumed execution are
-immutable. This proposal instead exposes raw disagreement and requires
+immutable. This decision instead exposes raw disagreement and requires
 individual canonical-reference exact-tie provenance.
 
 No implementation or execution is authorized by this documentary task.
-After DEC-024 acceptance and audit, any separately authorized next execution is:
+Acceptance and audit are recorded above; any separately authorized next execution is:
 
 ```text
 NEXT_EXECUTION_VERSION=R4

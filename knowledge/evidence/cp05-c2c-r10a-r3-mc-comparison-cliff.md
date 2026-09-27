@@ -1,11 +1,31 @@
 # EV-020 — R3 MC comparison cliff reported by the Project Owner / Quantum
 
-- Status: `proposed`.
+- Status: `validated_with_limits`; not `accepted`.
 - Date recorded: 2026-09-27; external execution timestamp not supplied.
 - Recorded by: Cortex — Implementation Engineering.
 - Source: Project Owner Ehud Bottaro / Quantum, supplied in the DEC-024 instruction.
 - Reviewers: ChatGPT architecture, Antigravity independent QA and Project Owner.
-- Related proposal: [DEC-024](../decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md).
+- Related accepted decision: [DEC-024](../decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md).
+
+## Validation scope and limits
+
+The Project Owner supplied Antigravity's independent PASS for candidate
+`843d932a8f63282d4dfc1e7f70b4a0a7b7b2b6b2`, tree
+`bc885233840ece806c35b7b1738967c3f7dedf96`, with exact remote identity, exactly
+four files in scope and no blocker, major, minor or note. The subsequent explicit
+Owner acceptance closes DEC-024, not the R3 execution or external archive.
+The evidence status is limited precisely as follows:
+
+- Frozen R9 Git provenance: independently verified.
+- DEC-024 adversarial reasoning: independently audited.
+- R3 runtime/output/archive: Project Owner / Quantum reported.
+- Archive bytes: not independently retrieved or hashed by Cortex or Antigravity.
+
+These independent review facts are recorded from the Owner-supplied audit;
+Cortex performed no new independent runtime/archive audit during closure.
+The checksum below remains Owner/Quantum-reported. R3 remains FAILED with
+consumed authorization; validation does not permit rerun, resume or retroactive
+PASS, and does not authorize R4 implementation or execution.
 
 ## Provenance and immutable execution status
 

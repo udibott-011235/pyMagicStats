@@ -56,9 +56,11 @@ Decisiones iniciales indexadas:
   queda atribuida en EV-019; no implementa harness ni autoriza ejecución.
 
 - [`DEC-024`](cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md):
-  propone adjudicación prospectiva de equivalencia MC sólo para crossings
+  `accepted` por el Project Owner tras arquitectura y QA independiente PASS;
+  adjudicación prospectiva de equivalencia MC sólo para crossings
   certificados de empate exacto del CPU reference; conserva comparador `>=`,
   tolerancias, resultados raw y decisiones de rechazo idénticas. EV-020 atribuye
-  la evidencia Owner/Quantum; R3 permanece FAILED y consumido. No autoriza R4.
+  la evidencia Owner/Quantum con estado `validated_with_limits`; R3 permanece
+  FAILED y consumido. No autoriza implementación ni ejecución R4.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
