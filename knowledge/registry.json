@@ -16,7 +16,7 @@
       "id": "DEC-025",
       "kind": "decision",
       "title": "CP05-C2C R10-A targeted GPU replay R4 preregistration",
-      "status": "proposed",
+      "status": "accepted",
       "scope": "Documentary R4 preregistration on frozen scientific d2abd57 and exact ordered R3/R2 workloads; sole future delta is accepted DEC-024 MC adjudication with signed accounting and preserved raw results; inherits strong preflight and requires fresh separately authorized execution; no R4 harness or EV-021 created",
       "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md",
       "evidence_paths": [

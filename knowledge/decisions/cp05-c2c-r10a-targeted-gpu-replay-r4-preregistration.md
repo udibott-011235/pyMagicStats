@@ -1,6 +1,6 @@
 # DEC-025 — CP05-C2C R10-A targeted GPU replay R4 preregistration
 
-- Status: `proposed`.
+- Status: `accepted`.
 - Date recorded: 2026-09-27.
 - Owner: Project Owner — Ehud Bottaro.
 - Architecture: ChatGPT; documentary implementation: Cortex.
@@ -11,11 +11,33 @@
 
 ## Scope, authority and frozen candidate
 
-The Project Owner authorized the R4 architecture and only this documentary
-materialization/preregistration. No R4 harness implementation or execution is
-authorized. EV-021 is reserved for future R4 evidence and is not created here.
-This proposed decision and new manifest require review on their exact candidate
-SHA; no prior audit PASS transfers automatically.
+The initial authorization covered documentary materialization only. The Project
+Owner subsequently accepted DEC-025 and authorized its documentary closure,
+then R4 harness implementation in a separate child commit of the closure SHA.
+Neither phase authorizes GPU, Quantum or replay execution. EV-021 remains
+reserved for future R4 evidence and is not created here.
+
+The Owner supplied the architecture review and independent Antigravity result
+for `659413864082de6c120bfb6886828b0c361b8803`, tree
+`0e59e3ea6cc4dadf6916c60a7f6e833ebc3e95b6`:
+
+```text
+ARCHITECTURE_REVIEW=PASS
+ADVERSARIAL_QA=PASS
+OWNER_ACCEPTANCE=YES
+BLOCKER=0
+MAJOR=0
+MINOR=0
+NOTE=0
+VERDICT=PASS
+READY_FOR_DEC025_ACCEPTANCE=YES
+```
+
+This records Owner-supplied independent review, not a new Cortex audit.
+No PASS transfers to the closure or future harness SHA. The frozen manifest
+is unchanged; its documentary-origin metadata is preserved, not rewritten
+as an execution authorization. The following block preserves the original
+preregistration identities and readiness at initial materialization:
 
 ```text
 BASE_SHA=4afaf54306567c24c7d9f5d66e5ee55102c4aac0
@@ -176,6 +198,27 @@ corrected CUDA p
 ```
 
 `STATISTIC_RTOL` is not changed and is never a tie tolerance.
+
+### Fixed B_EQ limitation: reject boundary is not informative
+
+```text
+B_EQ=15
+alpha=0.05
+p_min=(0+1)/(15+1)=0.0625
+p_min > alpha
+raw_reject_cpu=false
+raw_reject_cuda=false
+REJECT_DECISION_GATE_PRESERVED=YES
+REJECT_BOUNDARY_EVIDENCE_AT_ALPHA_0_05=NO
+```
+
+For every evaluable MC outer, both raw reject decisions must be false because
+even the smallest plus-one p-value exceeds alpha. The exact reject-agreement
+gate is retained, but this replay cannot validate decision behavior near
+`alpha=0.05`. This does not invalidate directed equivalence evidence on
+statistics, individual indicators, raw counts and exact-tie adjudication.
+Neither B_EQ nor alpha changes. TYPE_I_CALIBRATION, POWER,
+PRODUCTION_READINESS and FULL_C2C_EQUIVALENCE remain out of scope.
 
 ## Sole new semantics: future DEC-024 adjudication
 
@@ -504,6 +547,7 @@ or authority require STOP and architectural review, not automatic repair.
 
 One local commit is authorized: `preregister R4 exact-tie adjudicated replay`.
 No push, PR, merge, main modification, Quantum, GPU/replay, full campaign,
-CP05-D or holdout access. This proposed documentary candidate is not a harness
+CP05-D or holdout access. This accepted documentary contract is not a harness
 implementation or equivalence result. Next role: ChatGPT architecture.
-`READY_FOR_R4_IMPLEMENTATION=NO`.
+The Owner's subsequent implementation authorization is limited to the separate
+Phase 2 harness commit; GPU preflight and replay remain unauthorized.

@@ -64,9 +64,12 @@ Decisiones iniciales indexadas:
   FAILED y consumido. No autoriza implementación ni ejecución R4.
 
 - [`DEC-025`](cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md):
-  `proposed`; prerregistra R4 con las mismas identidades y ciencia de R3/R2,
+  `accepted` tras arquitectura/Antigravity PASS y aceptación del Owner;
+  prerregistra R4 con las mismas identidades y ciencia de R3/R2,
   adjudicación MC DEC-024 aceptada y accounting firmado, sin cambiar resultados
   raw ni certificar near-ties. Hereda preflight fuerte y exige ejecución fresca
-  con autorización separada; R3 permanece FAILED. No implementa harness ni crea EV-021.
+  con autorización separada; R3 permanece FAILED. Con B_EQ=15, p_min=0.0625
+  impide evidencia de frontera de rechazo a alpha=0.05. No crea EV-021;
+  implementación del harness autorizada separadamente, ejecución GPU no autorizada.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
