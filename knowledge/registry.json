@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-27",
+  "last_updated": "2026-09-28",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -12,6 +12,38 @@
     "adversarial-statistical-qa"
   ],
   "records": [
+    {
+      "id": "EV-021",
+      "kind": "evidence",
+      "title": "CP05-C2C R10-A R4 targeted CPU/CUDA equivalence runtime evidence",
+      "status": "validated_with_limits",
+      "scope": "Independently audited R4 run2 targeted CPU/CUDA equivalence on the frozen R10-A workload; 134 A + 192 B records complete, 12/12 MC outers reconstructed/adjudicated, 2 raw count-mismatch outers explained by 3 certified canonical CPU-reference exact-tie crossings, signed accounting verified and zero unexplained discrepancies; B_EQ=15 makes the alpha=.05 reject boundary non-informative; no full-1152, calibration, production, CP05-D or holdout claim.",
+      "path": "knowledge/evidence/cp05-c2c-r10a-r4-runtime-evidence.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-r4-runtime-evidence.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-identities.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r4/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r4/targeted_gpu_replay.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "r10-a",
+        "targeted-replay-r4",
+        "runtime-evidence",
+        "cpu-cuda-equivalence",
+        "exact-tie-adjudication",
+        "validated-with-limits"
+      ]
+    },
     {
       "id": "DEC-025",
       "kind": "decision",
