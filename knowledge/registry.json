@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-13",
+  "last_updated": "2026-09-28",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -12,6 +12,131 @@
     "adversarial-statistical-qa"
   ],
   "records": [
+    {
+      "id": "EV-021",
+      "kind": "evidence",
+      "title": "CP05-C2C R10-A R4 targeted CPU/CUDA equivalence runtime evidence",
+      "status": "validated_with_limits",
+      "scope": "Independently audited R4 run2 targeted CPU/CUDA equivalence on the frozen R10-A workload; 134 A + 192 B records complete, 12/12 MC outers reconstructed/adjudicated, 2 raw count-mismatch outers explained by 3 certified canonical CPU-reference exact-tie crossings, signed accounting verified and zero unexplained discrepancies; B_EQ=15 makes the alpha=.05 reject boundary non-informative; no full-1152, calibration, production, CP05-D or holdout claim.",
+      "path": "knowledge/evidence/cp05-c2c-r10a-r4-runtime-evidence.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-r4-runtime-evidence.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-identities.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r4/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r4/targeted_gpu_replay.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "r10-a",
+        "targeted-replay-r4",
+        "runtime-evidence",
+        "cpu-cuda-equivalence",
+        "exact-tie-adjudication",
+        "validated-with-limits"
+      ]
+    },
+    {
+      "id": "DEC-025",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay R4 preregistration",
+      "status": "accepted",
+      "scope": "Documentary R4 preregistration on frozen scientific d2abd57 and exact ordered R3/R2 workloads; sole future delta is accepted DEC-024 MC adjudication with signed accounting and preserved raw results; inherits strong preflight and requires fresh separately authorized execution; no R4 harness or EV-021 created",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-identities.json",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r2-root-certification.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/evidence/cp05-c2c-r10a-r3-mc-comparison-cliff.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/frozen_identity_manifest.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "r10-a",
+        "targeted-replay-r4",
+        "preregistration",
+        "frozen-identities",
+        "signed-mc-accounting",
+        "no-gpu-execution"
+      ]
+    },
+    {
+      "id": "DEC-024",
+      "kind": "decision",
+      "title": "Canonical CPU reference exact-tie adjudication for CPU/CUDA Monte Carlo equivalence",
+      "status": "accepted",
+      "scope": "Prospective individual exact CPU-reference tie certification for MC equivalence adjudication; unchanged statistical comparator and tolerances, preserved raw results and exact reject agreement; consumed failed R3 is not reclassified; no implementation or R4 execution authorization",
+      "path": "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-r3-mc-comparison-cliff.md",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2b_adversarial_fixtures.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "mc-equivalence",
+        "cpu-reference-exact-tie",
+        "prospective-adjudication",
+        "raw-results-preserved",
+        "no-execution"
+      ]
+    },
+    {
+      "id": "EV-020",
+      "kind": "evidence",
+      "title": "R3 MC comparison cliff reported by the Project Owner / Quantum",
+      "status": "validated_with_limits",
+      "scope": "Frozen R9 Git provenance independently verified and DEC-024 reasoning independently audited per Owner-supplied Antigravity PASS; R3 runtime/output/archive and checksum remain Owner/Quantum-reported, archive bytes not independently retrieved or hashed by Cortex/Antigravity; no R3 PASS or replay claim",
+      "path": "knowledge/evidence/cp05-c2c-r10a-r3-mc-comparison-cliff.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r3/targeted_gpu_replay.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "cp05-c2c",
+        "targeted-replay-r3",
+        "mc-comparison-cliff",
+        "owner-reported",
+        "external-evidence",
+        "no-gpu-execution"
+      ]
+    },
     {
       "id": "TH-001",
       "kind": "theory",
@@ -657,6 +782,177 @@
       "tags": ["cp05", "cuda", "rapids", "equivalence", "preregistration", "float64"]
     },
     {
+      "id": "DEC-018",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A-R2 Negative Binomial root certification",
+      "status": "proposed",
+      "scope": "Final-bracket sign, float64 adjacency and bracket-derived residual certification for the isolated CP05 CUDA/RAPIDS NB candidate; no DEC-016 change, GPU execution or calibration claim",
+      "path": "knowledge/decisions/cp05-c2c-r10a-r2-root-certification.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "experiments/distribution_gof/cuda_calibration/cuda_candidate.py",
+        "tests/research/test_cp05_cuda_nb_r10a.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["cp05", "cuda", "negative-binomial", "root-certification", "float64", "preregistration"]
+    },
+    {
+      "id": "DEC-019",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay preregistration",
+      "status": "proposed",
+      "scope": "Targeted future replay of the authenticated R9 persisted C/F/S/H failure union and complete reconstruction of 12 historical MC discrepancy outers; no CUDA execution, equivalence or calibration claim",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r2-root-certification.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-identities.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": ["cp05", "cuda", "targeted-replay", "negative-binomial", "monte-carlo", "preregistration"]
+    },
+    {
+      "id": "DEC-020",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A-R3 distribution-value grid / GOF-support separation",
+      "status": "proposed",
+      "scope": "Separate the existing canonical distribution-value grid from unchanged DEC-014 certified statistic support; fail closed on point identity mismatch; no solver, tolerance, GPU equivalence or calibration change",
+      "path": "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2c_equivalence_runner.py",
+        "tests/research/test_cp05_c2c_r10a_r3_value_grid.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a-r3", "value-grid", "statistic-support", "fail-closed"]
+    },
+    {
+      "id": "EV-017",
+      "kind": "evidence",
+      "title": "DEC-019 targeted replay R1 Owner-reported failure",
+      "status": "proposed",
+      "scope": "Owner-reported external failed replay and archive checksum, not independently archive-verified; local deterministic reconstruction supports the value-grid/support diagnosis without GPU execution or numerical equivalence claims",
+      "path": "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+        "tests/research/test_cp05_c2c_r10a_r3_value_grid.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "dec019", "owner-reported", "external-evidence", "value-grid", "no-gpu-execution"]
+    },
+    {
+      "id": "DEC-021",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A-R3-R1 required distribution quantity completeness",
+      "status": "proposed",
+      "scope": "Family-defined exact required distribution quantity sets and fail-closed missing/extra-key evidence; remediation of AGY-QA-R3-01 preserving DEC-020 grid/support separation and historical FAIL; no GPU or independent audit approval",
+      "path": "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r10a-r3-required-quantities-audit-failure.md",
+        "experiments/distribution_gof/cuda_calibration/cp05_c2c_equivalence_runner.py",
+        "tests/research/test_cp05_c2c_r10a_r3_r1_required_quantities.py",
+        "tests/research/test_cp05_c2c_r10a_r3_value_grid.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a-r3-r1", "required-quantities", "fail-closed", "agy-qa-r3-01"]
+    },
+    {
+      "id": "EV-018",
+      "kind": "evidence",
+      "title": "R10-A-R3 independent audit failure - missing required quantities",
+      "status": "proposed",
+      "scope": "Antigravity independent QA reported MAJOR AGY-QA-R3-01 and FAIL for candidate 3d13ac4ae5410cc6957f68cf4a60ebf34c22729f; missing CPU/both quantities incorrectly pass the gate; not ready for next preregistration; recorded by Cortex, not a Cortex audit",
+      "path": "knowledge/evidence/cp05-c2c-r10a-r3-required-quantities-audit-failure.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a-r3", "independent-audit", "historical-fail", "agy-qa-r3-01"]
+    },
+    {
+      "id": "DEC-022",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay R2 preregistration",
+      "status": "proposed",
+      "scope": "Documentary R2 preregistration for scientific candidate d2abd57e65bb7433eff81872a4f6510144d7c267: unchanged ordered R1 workloads, 134 R9 C/F/S/H identities and 12 complete MC outers, explicit DEC-020/021 structural gates and fresh execution; no DEC-019 authorization reuse, harness implementation or GPU execution",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-identities.json",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r2-root-certification.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-identities.json",
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md",
+        "knowledge/evidence/cp05-c2c-r10a-r3-required-quantities-audit-failure.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "implementation-engineering", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a", "targeted-replay-r2", "preregistration", "frozen-identities", "fail-closed", "no-gpu-execution"]
+    },
+    {
+      "id": "DEC-023",
+      "kind": "decision",
+      "title": "CP05-C2C R10-A targeted GPU replay R3 environment-remediated preregistration",
+      "status": "proposed",
+      "scope": "Documentary R3 contract on unchanged scientific SHA d2abd57e65bb7433eff81872a4f6510144d7c267 and exact ordered R2 workloads; preserves consumed failed R2 and requires strong CUDA 13/NVRTC preflight before scientific output; no harness implementation, execution or independent audit claim",
+      "path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-identities.json",
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r2-environment-remediation.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-value-grid-separation.md",
+        "knowledge/decisions/cp05-c2c-r10a-r3-r1-required-quantities.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r2/frozen_identity_manifest.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a", "targeted-replay-r3", "preregistration", "frozen-identities", "nvrtc", "no-gpu-execution"]
+    },
+    {
+      "id": "EV-019",
+      "kind": "evidence",
+      "title": "R2 failure and environment remediation reported by the Project Owner",
+      "status": "proposed",
+      "scope": "Attributed Owner/Quantum report of one consumed R2 loader failure, temporary CUDA wheel library visibility remediation, strong smoke and one historical-record probe; external archives not independently verified; no Cortex GPU execution or equivalence claim",
+      "path": "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r2-environment-remediation.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md",
+        "knowledge/evidence/cp05-c2c-r10a-targeted-replay-r1-failure.md"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "targeted-replay-r2", "owner-reported", "external-evidence", "environment", "nvrtc", "no-gpu-execution"]
+    },
+    {
       "id": "EV-013",
       "kind": "evidence",
       "title": "CP05-A GOF architecture baseline and preregistration",
@@ -748,6 +1044,26 @@
         "no-calibration-run",
         "no-holdout-access"
       ]
+    },
+    {
+      "id": "EV-016",
+      "kind": "evidence",
+      "title": "CP05-C2C R10-A targeted replay harness R1 audited artifact materialization",
+      "status": "validated_with_limits",
+      "scope": "Byte-identical materialization of the externally audited targeted replay harness, CRLF execution manifest and fail-fast mock tests on DEC-019 base b8255f4fdebe59bf534003b2fdcdaac687bd6543; local Git EOL protection and scoped pytest validation only; no GPU execution, CUDA equivalence, calibration or production claim",
+      "path": "knowledge/evidence/cp05-c2c-r10a-targeted-replay-harness-r1.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-identities.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/.gitattributes",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/targeted_gpu_replay.py",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/frozen_identity_manifest.json",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/test_harness_r1_fail_fast.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": ["statistical-software-architecture", "adversarial-statistical-qa", "decision-owner"],
+      "supersedes": [],
+      "tags": ["cp05-c2c", "r10-a", "targeted-replay", "harness-r1", "fail-fast", "byte-identity", "no-gpu-execution"]
     },
     {
       "id": "BR-017",

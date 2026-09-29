@@ -28,5 +28,48 @@ Decisiones iniciales indexadas:
   es un prototipo CUDA/RAPIDS aislado, sin equivalencia ni calibración.
 - `DEC-016`: prerregistra el gate CPU↔CUDA CP05-C2B sobre datos fijos y sus
   tolerancias; no constituye ejecución GPU, calibración ni benchmark.
+- `DEC-018`: propone la certificación R10-A-R2 de la raíz Negative Binomial
+  mediante bracket final, adyacencia float64 y residual derivado del bracket;
+  no modifica ni reemplaza DEC-016 y no constituye ejecución GPU o calibración.
+- `DEC-019`: prerregistra el replay GPU focalizado R10-A sobre la unión R9
+  persistida C/F/S/H y 12 reconstrucciones MC completas; no ejecuta CUDA ni
+  afirma equivalencia, calibración o cierre completo de fallos históricos.
+
+- `DEC-020`: propone separar los puntos de evaluación de valores de distribución
+  del soporte GOF certificado; preserva DEC-014/016/018/019 y no afirma
+  equivalencia GPU ni calibración.
+
+- `DEC-021`: propone el conjunto obligatorio de cantidades por familia y su
+  comprobación fail-closed; registra la remediación de AGY-QA-R3-01 sin borrar
+  el FAIL independiente del primer candidato DEC-020 ni autorizar replay.
+
+- [`DEC-022`](cp05-c2c-r10a-targeted-gpu-replay-r2-preregistration.md):
+  propone un replay R2 del mismo conjunto histórico 134 + 12, vinculado al
+  candidato científico R3-R1 exacto y a los contratos DEC-020/021; preserva
+  DEC-019 como ejecución consumida y fallida, sin reutilizar su autorización
+  ni ejecutar GPU o implementar el harness R2.
+
+- [`DEC-023`](cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md):
+  propone R3 con el mismo contrato científico y workloads ordenados de R2,
+  preserva la única ejecución R2 fallida y consumida y exige preflight fuerte
+  CUDA 13/NVRTC antes de crear output científico. La evidencia Owner/Quantum
+  queda atribuida en EV-019; no implementa harness ni autoriza ejecución.
+
+- [`DEC-024`](cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md):
+  `accepted` por el Project Owner tras arquitectura y QA independiente PASS;
+  adjudicación prospectiva de equivalencia MC sólo para crossings
+  certificados de empate exacto del CPU reference; conserva comparador `>=`,
+  tolerancias, resultados raw y decisiones de rechazo idénticas. EV-020 atribuye
+  la evidencia Owner/Quantum con estado `validated_with_limits`; R3 permanece
+  FAILED y consumido. No autoriza implementación ni ejecución R4.
+
+- [`DEC-025`](cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md):
+  `accepted` tras arquitectura/Antigravity PASS y aceptación del Owner;
+  prerregistra R4 con las mismas identidades y ciencia de R3/R2,
+  adjudicación MC DEC-024 aceptada y accounting firmado, sin cambiar resultados
+  raw ni certificar near-ties. Hereda preflight fuerte y exige ejecución fresca
+  con autorización separada; R3 permanece FAILED. Con B_EQ=15, p_min=0.0625
+  impide evidencia de frontera de rechazo a alpha=0.05. No crea EV-021;
+  implementación del harness autorizada separadamente, ejecución GPU no autorizada.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

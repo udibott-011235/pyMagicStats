@@ -1,0 +1,2963 @@
+{
+  "schema_version": "cp05-c2c-r10a-targeted-replay-v2",
+  "decision": "DEC-022",
+  "r9_execution_sha": "01c9c0759d3ffec1bbd95cb5aa3f67793aab544b",
+  "replay_execution_sha": "d2abd57e65bb7433eff81872a4f6510144d7c267",
+  "replay_version": "R2",
+  "replay_execution_tree": "70b20d1f9cbc20d6cd77de4c25b3017a6413932c",
+  "identity_source": {
+    "git_commit": "d2abd57e65bb7433eff81872a4f6510144d7c267",
+    "canonical_manifest_path": "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-identities.json",
+    "canonical_git_blob_sha256": "39e01237b3497be542b2c81e3d96ba0de78278bf8f22bd7bc86bed8fc5f2492a",
+    "r1_frozen_manifest_path": "experiments/distribution_gof/cuda_calibration/targeted_replay_r1/frozen_identity_manifest.json",
+    "r1_frozen_git_blob_sha256": "efb550af870213160ed450c222043a0c73cc415a7aecb633c62d61118d72b36d",
+    "ordered_workload_json_sha256": "3fe47fef69fc2dfac152dd48eac75841fe25a107b0da6194c06a5d14a7be1395"
+  },
+  "identity_semantics": "Workload A and B lists are semantically identical to R1, including record metadata, raw indices, gaps and original ordering.",
+  "historical_fields_policy": "Inherited gate/classification fields, topology, MC counts, p-values and reject flags are R9 provenance only, not new-replay acceptance results or oracles.",
+  "execution_authorization": "DEC-022 proposed preregistration only; future harness and execution require separate authorization. DEC-019 is not reused as execution authorization.",
+  "namespace": "CP05-C2C",
+  "R_EQ": 8,
+  "B_EQ": 15,
+  "source_archive_sha256": "2bda9bf446a64d61d035f0948c19570f6177c1ac2ac650968720edb2b6887269",
+  "source_digests_json_sha256": "3782b8f15977131afb6bcb416a3ac356a55dc4fb38f40a6006309dc88f9ca93a",
+  "selection_semantics": "R9 persisted failure union C/F/S/H",
+  "distribution_value_gate_persistence": "NOT_PERSISTED",
+  "persisted_failure_record_count": 134,
+  "persisted_failure_record_identities": [
+    {
+      "identity": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite|raw_outer=2|raw_inner=7",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 7,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite|raw_outer=3|raw_inner=0",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 0,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite|raw_outer=5|raw_inner=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite|raw_outer=6|raw_inner=13",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 13,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=3",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 3,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=3|raw_inner=11",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 11,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=1|raw_inner=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=1|raw_inner=25",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 25,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=1|raw_inner=9",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=2|raw_inner=20",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 20,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=3|raw_inner=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=3|raw_inner=28",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 28,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=5|raw_inner=14",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 14,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=5|raw_inner=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=6|raw_inner=13",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 13,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=6|raw_inner=3",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 3,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite|raw_outer=7|raw_inner=9",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=0|raw_inner=33",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 33,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=0|raw_inner=39",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 39,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=0|raw_inner=41",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 41,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=1",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 1,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=1|raw_inner=11",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 11,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=1|raw_inner=16",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 16,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=1|raw_inner=17",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 17,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=1|raw_inner=19",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 19,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=1|raw_inner=8",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 8,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=3",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 3,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=3|raw_inner=0",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 0,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=3|raw_inner=13",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 13,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=3|raw_inner=3",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 3,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 7,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=0",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 0,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=1",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 1,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=12",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 12,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=15",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 15,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=20",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 20,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=22",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 22,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=27",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 27,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=30",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 30,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=31",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 31,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite|raw_outer=7|raw_inner=32",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 32,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=17",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 17,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=0|raw_inner=14",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 14,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=1|raw_inner=9",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=1",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 1,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=6",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 6,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=250|CVM|composite|raw_outer=2|raw_inner=18",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=250|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 18,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 1,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=12",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 12,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=23",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 23,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=27",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 27,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=29",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 29,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=32",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 32,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=33",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 33,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=36",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 36,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=1|raw_inner=7",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 7,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 5,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=12",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 12,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=15",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 15,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=20",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 20,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=21",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 21,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=22",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 22,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=27",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 27,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=31",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 31,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=34",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 34,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=8",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 8,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=12",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 12,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=13",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 13,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=34",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 34,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=5|raw_inner=18",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 18,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=5|raw_inner=29",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 29,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=0|raw_inner=13",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 13,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=0|raw_inner=19",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 19,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=1|raw_inner=2",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=1|raw_inner=6",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 6,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=2|raw_inner=12",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 12,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=2|raw_inner=22",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 22,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=4|raw_inner=15",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 15,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=4|raw_inner=19",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 19,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=4|raw_inner=2",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=4|raw_inner=25",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 25,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=5|raw_inner=12",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 12,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=5|raw_inner=2",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=5|raw_inner=9",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=6|raw_inner=4",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 4,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|AD|composite|raw_outer=6|raw_inner=6",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 6,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=1|raw_inner=13",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 13,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=1|raw_inner=9",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=3|raw_inner=15",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 15,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=3|raw_inner=4",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 4,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=3|raw_inner=6",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 3,
+      "raw_inner_index": 6,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=4|raw_inner=0",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 0,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=5|raw_inner=0",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 0,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=5|raw_inner=1",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 1,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=5|raw_inner=10",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 10,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=5|raw_inner=15",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 15,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=20|CVM|composite|raw_outer=5|raw_inner=9",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=50|AD|composite|raw_outer=0|raw_inner=3",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 3,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=50|AD|composite|raw_outer=1|raw_inner=2",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": true,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.5|n=50|AD|composite|raw_outer=1|raw_inner=7",
+      "cell_id": "negative_binomial|r=1,p=0.5|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 7,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=1",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 1,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=6",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 6,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": null,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": null,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "VARIANCE_NOT_GREATER_THAN_MEAN",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=7|raw_inner=9",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.5|n=20|AD|composite|raw_outer=1|raw_inner=7",
+      "cell_id": "negative_binomial|r=20,p=0.5|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 1,
+      "raw_inner_index": 7,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=14",
+      "cell_id": "negative_binomial|r=20,p=0.9|n=100|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 14,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.9|n=100|CVM|composite|raw_outer=7|raw_inner=2",
+      "cell_id": "negative_binomial|r=20,p=0.9|n=100|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.9|n=20|CVM|composite|raw_outer=6|raw_inner=7",
+      "cell_id": "negative_binomial|r=20,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 7,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.9|n=250|AD|composite|raw_outer=5|raw_inner=2",
+      "cell_id": "negative_binomial|r=20,p=0.9|n=250|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 5,
+      "raw_inner_index": 2,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": true,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.9|n=250|CVM|composite|raw_outer=2|raw_inner=9",
+      "cell_id": "negative_binomial|r=20,p=0.9|n=250|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 9,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": true,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.9|n=250|CVM|composite|raw_outer=6|raw_inner=11",
+      "cell_id": "negative_binomial|r=20,p=0.9|n=250|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 11,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=20,p=0.9|n=50|CVM|composite|raw_outer=7|raw_inner=8",
+      "cell_id": "negative_binomial|r=20,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 8,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=100|AD|composite|raw_outer=6|raw_inner=8",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=100|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 8,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=0|raw_inner=18",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 18,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=2",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 2,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=2|raw_inner=18",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 18,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=2|raw_inner=19",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 19,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=2|raw_inner=5",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 5,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=2|raw_inner=6",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 6,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=4",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 4,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|AD|composite|raw_outer=4|raw_inner=1",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 4,
+      "raw_inner_index": 1,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|CVM|composite|raw_outer=0|raw_inner=4",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 4,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|CVM|composite|raw_outer=0|raw_inner=5",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 0,
+      "raw_inner_index": 5,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|CVM|composite|raw_outer=2|raw_inner=16",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 16,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|CVM|composite|raw_outer=2|raw_inner=7",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 2,
+      "raw_inner_index": 7,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|CVM|composite|raw_outer=6|raw_inner=11",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 11,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|CVM|composite|raw_outer=6|raw_inner=3",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 3,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=20|CVM|composite|raw_outer=6|raw_inner=6",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=20|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 6,
+      "raw_inner_index": 6,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=250|AD|composite|raw_outer=2",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=250|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 2,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=14",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=250|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 14,
+      "r9_classification_gate_pass": true,
+      "r9_fit_gate_pass": true,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": null,
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "ELIGIBLE"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=50|AD|composite|raw_outer=4",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=50|AD|composite",
+      "family": "negative_binomial",
+      "record_type": "observed",
+      "raw_outer_index": 4,
+      "raw_inner_index": null,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    },
+    {
+      "identity": "negative_binomial|r=5,p=0.9|n=50|CVM|composite|raw_outer=7|raw_inner=11",
+      "cell_id": "negative_binomial|r=5,p=0.9|n=50|CVM|composite",
+      "family": "negative_binomial",
+      "record_type": "bootstrap",
+      "raw_outer_index": 7,
+      "raw_inner_index": 11,
+      "r9_classification_gate_pass": false,
+      "r9_fit_gate_pass": false,
+      "r9_distribution_value_gate_pass": "NOT_PERSISTED",
+      "r9_statistic_gate_pass": false,
+      "r9_cuda_failure_reason": "CUDA solver non-convergence",
+      "cpu_classification": "ELIGIBLE",
+      "cuda_classification": "FAILED"
+    }
+  ],
+  "r9_topology_diagnostics": {
+    "classification_gate_false": 72,
+    "fit_gate_false": 131,
+    "statistic_gate_false": 131,
+    "cuda_hard_failure_records": 71,
+    "fit_stat_intersection": 129,
+    "fit_only_count": 2,
+    "fit_only_identities": [
+      "negative_binomial|r=20,p=0.9|n=250|AD|composite|raw_outer=5|raw_inner=2",
+      "negative_binomial|r=20,p=0.9|n=250|CVM|composite|raw_outer=2|raw_inner=9"
+    ],
+    "statistic_only_count": 2,
+    "statistic_only_identities": [
+      "negative_binomial|r=1,p=0.5|n=50|AD|composite|raw_outer=1|raw_inner=2",
+      "negative_binomial|r=5,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=14"
+    ],
+    "pure_classification_only_count": 1,
+    "pure_classification_only_identities": [
+      "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=6"
+    ],
+    "failed_observed_records": 10,
+    "failed_bootstrap_records": 124,
+    "failed_families": [
+      "negative_binomial"
+    ],
+    "mc_evaluated_outer_count": 970,
+    "mc_unevaluable_outer_count": 38
+  },
+  "historical_evidence_limitations": [
+    "The 134 records are the R9 persisted failure union C/F/S/H, not a complete set of all possible DEC-016 failures.",
+    "distribution_value_gate_pass was not persisted at record level and cannot be derived retrospectively from the published R9 artifacts.",
+    "Historical sample digests were not persisted; future replay arrays must be reconstructed from frozen runner identity and seed semantics."
+  ],
+  "mc_failed_outer_count": 12,
+  "mc_failed_outers": [
+    {
+      "outer_identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0",
+      "cell_id": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite",
+      "raw_outer_index": 0,
+      "r9_b_cpu": 1,
+      "r9_b_cuda": 3,
+      "r9_p_cpu": 0.125,
+      "r9_p_cuda": 0.25,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=0",
+          "raw_inner_index": 0
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=3",
+          "raw_inner_index": 3
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=4",
+          "raw_inner_index": 4
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=5",
+          "raw_inner_index": 5
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=9",
+          "raw_inner_index": 9
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=10",
+          "raw_inner_index": 10
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=11",
+          "raw_inner_index": 11
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=13",
+          "raw_inner_index": 13
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.1|n=20|CVM|composite|raw_outer=0|raw_inner=14",
+          "raw_inner_index": 14
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite",
+      "raw_outer_index": 3,
+      "r9_b_cpu": 14,
+      "r9_b_cuda": 13,
+      "r9_p_cpu": 0.9375,
+      "r9_p_cuda": 0.875,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=0",
+          "raw_inner_index": 0
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=3",
+          "raw_inner_index": 3
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=4",
+          "raw_inner_index": 4
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=5",
+          "raw_inner_index": 5
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=10",
+          "raw_inner_index": 10
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=11",
+          "raw_inner_index": 11
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=13",
+          "raw_inner_index": 13
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=14",
+          "raw_inner_index": 14
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=100|AD|composite|raw_outer=3|raw_inner=15",
+          "raw_inner_index": 15
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite",
+      "raw_outer_index": 2,
+      "r9_b_cpu": 14,
+      "r9_b_cuda": 13,
+      "r9_p_cpu": 0.9375,
+      "r9_p_cuda": 0.875,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=0",
+          "raw_inner_index": 0
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=3",
+          "raw_inner_index": 3
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=14",
+          "raw_inner_index": 14
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=15",
+          "raw_inner_index": 15
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=17",
+          "raw_inner_index": 17
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=18",
+          "raw_inner_index": 18
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=21",
+          "raw_inner_index": 21
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=22",
+          "raw_inner_index": 22
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=23",
+          "raw_inner_index": 23
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=24",
+          "raw_inner_index": 24
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=25",
+          "raw_inner_index": 25
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=2|raw_inner=26",
+          "raw_inner_index": 26
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite",
+      "raw_outer_index": 3,
+      "r9_b_cpu": 11,
+      "r9_b_cuda": 10,
+      "r9_p_cpu": 0.75,
+      "r9_p_cuda": 0.6875,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=5",
+          "raw_inner_index": 5
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=16",
+          "raw_inner_index": 16
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=17",
+          "raw_inner_index": 17
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=19",
+          "raw_inner_index": 19
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=23",
+          "raw_inner_index": 23
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=27",
+          "raw_inner_index": 27
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=28",
+          "raw_inner_index": 28
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=30",
+          "raw_inner_index": 30
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=31",
+          "raw_inner_index": 31
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=32",
+          "raw_inner_index": 32
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=33",
+          "raw_inner_index": 33
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|AD|composite|raw_outer=3|raw_inner=35",
+          "raw_inner_index": 35
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2",
+      "cell_id": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite",
+      "raw_outer_index": 2,
+      "r9_b_cpu": 4,
+      "r9_b_cuda": 6,
+      "r9_p_cpu": 0.3125,
+      "r9_p_cuda": 0.4375,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=0",
+          "raw_inner_index": 0
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=3",
+          "raw_inner_index": 3
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=4",
+          "raw_inner_index": 4
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=5",
+          "raw_inner_index": 5
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=11",
+          "raw_inner_index": 11
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=13",
+          "raw_inner_index": 13
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=15",
+          "raw_inner_index": 15
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=16",
+          "raw_inner_index": 16
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=17",
+          "raw_inner_index": 17
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.5|n=50|CVM|composite|raw_outer=2|raw_inner=18",
+          "raw_inner_index": 18
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite",
+      "raw_outer_index": 5,
+      "r9_b_cpu": 10,
+      "r9_b_cuda": 9,
+      "r9_p_cpu": 0.6875,
+      "r9_p_cuda": 0.625,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=15",
+          "raw_inner_index": 15
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=19",
+          "raw_inner_index": 19
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=20",
+          "raw_inner_index": 20
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=21",
+          "raw_inner_index": 21
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=22",
+          "raw_inner_index": 22
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=27",
+          "raw_inner_index": 27
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=30",
+          "raw_inner_index": 30
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=31",
+          "raw_inner_index": 31
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=34",
+          "raw_inner_index": 34
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=38",
+          "raw_inner_index": 38
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|AD|composite|raw_outer=5|raw_inner=47",
+          "raw_inner_index": 47
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4",
+      "cell_id": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite",
+      "raw_outer_index": 4,
+      "r9_b_cpu": 10,
+      "r9_b_cuda": 13,
+      "r9_p_cpu": 0.6875,
+      "r9_p_cuda": 0.875,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=0",
+          "raw_inner_index": 0
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=4",
+          "raw_inner_index": 4
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=11",
+          "raw_inner_index": 11
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=13",
+          "raw_inner_index": 13
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=15",
+          "raw_inner_index": 15
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=16",
+          "raw_inner_index": 16
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=17",
+          "raw_inner_index": 17
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=21",
+          "raw_inner_index": 21
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=22",
+          "raw_inner_index": 22
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=24",
+          "raw_inner_index": 24
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=26",
+          "raw_inner_index": 26
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=28",
+          "raw_inner_index": 28
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=31",
+          "raw_inner_index": 31
+        },
+        {
+          "identity": "negative_binomial|r=0.25,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=34",
+          "raw_inner_index": 34
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=100|CVM|composite",
+      "raw_outer_index": 5,
+      "r9_b_cpu": 11,
+      "r9_b_cuda": 10,
+      "r9_p_cpu": 0.75,
+      "r9_p_cuda": 0.6875,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=0",
+          "raw_inner_index": 0
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=3",
+          "raw_inner_index": 3
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=4",
+          "raw_inner_index": 4
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=5",
+          "raw_inner_index": 5
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=10",
+          "raw_inner_index": 10
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=14",
+          "raw_inner_index": 14
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=17",
+          "raw_inner_index": 17
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=19",
+          "raw_inner_index": 19
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=21",
+          "raw_inner_index": 21
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=100|CVM|composite|raw_outer=5|raw_inner=22",
+          "raw_inner_index": 22
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=250|AD|composite",
+      "raw_outer_index": 7,
+      "r9_b_cpu": 12,
+      "r9_b_cuda": 11,
+      "r9_p_cpu": 0.8125,
+      "r9_p_cuda": 0.75,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=4",
+          "raw_inner_index": 4
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=10",
+          "raw_inner_index": 10
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=11",
+          "raw_inner_index": 11
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=15",
+          "raw_inner_index": 15
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=18",
+          "raw_inner_index": 18
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=20",
+          "raw_inner_index": 20
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=22",
+          "raw_inner_index": 22
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=24",
+          "raw_inner_index": 24
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|AD|composite|raw_outer=7|raw_inner=28",
+          "raw_inner_index": 28
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=250|CVM|composite",
+      "raw_outer_index": 3,
+      "r9_b_cpu": 1,
+      "r9_b_cuda": 0,
+      "r9_p_cpu": 0.125,
+      "r9_p_cuda": 0.0625,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=0",
+          "raw_inner_index": 0
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=3",
+          "raw_inner_index": 3
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=5",
+          "raw_inner_index": 5
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=6",
+          "raw_inner_index": 6
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=9",
+          "raw_inner_index": 9
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=10",
+          "raw_inner_index": 10
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=12",
+          "raw_inner_index": 12
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=13",
+          "raw_inner_index": 13
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=14",
+          "raw_inner_index": 14
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=16",
+          "raw_inner_index": 16
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=17",
+          "raw_inner_index": 17
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=250|CVM|composite|raw_outer=3|raw_inner=19",
+          "raw_inner_index": 19
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=50|CVM|composite",
+      "raw_outer_index": 2,
+      "r9_b_cpu": 14,
+      "r9_b_cuda": 12,
+      "r9_p_cpu": 0.9375,
+      "r9_p_cuda": 0.8125,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=3",
+          "raw_inner_index": 3
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=4",
+          "raw_inner_index": 4
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=11",
+          "raw_inner_index": 11
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=14",
+          "raw_inner_index": 14
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=16",
+          "raw_inner_index": 16
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=18",
+          "raw_inner_index": 18
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=19",
+          "raw_inner_index": 19
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=20",
+          "raw_inner_index": 20
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=24",
+          "raw_inner_index": 24
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=27",
+          "raw_inner_index": 27
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=28",
+          "raw_inner_index": 28
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=2|raw_inner=30",
+          "raw_inner_index": 30
+        }
+      ]
+    },
+    {
+      "outer_identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4",
+      "cell_id": "negative_binomial|r=1,p=0.9|n=50|CVM|composite",
+      "raw_outer_index": 4,
+      "r9_b_cpu": 12,
+      "r9_b_cuda": 11,
+      "r9_p_cpu": 0.8125,
+      "r9_p_cuda": 0.75,
+      "r9_reject_cpu": false,
+      "r9_reject_cuda": false,
+      "observed_identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4",
+      "bootstrap_identities": [
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=1",
+          "raw_inner_index": 1
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=2",
+          "raw_inner_index": 2
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=7",
+          "raw_inner_index": 7
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=8",
+          "raw_inner_index": 8
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=11",
+          "raw_inner_index": 11
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=13",
+          "raw_inner_index": 13
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=19",
+          "raw_inner_index": 19
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=22",
+          "raw_inner_index": 22
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=26",
+          "raw_inner_index": 26
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=27",
+          "raw_inner_index": 27
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=28",
+          "raw_inner_index": 28
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=29",
+          "raw_inner_index": 29
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=30",
+          "raw_inner_index": 30
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=31",
+          "raw_inner_index": 31
+        },
+        {
+          "identity": "negative_binomial|r=1,p=0.9|n=50|CVM|composite|raw_outer=4|raw_inner=32",
+          "raw_inner_index": 32
+        }
+      ]
+    }
+  ]
+}

@@ -37,3 +37,31 @@ equivalence or calibration result. R1's small composite fixture runner calls
 the CP04 reference MLE for observed samples and every bootstrap replicate;
 that preserves the objective and failure semantics but is not CPU↔CUDA
 equivalence evidence.
+
+CP05-C2C adds `cp05_c2c_equivalence_runner.py`: a fail-closed, fixed-data
+DEC-016 runner contract. It accepts only the frozen `R_EQ=8`, `B_EQ=15`,
+144-cell/1152-outer identity design and records that bootstrap fixtures are
+constructed with `CPU_REFERENCE_FITTED_PARAMETERS`. It exposes exactly the
+preregistered artifact bundle, three fixed batch partitions, fixture digests,
+and the seven-case `N=1_000_000` generator-sanity path. It has no calibration
+mode, no partial PASS artifact, and requires `--require-gpu`; execution on a
+CUDA/Quantum host remains separately authorized.
+## R5 controlled Quantum smoke probe
+
+Before any resumed campaign, run this isolated CUDA-native probe on Quantum. It
+does not execute the C2C matrix, calibration, or generator-sanity campaign.
+
+```python
+import numpy as np
+from experiments.distribution_gof.cuda_calibration import cuda_candidate
+
+sample = np.asarray([28, 34, 54, 29, 40, 75, 27, 52, 44, 47,
+                     46, 17, 85, 60, 12, 23, 35, 24, 30, 19])
+fit = cuda_candidate.fit_negative_binomial(sample)
+assert bool(cuda_candidate.cp.all(fit["converged"]))
+```
+
+The operator must record `r`, `p`, `log_likelihood`, dtype, and any failure
+reason, then compare the fit with the frozen CP04/DEC-016 gates. This probe is
+not evidence of CPU↔CUDA equivalence, and it must remain separate from the
+1,152-outer campaign.

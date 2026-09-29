@@ -144,7 +144,14 @@ def nb_eligibility(sample) -> tuple[bool, str | None]:
         raise EngineContractError("NB sample must be a finite non-negative vector")
     if np.all(values == 0):
         return False, "ALL_ZERO_NON_IDENTIFYING"
-    if np.var(values, ddof=1) <= np.mean(values):
+    # CP04 finite-MLE gate: population variance is strictly greater than mean.
+    if np.all(values == np.floor(values)):
+        integers = [int(value) for value in values]
+        count, total = len(integers), sum(integers)
+        overdispersed = count * sum(value * value for value in integers) - total * total > count * total
+    else:
+        overdispersed = np.var(values, ddof=0) > np.mean(values)
+    if not overdispersed:
         return False, "VARIANCE_NOT_GREATER_THAN_MEAN"
     return True, None
 
