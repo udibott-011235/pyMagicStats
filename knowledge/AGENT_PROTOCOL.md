@@ -31,6 +31,29 @@ pasar revisión cruzada.
 9. Todo nuevo SHA vuelve a Antigravity.
 10. Sólo el Project Owner autoriza PR y merge.
 
+El ciclo de producción anterior se conserva. La generación de evidencia
+acelerada sigue un flujo separado conforme a
+[`DEC-026`](decisions/research-acceleration-boundary.md):
+
+```text
+Owner scientific objective
+→ ChatGPT experimental architecture/preregistration
+→ Owner implementation authorization
+→ Cortex research harness
+→ reference/equivalence evidence
+→ Antigravity adversarial QA
+→ Owner execution authorization
+→ CUDA large-scale execution
+→ CPU preregistered cross-validation
+→ Antigravity evidence audit
+→ ChatGPT scientific interpretation
+→ Owner decision
+```
+
+La autorización de una etapa no autoriza la siguiente. En particular, un
+harness validado no autoriza ejecución CUDA, y una ejecución completa no
+convierte por sí sola sus outputs en evidencia científica aceptada.
+
 ## Formato de transferencia
 
 ```yaml
@@ -55,6 +78,17 @@ open_risks: <BLOCKER|MAJOR|MINOR|NOTE y razón>
 next_role: <quién debe actuar>
 acceptance_criteria: <condición verificable>
 git_actions_not_performed: <push|PR|merge|rebase|main modification>
+```
+
+Cuando el trabajo involucre la frontera de aceleración, el handoff añade:
+
+```yaml
+execution_class: <production|research-reference|research-exploratory|research-confirmatory>
+canonical_reference: <implementación NumPy/SciPy y SHA exactos>
+research_accelerator: <CUDA/CuPy, harness, versión y hardware, o null>
+equivalence_scope: <operaciones, escenarios, decisiones y límites>
+cross_validation_strategy: <diseño CPU prospectivo, seeds, métricas y gates>
+evidence_claim: <afirmación exacta permitida por la evidencia>
 ```
 
 Hecho observado, interpretación y decisión deben aparecer separados.

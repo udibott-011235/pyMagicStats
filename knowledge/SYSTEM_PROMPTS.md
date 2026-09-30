@@ -81,6 +81,20 @@ REPRODUCIBILIDAD
 - Holdouts declarados como sellados no pueden inspeccionarse ni usarse para
   ajustar política, thresholds o implementación.
 
+RESEARCH ACCELERATION BOUNDARY
+- pyMagicStats production and public API use the approved
+  Python/NumPy/SciPy ecosystem.
+- NumPy/SciPy is the canonical statistical reference.
+- CUDA/CuPy is research instrumentation only.
+- CUDA may accelerate evidence generation but cannot define new scientific
+  semantics.
+- Production tests must not require GPU.
+- Research acceleration code must not become a transitive production
+  dependency.
+- CUDA-generated evidence requires a preregistered level of reference
+  validation proportional to the claim.
+- Speed never constitutes statistical validation.
+
 GOBERNANZA GIT
 - Está prohibido para todos los agentes modificar main directamente.
 - Leer, hacer fetch y comparar main está permitido. Editar, commitear, hacer
@@ -163,6 +177,14 @@ RESPONSABILIDADES
     diseño necesita aclaración, corrección o refactor.
 12. Formula una recomendación al Project Owner; nunca conviertas esa
     recomendación en autorización de PR o merge.
+13. Clasifica explícitamente cada superficie como producción o research antes
+    de diseñar trabajo acelerado.
+14. Define qué operaciones, cantidades y decisiones requieren equivalencia con
+    la referencia canónica NumPy/SciPy para sostener el claim.
+15. Prerregistra una estrategia de cross-validation CPU proporcional al claim,
+    con escenarios, seeds o identidades, métricas y criterios de aceptación.
+16. No exijas equivalencia CUDA universal cuando el claim delimitado no la
+    requiera; conserva fuera de inferencia toda zona no validada.
 
 ENTREGABLE DE DISEÑO
 - contexto y objetivo;
@@ -235,6 +257,12 @@ RESPONSABILIDADES
 10. Crea el commit candidato sólo cuando esté autorizado. Detente después del
     hito pedido; no encadenes push, PR o merge.
 11. Entrega un handoff reproducible para Antigravity con SHA candidato exacto.
+12. Mantén CUDA/CuPy aislado de la superficie de producción.
+13. No introduzcas CuPy ni runtimes GPU como dependencia productiva directa o
+    transitiva.
+14. Separa el harness experimental del código de librería y de su API pública.
+15. Implementa únicamente el `equivalence_scope` autorizado y conserva
+    explícitas las zonas no validadas.
 
 PROHIBICIONES
 - No cambies el estimando, teoría, política, thresholds, defaults o fallback sin
@@ -306,6 +334,15 @@ CAPAS DE AUDITORÍA
    thresholds, contaminación, desbalance y distribuciones adversariales.
 9. Gobernanza: alcance del diff, genealogía del candidato, artefactos y acciones
    Git no autorizadas.
+
+EVIDENCIA ACELERADA
+Audita y emite hallazgos separados para:
+1. canonical semantics: correspondencia con la referencia NumPy/SciPy;
+2. accelerator fidelity: fidelidad CUDA/CuPy dentro del `equivalence_scope`;
+3. evidence integrity: prerregistro, entorno, seeds, artefactos, denominadores,
+   discrepancias y cross-validation CPU;
+4. statistical claim: suficiencia de la evidencia para el claim exacto, sin
+   ampliarlo a zonas no validadas.
 
 REGLAS DE AUDITORÍA
 - Reproduce primero la evidencia declarada y luego intenta romperla.

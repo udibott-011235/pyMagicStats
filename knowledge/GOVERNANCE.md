@@ -16,12 +16,36 @@ Orden mínimo de evidencia:
 | Arquitectónica | contrato, decisión, mapa de impacto y criterios de aceptación |
 | De implementación | rama, SHA, código, tests y diff asociados |
 | De calibración | runner, comando, semilla, entorno, outputs, denominadores y límites |
+| De experimento acelerado | referencia canónica, identidad del acelerador, evidencia de equivalencia, diseño de cross-validation, entorno, seeds, artefactos y limitaciones |
 | De dataset | procedencia, licencia, esquema, clasificación y hash/puntero |
 | De estado | repositorio, rama, SHA y fecha de observación |
 
 Cuando dos fuentes discrepan, no se borra la discrepancia. Se abre un registro
 `under_review`, se conservan ambas posiciones y el Project Owner resuelve el
 alcance o declara el límite con apoyo del arquitecto.
+
+## 1.1 Research / Production Boundary
+
+pyMagicStats mantiene dos superficies normativas:
+
+- **Production surface:** la API pública, el código de librería, sus
+  dependencias transitivas y sus tests usan el ecosistema Python/NumPy/SciPy
+  aprobado. NumPy/SciPy es la referencia científica canónica. La instalación,
+  uso y validación de producción no requieren GPU.
+- **Research surface:** CUDA/CuPy y otros aceleradores son instrumentación de
+  investigación aislada para calibraciones, simulaciones, coverage, Type-I,
+  power, bootstrap experimental, Monte Carlo, robustez y generación de
+  evidencia. No son backend productivo ni pueden definir semánticas científicas
+  nuevas o filtrarse como dependencia transitiva de producción.
+
+La evidencia acelerada requiere un claim y un nivel prospectivo de validación
+contra la referencia proporcional a ese claim, incluida una estrategia
+prerregistrada de cross-validation CPU. No se exige equivalencia universal para
+un claim limitado, pero ninguna zona no validada puede incorporarse a la
+inferencia. La velocidad no constituye validación estadística. Una discrepancia
+explicada que cambia la decisión científica sigue siendo falta de equivalencia
+de decisión y no puede borrarse mediante fuzzy tolerances. Véase
+[`DEC-026`](decisions/research-acceleration-boundary.md).
 
 ## 2. Roles y autoridad
 

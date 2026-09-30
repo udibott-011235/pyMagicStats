@@ -21,6 +21,13 @@ debe incluir:
 - limitaciones y riesgos abiertos;
 - veredicto `PASS`, `CONDITIONAL PASS`, `FAIL / DO NOT MERGE` o `BLOCKED`.
 
+En evidencia acelerada, Antigravity audita por separado semántica canónica,
+fidelidad del acelerador, integridad de la evidencia y claim estadístico. Debe
+comprobar que el alcance de equivalencia y la cross-validation CPU fueron
+prerregistrados y son proporcionales al claim; una discrepancia de decisión no
+se elimina con fuzzy tolerances. Véase
+[`DEC-026`](../../decisions/research-acceleration-boundary.md).
+
 Un fix vuelve a revisión independiente. Antigravity no modifica producción en la
 primera auditoría, no aprueba su propio fix, no inspecciona holdouts sellados y
 no toca `main`.

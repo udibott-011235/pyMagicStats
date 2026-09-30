@@ -18,6 +18,13 @@ Toda nota debe incluir:
 - acciones Git realizadas y expresamente no realizadas;
 - criterio de handoff a Antigravity.
 
+Cuando implemente infraestructura de investigación, Cortex mantiene CUDA/CuPy
+aislado de producción, evita dependencias productivas transitivas, separa el
+harness experimental del código de librería e implementa únicamente el
+`equivalence_scope` autorizado. NumPy/SciPy sigue siendo producción y referencia
+canónica conforme a
+[`DEC-026`](../../decisions/research-acceleration-boundary.md).
+
 Una implementación o suite verde no autocertifica validez estadística. Cortex
 no toca `main`, no cierra sus propios hallazgos y no avanza de commit a push, PR
 o merge sin autorización específica.

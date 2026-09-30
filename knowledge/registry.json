@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-28",
+  "last_updated": "2026-09-29",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -12,6 +12,35 @@
     "adversarial-statistical-qa"
   ],
   "records": [
+    {
+      "id": "DEC-026",
+      "kind": "decision",
+      "title": "Research Acceleration Boundary",
+      "status": "proposed",
+      "scope": "Prospective architecture boundary: NumPy/SciPy remains production and canonical scientific reference; CUDA/CuPy is isolated research instrumentation whose evidence requires claim-proportional reference equivalence and preregistered CPU cross-validation; no retrospective change to DEC-014..025, R10-A or EV-021",
+      "path": "knowledge/decisions/research-acceleration-boundary.md",
+      "evidence_paths": [
+        "knowledge/decisions/experimental-engine-policy.md",
+        "knowledge/decisions/cp05-c2b-cuda-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "research-acceleration-boundary",
+        "numpy-scipy-reference",
+        "cuda-research-instrumentation",
+        "claim-proportional-equivalence",
+        "cpu-cross-validation",
+        "no-production-gpu"
+      ]
+    },
     {
       "id": "EV-021",
       "kind": "evidence",
