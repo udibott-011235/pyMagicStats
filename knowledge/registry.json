@@ -13,6 +13,36 @@
   ],
   "records": [
     {
+      "id": "DEC-027",
+      "kind": "decision",
+      "title": "CP05-C2C R11 Boundary-Sensitive Decision Equivalence Preregistration",
+      "status": "proposed",
+      "scope": "Prospective limited R11 boundary-sensitive CPU/CUDA decision-equivalence research claim under DEC-026 at alpha=.05 and B=199 over 12 frozen historical R10-A MC outers; defines future CPU-reference workload construction, deterministic boundary fixtures, DEC-024 exact-tie signed accounting and exact reject-decision agreement; excludes full-1152, production backend, CP05-D and holdout claims.",
+      "path": "knowledge/decisions/cp05-c2c-r11-boundary-sensitive-decision-equivalence-preregistration.md",
+      "evidence_paths": [
+        "knowledge/decisions/research-acceleration-boundary.md",
+        "knowledge/decisions/cp05-c2c-r10a-mc-reference-exact-tie-adjudication.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r4-preregistration.md",
+        "knowledge/evidence/cp05-c2c-r10a-r4-runtime-evidence.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r4/frozen_identity_manifest.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "r11",
+        "boundary-sensitive",
+        "decision-equivalence",
+        "cpu-reference",
+        "exact-tie-accounting",
+        "research-only"
+      ]
+    },
+    {
       "id": "DEC-026",
       "kind": "decision",
       "title": "Research Acceleration Boundary",
