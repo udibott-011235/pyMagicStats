@@ -16,7 +16,7 @@
       "id": "DEC-026",
       "kind": "decision",
       "title": "Research Acceleration Boundary",
-      "status": "proposed",
+      "status": "accepted",
       "scope": "Prospective architecture boundary: NumPy/SciPy remains production and canonical scientific reference; CUDA/CuPy is isolated research instrumentation whose evidence requires claim-proportional reference equivalence and preregistered CPU cross-validation; no retrospective change to DEC-014..025, R10-A or EV-021",
       "path": "knowledge/decisions/research-acceleration-boundary.md",
       "evidence_paths": [

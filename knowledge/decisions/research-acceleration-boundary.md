@@ -1,6 +1,6 @@
 # DEC-026 — Research Acceleration Boundary
 
-- Estado: `proposed`
+- Estado: `accepted`
 - Fecha: 2026-09-29
 - Owner: `decision-owner`
 - Revisores: `statistical-software-architecture`, `implementation-engineering`,
