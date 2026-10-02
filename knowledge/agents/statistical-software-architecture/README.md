@@ -17,5 +17,12 @@ Toda nota debe incluir:
 - riesgos que Antigravity debe intentar refutar;
 - criterio de handoff a Cortex y condiciones de detención.
 
+Para trabajo acelerado, este rol clasifica explícitamente producción frente a
+research, fija la semántica NumPy/SciPy canónica, delimita las operaciones y
+decisiones que requieren equivalencia y prerregistra la cross-validation CPU
+proporcional al claim. No exige equivalencia CUDA universal cuando el claim no
+la necesita. El contrato normativo está en
+[`DEC-026`](../../decisions/research-acceleration-boundary.md).
+
 Este espacio no puede declarar una calibración válida, implementar producción ni
 autorizar PR o merge.

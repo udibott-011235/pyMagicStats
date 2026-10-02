@@ -72,4 +72,12 @@ Decisiones iniciales indexadas:
   impide evidencia de frontera de rechazo a alpha=0.05. No crea EV-021;
   implementación del harness autorizada separadamente, ejecución GPU no autorizada.
 
+- [`DEC-026`](research-acceleration-boundary.md): establece NumPy/SciPy como
+  superficie productiva y referencia científica canónica, y restringe
+  CUDA/CuPy a instrumentación de investigación. Redefine prospectivamente cómo
+  se interpreta la suficiencia de C2C mediante equivalencia y cross-validation
+  CPU proporcionales al claim; no exige equivalencia universal para usar CUDA
+  en research. No altera retrospectivamente `DEC-014`..`DEC-025`, R10-A ni sus
+  estados y evidencia históricos.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

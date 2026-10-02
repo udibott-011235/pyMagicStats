@@ -44,6 +44,32 @@ pregunta -> diseño de ChatGPT -> autorización del Project Owner
          -> estado aceptado/limitado/rechazado
 ```
 
+El flujo se expresa en dos rutas coordinadas por
+[`DEC-026`](decisions/research-acceleration-boundary.md):
+
+```text
+PRODUCTION PATH
+NumPy/SciPy architecture
+→ implementation
+→ tests
+→ QA
+→ controlled integration
+
+RESEARCH PATH
+canonical NumPy/SciPy semantics
+→ accelerator implementation
+→ equivalence gate
+→ accelerated experiment
+→ CPU cross-validation
+→ adversarial evidence audit
+→ scientific interpretation
+```
+
+Las rutas convergen únicamente cuando la evidencia experimental produce una
+decisión que requiere modificar producción. Esa convergencia inicia un nuevo
+ciclo de producción; no incorpora CUDA/CuPy como backend ni como dependencia
+productiva.
+
 Cada incorporación debe:
 
 - tener un ID único en `registry.json` cuando modifique conocimiento canónico;
