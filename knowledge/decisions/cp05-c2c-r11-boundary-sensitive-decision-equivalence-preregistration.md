@@ -1,6 +1,6 @@
 # DEC-027 — CP05-C2C R11 Boundary-Sensitive Decision Equivalence Preregistration
 
-- Status: `proposed`.
+- Status: `accepted`.
 - Date recorded: 2026-10-01.
 - Owner: Project Owner — Ehud Bottaro.
 - Architecture: ChatGPT — statistical/software architecture.
