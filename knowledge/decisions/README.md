@@ -81,11 +81,11 @@ Decisiones iniciales indexadas:
   estados y evidencia históricos.
 
 - [`DEC-027`](cp05-c2c-r11-boundary-sensitive-decision-equivalence-preregistration.md):
-  `proposed`; prerregistra prospectivamente R11 como un experimento limitado de
+  `accepted`; prerregistra prospectivamente R11 como un experimento limitado de
   equivalencia de decisión CPU/CUDA sensible a la frontera `alpha=.05`, bajo
   `DEC-026`, sobre 12 outers MC históricos congelados y `B=199`. Define la
   futura construcción CPU-reference, fixtures deterministas y accounting de
-  empates exactos `DEC-024`; no está aceptado, ejecutado, validado ni completo,
+  empates exactos `DEC-024`; está aceptado, pero no ejecutado, científicamente validado ni completo,
   y no afirma full-1152, backend productivo, CP05-D ni holdout.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
