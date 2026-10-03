@@ -9,8 +9,10 @@ Real construction, scientific sample generation, numerical comparison, CUDA,
 full-1152, CP05-D and holdout access remain separately authorized phases.
 
 No import starts execution. There is no command-line execution entry point,
-comparison harness, CuPy import, RNG implementation or scientific fitting
-implementation. No pre-existing scientific file is changed.
+comparison harness, direct CuPy import, RNG implementation or scientific fitting
+implementation in this package. Canonical engine imports are lazy; its existing
+optional CuPy import tolerates absence, and the delegated CPU functions do not
+use CUDA. No pre-existing scientific file is changed.
 
 ## API and future human binding
 
@@ -18,26 +20,39 @@ implementation. No pre-existing scientific file is changed.
   12 stored outers and normative 4250-byte ordered projection. It retains
   immutable source bytes and reconstructs fresh metadata dictionaries in stored
   order. It never generates a sample.
-- `CPUAdapters` describes injected canonical interfaces. A human-authorized
-  execution environment must supply bindings to the **existing frozen**
-  observed construction, `reference_fit`, `derive_seed` and CPU `_generate`
-  semantics. These are the existing interfaces inspected in
-  `cp05_c2c_equivalence_runner.py` / `cp05_cuda_engine.py` at the frozen
-  scientific SHA; this package does not import those modules because their
-  transitive imports attempt CuPy. Adapter wiring and scientific execution are
-  not provided or tested on the real surface in this candidate.
+- `canonical_adapter.py` supplies the concrete, versioned `CanonicalCPUAdapters`
+  implementation. It delegates directly to the existing frozen `derive_seed`,
+  `_generate`, `_cp04_fit`, `_parameters` and `EngineContractError` in
+  `cp05_cuda_engine.py`. Cells are resolved from the accepted existing
+  `primary_fixture_matrix()` definitions in `equivalence_preregistration.py`;
+  unknown cells or mismatching identities/metadata fail closed. Loaded engine
+  and fixture modules must come from this builder's repository.
+- `FROZEN_R11` obtains `CanonicalCPUAdapters()` internally. Any caller-supplied
+  adapter, including a caller-supplied canonical instance, is rejected before
+  source traversal or scientific calls. `CPUAdapters` remains only the explicit
+  fake-injection API for `SYNTHETIC_TEST`; unknown source kinds and overriding
+  `SourceSurface` subclasses are rejected.
+- Canonical observed reconstruction delegates exactly to
+  `derive_seed(namespace, cell.canonical_id, raw_outer_index, "outer_observed")`
+  followed by `_generate(cell.family, dict(cell.parameters), cell.n, seed)`.
+  The reference wrapper calls `_cp04_fit(family, sample)`, then
+  `_parameters(fit.fitted_distribution)`, returning the original
+  `CPU_REFERENCE` structure with `bound` and `parameters`. It does not translate
+  exceptions, change tolerances, transform parameters or add fallbacks.
 - `observed(row, namespace)` returns the canonical ndarray and integer observed
   seed. `reference_fit(family, sample)` returns the existing fit dictionary
   with `engine="CPU_REFERENCE"` and `parameters`. `derive_seed` receives the
   exact five canonical arguments including `"inner_bootstrap"`.
   `generate(row, fitted_parameters, seed)` passes the CPU fit parameters to
   the existing generator using the row's canonical cell metadata.
-- `canonical_error_type` must be the existing custom `EngineContractError`
-  in a real binding. Only an exception of that type, in an NB bootstrap fit,
+- The concrete `canonical_error_type` is exactly the existing `EngineContractError`.
+  Only an exception of that type, in an NB bootstrap fit,
   with the canonical `NB_NOT_ASSESSED:` prefix is ineligible. Other failures
   terminate the single invocation. An NB observed-fit failure also terminates.
   No exception is converted into that scientific classification.
-- `ReferenceWorkloadBuilder.build(source, adapters, builder_binding=...)`
+- `ReferenceWorkloadBuilder.build(source, builder_binding=...)` for frozen
+  sources, or `build(source, fake_adapters, builder_binding=...)` for synthetic
+  sources,
   visits raw inner indices from zero, retains every attempt and accepts exactly
   199 eligible samples. NB is limited to 19900 raw attempts; other canonical
   families have 199 attempts and fail on any unsuccessful construction. An
@@ -52,7 +67,11 @@ implementation. No pre-existing scientific file is changed.
   rejection occurs before construction and raises `ContractError`.
 - `binding_from_git(repository)` reads a clean committed builder's SHA/tree,
   verifies the frozen scientific tree and rejects changes to pre-existing
-  scientific paths. `builder_binding=None` is an explicit placeholder.
+  scientific paths. Frozen construction obtains this identity internally and
+  rejects any supplied SHA/tree that differs from it. This includes the versioned
+  canonical adapter implementation, so an adapter change requires a new builder
+  SHA/tree and independent re-audit. `builder_binding=None` is an explicit
+  placeholder only for synthetic testing.
   `bind_artifact` returns new bytes bound to a supplied SHA/tree and refuses
   replacing an existing binding. A human should obtain this binding with
   `binding_from_git` before publishing a frozen artifact.
@@ -119,21 +138,24 @@ future phase; it makes no scientific equivalence or empirical acceptance claim.
 Run the isolated standard-library suite from the repository root:
 
 ```text
-python -m unittest tests.research.test_cp05_c2c_r11_reference_workload -v
+python -m unittest tests.research.test_cp05_c2c_r11_reference_workload tests.research.test_cp05_c2c_r11_canonical_adapter -v
 python -m knowledge.tools.validate_registry
-python -m compileall -q experiments/distribution_gof/cuda_calibration/r11_reference_workload tests/research/test_cp05_c2c_r11_reference_workload.py
+python -m compileall -q experiments/distribution_gof/cuda_calibration/r11_reference_workload tests/research/test_cp05_c2c_r11_reference_workload.py tests/research/test_cp05_c2c_r11_canonical_adapter.py
 git diff --check
 ```
 
-Every scientific call in the suite uses deterministic fake adapters and tiny
-fixed arrays. No RNG, canonical scientific fit, real observed reconstruction
-or scientific sample generation is invoked. The real R4 manifest is read only
+Scientific fitting and sample generation in the suite use deterministic fake
+adapters or patched canonical delegates and tiny fixed arrays. Direct calls to
+the existing canonical seed hash and parameter-extraction utility use only
+definition metadata or a fixed toy dataclass. No scientific fit, RNG draw,
+real observed reconstruction or real scientific sample generation is invoked.
+No concrete adapter test uses the real frozen R11 surface. The real R4 manifest is read only
 for the expressly permitted documentary hash/order test. Synthetic artifacts
 are tagged `SYNTHETIC_TEST` and rejected by the scientific loader.
 
 The historical external runtime archive was not retrieved or scientifically
-checked in this implementation phase. Actual prefix acceptance and canonical
-adapter execution remain untested and require the later human-authorized phase.
+checked in this implementation phase. Actual prefix acceptance and scientific
+construction remain untested and require the later human-authorized phase.
 The current software-test runtime has Python/NumPy but no SciPy/pytest; the
 suite uses `unittest` and no scientific dependency. No registry, historical
 decision or historical evidence file is modified.

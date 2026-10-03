@@ -1,10 +1,11 @@
-"""Prospective CPU construction via injected canonical adapters, with no CLI."""
+"""Prospective CPU construction with internal canonical wiring, with no CLI."""
 from __future__ import annotations
 
 import base64
 import importlib.metadata
 import platform
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
 from .codec import (ContractError, SamplePayload, canonical_json, integer,
@@ -16,15 +17,15 @@ from .source import SourceSurface, projection
 
 @dataclass(frozen=True)
 class CPUAdapters:
-    """Bindings supplied by a separately authorized human execution phase.
+    """Explicit fake bindings for SYNTHETIC_TEST only.
 
     observed(row, namespace) -> (NumPy array, canonical integer seed)
     reference_fit(family, array) -> existing CPU_REFERENCE fit dictionary
     derive_seed(namespace, cell_id, outer, purpose, inner) -> canonical int
     generate(row, fitted_parameters, seed) -> canonical NumPy array
 
-    canonical_error_type must be the existing reference EngineContractError.
-    No fit, seed, generator or eligibility semantics are implemented here.
+    FROZEN_R11 obtains its concrete canonical wiring internally and rejects
+    this injection surface, including caller-supplied canonical adapters.
     """
     observed: Callable
     reference_fit: Callable
@@ -90,16 +91,29 @@ class ReferenceWorkloadBuilder:
     def __init__(self):
         self._consumed = False
 
-    def build(self, source: SourceSurface, adapters: CPUAdapters, *, builder_binding=None):
+    def build(self, source: SourceSurface, adapters: CPUAdapters | None = None, *, builder_binding=None):
         require(not self._consumed, "builder consumed; automatic rerun/resume prohibited")
         self._consumed = True
-        adapters.verify()
+        require(type(source) is SourceSurface, "exact SourceSurface required")
+        if source.kind == "FROZEN_R11":
+            require(adapters is None, "FROZEN_R11 prohibits external adapter injection")
+            from .canonical_adapter import CanonicalCPUAdapters
+            adapters = CanonicalCPUAdapters()
+        else:
+            require(source.kind == "SYNTHETIC_TEST", "unknown source kind")
+            require(type(adapters) is CPUAdapters, "SYNTHETIC_TEST requires explicit fake adapters")
         from .schema import validate_binding
         validate_binding(builder_binding, required=False)
         rows = source.rows()
         env = environment()
         if source.kind == "FROZEN_R11":
             require(env["scipy"] != "UNAVAILABLE", "SciPy version unavailable")
+            from .binding import binding_from_git
+            actual_binding = binding_from_git(Path(__file__).resolve().parents[4])
+            require(builder_binding is None or builder_binding == actual_binding,
+                    "builder binding does not match executing canonical builder")
+            builder_binding = actual_binding
+        adapters.verify()
         projected = canonical_json(projection(rows))
         workload = {
             "schema_version": SCHEMA_VERSION, "source_kind": source.kind,
