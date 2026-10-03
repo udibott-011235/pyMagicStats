@@ -2,7 +2,7 @@
   "$schema": "schema/registry.schema.json",
   "schema_version": "1.1.0",
   "knowledge_base_version": "1.3.0",
-  "last_updated": "2026-09-29",
+  "last_updated": "2026-10-03",
   "repository": "udibott-011235/pyMagicStats",
   "canonical_branch": "main",
   "roles": [
@@ -12,6 +12,64 @@
     "adversarial-statistical-qa"
   ],
   "records": [
+    {
+      "id": "DEC-029",
+      "kind": "decision",
+      "title": "CP05-C2C R11 CUDA Execution-Readiness Oracle and Attempt-1 Infrastructure Disposition",
+      "status": "proposed",
+      "scope": "Preserves consumed R11 attempt #1 as INCONCLUSIVE_INFRASTRUCTURE after first-record NVRTC dynamic-loader failure and prospectively requires a deterministic CUDA/NVRTC execution-readiness oracle before any future R11 scientific record evaluation or authorization consumption; leaves DEC-027 scientific parameters, frozen workload, numerical gates, DEC-024 adjudication and research-only claim boundary unchanged.",
+      "path": "knowledge/decisions/cp05-c2c-r11-cuda-execution-readiness-oracle.md",
+      "evidence_paths": [
+        "knowledge/evidence/cp05-c2c-r11-attempt1-infrastructure-failure.md",
+        "knowledge/decisions/cp05-c2c-r11-boundary-sensitive-decision-equivalence-preregistration.md",
+        "knowledge/decisions/cp05-c2c-r10a-targeted-gpu-replay-r3-preregistration.md",
+        "experiments/distribution_gof/cuda_calibration/r11_decision_equivalence/harness.py",
+        "experiments/distribution_gof/cuda_calibration/r11_decision_equivalence/runtime.py"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "r11",
+        "cuda-readiness",
+        "nvrtc",
+        "infrastructure-failure",
+        "one-shot",
+        "research-only"
+      ]
+    },
+    {
+      "id": "EV-022",
+      "kind": "evidence",
+      "title": "CP05-C2C R11 attempt-1 infrastructure failure and CUDA readiness remediation",
+      "status": "proposed",
+      "scope": "Owner/Quantum evidence for the single consumed R11 attempt #1: one observed record reached, zero completed outers, CUDA failed because libnvrtc.so.13 was not visible to the original process dynamic loader; subsequent non-scientific process-scoped NVRTC exposure and deterministic CUDA dependency smoke passed. No R11 scientific equivalence conclusion was reached.",
+      "path": "knowledge/evidence/cp05-c2c-r11-attempt1-infrastructure-failure.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r11-cuda-execution-readiness-oracle.md",
+        "experiments/distribution_gof/cuda_calibration/r11_decision_equivalence/harness.py",
+        "experiments/distribution_gof/cuda_calibration/r11_decision_equivalence/runtime.py"
+      ],
+      "owner_role": "implementation-engineering",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "adversarial-statistical-qa",
+        "decision-owner"
+      ],
+      "supersedes": [],
+      "tags": [
+        "r11",
+        "runtime-evidence",
+        "nvrtc",
+        "cuda-readiness",
+        "inconclusive-infrastructure",
+        "one-shot"
+      ]
+    },
     {
       "id": "DEC-028",
       "kind": "decision",

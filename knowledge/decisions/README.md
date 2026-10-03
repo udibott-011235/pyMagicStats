@@ -95,4 +95,13 @@ Decisiones iniciales indexadas:
   el diseño científico R11 ni autoriza builder, construcción del workload,
   harness, GPU, full-1152, CP05-D o holdout.
 
+- [`DEC-029`](cp05-c2c-r11-cuda-execution-readiness-oracle.md):
+  `proposed`; preserva R11 attempt #1 como
+  `INCONCLUSIVE_INFRASTRUCTURE`, con autorización consumida y sin
+  conclusión de equivalencia; prohíbe rerun, resume y reutilización de ese
+  intento. Restablece y generaliza el preflight fuerte NVRTC de DEC-023,
+  exige readiness sintético determinista antes de futura evaluación científica
+  R11 y conserva la ciencia DEC-027 sin cambios. La evidencia Owner/Quantum se
+  atribuye en EV-022; no autoriza attempt #2.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
