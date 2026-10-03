@@ -99,7 +99,7 @@ Decisiones iniciales indexadas:
   harness, GPU, full-1152, CP05-D o holdout.
 
 - [`DEC-029`](cp05-c2c-r11-cuda-execution-readiness-oracle.md):
-  `proposed`; preserva R11 attempt #1 como
+  `accepted`; preserva R11 attempt #1 como
   `INCONCLUSIVE_INFRASTRUCTURE`, con autorización consumida y sin
   conclusión de equivalencia; prohíbe rerun, resume y reutilización de ese
   intento. Restablece y generaliza el preflight fuerte NVRTC de DEC-023,

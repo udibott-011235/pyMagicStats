@@ -1,6 +1,6 @@
 # EV-022 — CP05-C2C R11 attempt-1 infrastructure failure and CUDA readiness remediation
 
-- Status: `proposed`.
+- Status: `validated_with_limits`.
 - Date recorded: 2026-10-03.
 - Repository: `udibott-011235/pyMagicStats`.
 - Documentary branch: `docs/cp05-c2c-r11-cuda-execution-readiness-oracle`.
@@ -20,7 +20,9 @@
 ## Attribution and limits of documentary transcription
 
 This record transcribes Owner/Quantum runtime evidence supplied by the Project
-Owner. It is **not independently audited**. Cortex did not retrieve, load,
+Owner. The external bundle was **not independently re-hashed** during this
+documentary audit, and the scientific execution was **not reexecuted**.
+Cortex did not retrieve, load,
 rehash or evaluate the external R11 workload or result bundle, and did not
 perform CUDA diagnostics, a scientific execution or a rerun in this task.
 The byte counts, digests and runtime observations below are attributed values,
@@ -349,6 +351,7 @@ Neither result establishes R11 decision equivalence, full C2C equivalence,
 type-I calibration, power, performance, CUDA production readiness, production
 readiness, CP05-D readiness or holdout validation.
 
-This documentary task creates only proposed DEC-029 and EV-022 records.
+This documentary closure records DEC-029 as `accepted` and EV-022 as
+`validated_with_limits`.
 Readiness implementation, harness modification, attempt #2, GPU/scientific
 execution, push, PR and merge are not authorized.

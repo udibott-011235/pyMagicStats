@@ -16,7 +16,7 @@
       "id": "DEC-029",
       "kind": "decision",
       "title": "CP05-C2C R11 CUDA Execution-Readiness Oracle and Attempt-1 Infrastructure Disposition",
-      "status": "proposed",
+      "status": "accepted",
       "scope": "Preserves consumed R11 attempt #1 as INCONCLUSIVE_INFRASTRUCTURE after first-record NVRTC dynamic-loader failure and prospectively requires a deterministic CUDA/NVRTC execution-readiness oracle before any future R11 scientific record evaluation or authorization consumption; leaves DEC-027 scientific parameters, frozen workload, numerical gates, DEC-024 adjudication and research-only claim boundary unchanged.",
       "path": "knowledge/decisions/cp05-c2c-r11-cuda-execution-readiness-oracle.md",
       "evidence_paths": [
@@ -46,7 +46,7 @@
       "id": "EV-022",
       "kind": "evidence",
       "title": "CP05-C2C R11 attempt-1 infrastructure failure and CUDA readiness remediation",
-      "status": "proposed",
+      "status": "validated_with_limits",
       "scope": "Owner/Quantum evidence for the single consumed R11 attempt #1: one observed record reached, zero completed outers, CUDA failed because libnvrtc.so.13 was not visible to the original process dynamic loader; subsequent non-scientific process-scoped NVRTC exposure and deterministic CUDA dependency smoke passed. No R11 scientific equivalence conclusion was reached.",
       "path": "knowledge/evidence/cp05-c2c-r11-attempt1-infrastructure-failure.md",
       "evidence_paths": [

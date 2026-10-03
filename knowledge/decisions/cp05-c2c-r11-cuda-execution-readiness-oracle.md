@@ -1,6 +1,6 @@
 # DEC-029 — CP05-C2C R11 CUDA Execution-Readiness Oracle and Attempt-1 Infrastructure Disposition
 
-- Status: `proposed`.
+- Status: `accepted`.
 - Date recorded: 2026-10-03.
 - Owner: Project Owner — Ehud Bottaro.
 - Architecture: ChatGPT — statistical/software architecture.
@@ -15,8 +15,8 @@
   [EV-022](../evidence/cp05-c2c-r11-attempt1-infrastructure-failure.md).
 - Supersedes: none.
 
-This proposed decision requires exact-SHA architectural review and independent
-adversarial QA before governance acceptance. Runtime facts below are attributed
+The Project Owner accepted this decision after architecture PASS and Antigravity
+PASS. Runtime facts below are attributed
 Owner/Quantum evidence, transcribed in EV-022; this documentary materialization
 does not independently audit the external runtime artifacts.
 
