@@ -88,4 +88,10 @@ Decisiones iniciales indexadas:
   empates exactos `DEC-024`; está aceptado, pero no ejecutado, científicamente validado ni completo,
   y no afirma full-1152, backend productivo, CP05-D ni holdout.
 
+- [`DEC-028`](cp05-c2c-r11-r4-runtime-oracle-identity-correction.md):
+  `proposed`; corrige de forma estrecha la identidad del oráculo runtime R4 de
+  DEC-027: vincula el archive SHA canónico de EV-021 al PASS_EVIDENCE y conserva
+  el digest anterior para el crossings report. No cambia el diseño científico
+  R11 ni autoriza ejecución, builder, harness o GPU.
+
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).

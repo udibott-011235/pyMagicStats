@@ -13,6 +13,34 @@
   ],
   "records": [
     {
+      "id": "DEC-028",
+      "kind": "decision",
+      "title": "CP05-C2C R11 R4 Runtime Oracle Identity Correction",
+      "status": "proposed",
+      "scope": "Narrow provenance correction to accepted DEC-027: binds the canonical R4 run2 PASS_EVIDENCE archive to the EV-021 SHA256 dd8de17dfa17ac54855f9823d053e6820a2a285aeb8467eec390aea51dcba6ad, preserves f7c35e51e0273eac73f9743010b0191cc3c33fac9dde88cdbc123200d86e10f7 as the crossings-report digest and leaves all R11 scientific parameters, gates, claims and authorization boundaries unchanged.",
+      "path": "knowledge/decisions/cp05-c2c-r11-r4-runtime-oracle-identity-correction.md",
+      "evidence_paths": [
+        "knowledge/decisions/cp05-c2c-r11-boundary-sensitive-decision-equivalence-preregistration.md",
+        "knowledge/evidence/cp05-c2c-r10a-r4-runtime-evidence.md",
+        "experiments/distribution_gof/cuda_calibration/targeted_replay_r4/frozen_identity_manifest.json"
+      ],
+      "owner_role": "decision-owner",
+      "reviewer_roles": [
+        "statistical-software-architecture",
+        "implementation-engineering",
+        "adversarial-statistical-qa"
+      ],
+      "supersedes": [],
+      "tags": [
+        "r11",
+        "oracle-identity",
+        "provenance-correction",
+        "r4-runtime-evidence",
+        "dec-027-correction",
+        "research-only"
+      ]
+    },
+    {
       "id": "DEC-027",
       "kind": "decision",
       "title": "CP05-C2C R11 Boundary-Sensitive Decision Equivalence Preregistration",

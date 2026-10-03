@@ -232,10 +232,15 @@ ordering. The independently audited R4 run2 runtime evidence referenced by
 ```text
 R4_PREFIX_IDENTITY_ORACLE=experiments/distribution_gof/cuda_calibration/targeted_replay_r4/frozen_identity_manifest.json
 R4_RUNTIME_ORACLE_ARCHIVE=cp05_c2c_r10a_targeted_r4_501d752_run2_PASS_EVIDENCE.tar.gz
-R4_RUNTIME_ORACLE_ARCHIVE_SHA256=f7c35e51e0273eac73f9743010b0191cc3c33fac9dde88cdbc123200d86e10f7
+R4_RUNTIME_ORACLE_ARCHIVE_SHA256=dd8de17dfa17ac54855f9823d053e6820a2a285aeb8467eec390aea51dcba6ad
+R4_RUNTIME_CROSSINGS_REPORT=cp05_c2c_r10a_targeted_r4_501d752_run2_crossings.json
+R4_RUNTIME_CROSSINGS_REPORT_SHA256=f7c35e51e0273eac73f9743010b0191cc3c33fac9dde88cdbc123200d86e10f7
 R4_RUNTIME_WORKLOAD_B_RECORDS=workload_b_records.jsonl
 R4_RUNTIME_WORKLOAD_B_RECORDS_SHA256=beea7dffa4a059de241703079e254a696a8ad7764cd9b6288079a84188ee5f37
 ```
+
+The archive/crossings identity association above is corrected by DEC-028
+against canonical EV-021. No other DEC-027 scientific contract term changes.
 
 Before accepting the future R11 reference workload:
 
