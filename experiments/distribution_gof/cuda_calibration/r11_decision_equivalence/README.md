@@ -23,10 +23,13 @@ builder contract. Alpha is 0.05, B is 199, and the required topology is
 
 Future execution derives the harness SHA/tree from its actual clean checkout.
 It requires the scientific and builder Git objects and trees, unchanged
-pre-existing scientific files, an unchanged entire builder surface, and a diff
-limited to additions in this package and the new test file. A development
-checkout with an equivalent tree does **not** replace the production builder SHA.
-Materialization on the final governance base and a new-SHA audit remain required.
+pre-existing scientific files and an unchanged entire builder surface. Builder
+provenance remains independent of the readiness implementation base:
+`7891f17a3af77ebdc818896b31cfd12c4179b759`, tree
+`31f93907b9f57956e09fb181749b340b108f5e6f`. That base includes accepted
+DEC-029 governance history. Only the prospective diff from this base is scoped
+to this package and its dedicated software test. The base must be an ancestor
+of the executing commit; unrelated new paths or changes fail closed.
 
 Project imports are lazy and confined to tracked, unchanged source files in the
 executing checkout. Existing project modules and subsequently resolved project
@@ -86,6 +89,39 @@ The count of CPU b in {8,9,10,11} is diagnostic; zero is allowed.
 
 ## Evidence and failure behavior
 
+DEC-029 readiness runs after frozen provenance, topology and logical fixture
+checks, and before scientific runtime construction, output creation or payload
+deserialization. Its isolated module loads CuPy/CuPyX lazily and exercises only
+deterministic toy numbers: runtime/device, normal-loader `libnvrtc.so.13`, NVRTC
+13.0, float64 arrays/elementwise/reduction, NVRTC RawKernel, all six required
+special functions, sort and nextafter. Every asynchronous operation is
+synchronized before PASS. Toy numerical checks are operational smoke checks;
+they do not change scientific tolerances or establish scientific equivalence.
+
+RawKernel uses explicit `backend="nvrtc"` and an explicit compile call. Every
+invocation uses a new UUID in the actual kernel symbol/source, making the CuPy
+source cache key distinct. Evidence records the invocation identity, source
+SHA256, backend and synchronized compilation before launch and result checks.
+An old kernel or an existing readiness artifact cannot satisfy a new invocation.
+The source cache behavior is documented in the
+[CuPy compiler source](https://github.com/cupy/cupy/blob/v13.6.0/cupy/cuda/compiler.py)
+and the [RawKernel API](https://docs.cupy.dev/en/v13.6.0/reference/generated/cupy.RawKernel.html).
+
+`--readiness-output` names an exclusive JSON file outside the repository and
+outside scientific `--output`. The file is reserved before hardware access and
+flushed/fsynced on PASS or FAIL when publication is possible. It includes host,
+software/device versions, only the effective CUDA_PATH/LD_LIBRARY_PATH environment
+values, every gate, fresh-JIT proof, harness SHA/tree and failure details.
+No host repair, environment mutation, retry, cuRAND or cuSOLVER call is used.
+Existing evidence is never overwritten. A publication failure stops execution
+and retains any bytes already written.
+
+Readiness failure leaves scientific execution unstarted, zero scientific
+records, authorization unconsumed and the scientific directory uncreated.
+On readiness PASS, future scientific execution binds execution_manifest.json
+to `CUDA_READINESS_ORACLE_PASS=true` and the exact separate readiness artifact
+SHA256. Readiness itself does not consume scientific execution authorization.
+
 A new output directory must resolve outside the executing repository. Existing
 output directories and duplicate artifact names are rejected. JSONL streams
 are created exclusively and appended/flushed sequentially. Each raw result is
@@ -126,8 +162,16 @@ when present. Its own self-hash is explicitly excluded to avoid self-reference.
 checks the frozen dimensions and logical fixtures without loading R11 payloads,
 constructing a scientific runtime or requiring SciPy/CuPy.
 
-The separate future `--execute` mode requires `--workload`, `--r4-archive`,
-`--r4-crossings`, `--output` and `--require-gpu`. There are no mutable scientific
+The non-scientific `--validate-readiness` mode requires `--workload`,
+`--r4-archive`, `--r4-crossings`, `--readiness-output` and `--require-gpu`.
+It may validate frozen schema/provenance but never deserializes samples or
+constructs a scientific runtime/bundle. It prohibits `--output` and explicitly
+reports zero scientific records and unconsumed authorization. Running this
+hardware mode requires separate execution authorization; this implementation
+was tested only with fakes.
+
+The separate future `--execute` mode requires those same arguments plus
+`--output`. There are no mutable scientific
 contract options, option abbreviations or resume switches.
 
 Run the three software suites:
@@ -152,5 +196,8 @@ The new suite covers the requested implementation contracts:
 | Tampering, incomplete topology, failures before/after consumption, no retry and publication failure | ExecutionSoftwareTests |
 | No regeneration/old aggregator, fixed B/alpha/hash, no resume/mutable CLI, import/static safety | StaticAndArtifactTests |
 | Raw-result immutability, explicit nonfinite evidence and no overwrite | StaticAndArtifactTests |
+| Full mandatory surface, loader/version failure, async/numerical failure, fresh source vs cached kernel, write-once evidence and environment isolation | ReadinessProbeTests |
+| Readiness-only safety, failure before runtime/output/deserialization, sequencing, immediate consumption callback and manifest digest | ReadinessIntegrationTests |
+| Accepted documentary history, distinct implementation base/ancestor, unchanged science/builder and rejection of prospective unrelated changes | GitIdentityTests |
 
 No pre-existing scientific code or builder implementation is modified.

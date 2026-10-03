@@ -8,6 +8,7 @@ import copy
 import io
 import json
 import math
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -24,12 +25,22 @@ from experiments.distribution_gof.cuda_calibration.r11_reference_workload.codec 
 )
 from experiments.distribution_gof.cuda_calibration.r11_reference_workload.oracle import OracleError
 from experiments.distribution_gof.cuda_calibration.r11_decision_equivalence import (
-    adjudication, artifacts, boundary_fixtures, contract, harness, preflight, runtime,
+    adjudication, artifacts, boundary_fixtures, contract, harness, preflight, readiness, runtime,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
 PREFIX = "experiments.distribution_gof.cuda_calibration.r11_decision_equivalence"
 IDENTITY = {"R11_HARNESS_SHA": "a" * 40, "R11_HARNESS_TREE": "b" * 40}
+
+
+def fake_ready(evidence):
+    """Logical readiness fixture only; integration tests never load CUDA libraries."""
+    evidence.update(LIBNVRTC_SO_13_LOAD="PASS", NVRTC_VERSION=[13, 0],
+                    RAWKERNEL_BACKEND="NVRTC")
+    evidence["gates"] = dict.fromkeys(readiness.REQUIRED_GATES, "PASS")
+    name, source, proof = readiness._fresh_source()
+    proof.update(compile_called=True, compile_synchronized=True)
+    evidence["fresh_jit_proof"] = proof
 
 
 def toy_workload():
@@ -342,7 +353,8 @@ class PreflightTests(unittest.TestCase):
                 harness, "CanonicalRuntime") as factory:
             with self.assertRaises(OracleError):
                 harness.execute(workload="toy", r4_archive="toy", r4_crossings="toy",
-                                output="unused-software-output", require_gpu=True)
+                                output="unused-software-output", readiness_output="unused-ready",
+                                require_gpu=True)
             factory.assert_not_called()
 
 
@@ -360,13 +372,20 @@ class GitIdentityTests(unittest.TestCase):
         self.base = self.commit("synthetic builder marker")
         self.base_tree = self.git("rev-parse", "HEAD^{tree}")
         self.write(contract.PACKAGE_PATH + "/harness.py", "SOFTWARE_HARNESS_MARKER = 1\n")
+        self.commit("synthetic accepted harness")
+        self.write("knowledge/decisions/accepted-governance.md", "accepted documentary history\n")
+        self.implementation_base = self.commit("synthetic accepted governance")
+        self.implementation_tree = self.git("rev-parse", "HEAD^{tree}")
+        self.write(contract.PACKAGE_PATH + "/harness.py", "SOFTWARE_HARNESS_MARKER = 2\n")
         self.head = self.commit("synthetic harness marker")
         self.tree = self.git("rev-parse", "HEAD^{tree}")
         self.stack = contextlib.ExitStack()
         self.addCleanup(self.stack.close)
         for name, value in (("SCIENTIFIC_SHA", self.scientific),
                             ("SCIENTIFIC_TREE", self.scientific_tree),
-                            ("BUILDER_SHA", self.base), ("BUILDER_TREE", self.base_tree)):
+                            ("BUILDER_SHA", self.base), ("BUILDER_TREE", self.base_tree),
+                            ("READINESS_IMPLEMENTATION_BASE_SHA", self.implementation_base),
+                            ("READINESS_IMPLEMENTATION_BASE_TREE", self.implementation_tree)):
             self.stack.enter_context(patch.object(preflight, name, value))
 
     def git(self, *args):
@@ -425,6 +444,29 @@ class GitIdentityTests(unittest.TestCase):
         self.write("unrelated.txt", "unrelated")
         self.commit("synthetic out of scope addition")
         with self.assertRaisesRegex(ContractError, "authorized isolated scope"):
+            preflight.repository_identity(self.repo)
+
+    def test_accepted_governance_history_and_existing_package_edits_allowed(self):
+        identity = preflight.repository_identity(self.repo)
+        self.assertEqual(identity["READINESS_IMPLEMENTATION_BASE_SHA"], self.implementation_base)
+        self.assertEqual(identity["READINESS_IMPLEMENTATION_BASE_TREE"], self.implementation_tree)
+        self.assertEqual(identity["R11_BUILDER_SHA"], self.base)
+        self.assertEqual(identity["R11_BUILDER_TREE"], self.base_tree)
+
+    def test_new_governance_mutation_rejected(self):
+        self.write("knowledge/decisions/accepted-governance.md", "unauthorized new change\n")
+        self.commit("synthetic out of scope mutation")
+        with self.assertRaisesRegex(ContractError, "authorized isolated scope"):
+            preflight.repository_identity(self.repo)
+
+    def test_wrong_implementation_tree_rejected(self):
+        with patch.object(preflight, "READINESS_IMPLEMENTATION_BASE_TREE", "0" * 40):
+            with self.assertRaisesRegex(ContractError, "implementation base tree"):
+                preflight.repository_identity(self.repo)
+
+    def test_implementation_base_must_be_ancestor(self):
+        self.git("checkout", "-q", self.base)
+        with self.assertRaisesRegex(ContractError, "Git identity read failed"):
             preflight.repository_identity(self.repo)
 
     def test_wrong_scientific_and_builder_tree_rejected(self):
@@ -583,9 +625,12 @@ class ExecutionSoftwareTests(unittest.TestCase):
     def mocked_execution(self, fake, *, output=None):
         with patch.object(harness, "prepare", return_value=self.receipt()), patch.object(
                 harness, "CanonicalRuntime", return_value=fake), patch.object(
-                harness, "repository_identity", return_value=IDENTITY):
+                harness, "repository_identity", return_value=IDENTITY), patch.object(
+                readiness, "_probe", side_effect=fake_ready):
             return harness.execute(workload="SYNTHETIC_PATH", r4_archive="MOCK_ARCHIVE",
-                r4_crossings="MOCK_CROSSINGS", output=output or self.output, require_gpu=True)
+                r4_crossings="MOCK_CROSSINGS", output=output or self.output,
+                readiness_output=(output or self.output).with_suffix(".readiness.json"),
+                require_gpu=True)
 
     def read(self, name):
         return strict_json((self.output / name).read_bytes())
@@ -606,6 +651,9 @@ class ExecutionSoftwareTests(unittest.TestCase):
         manifest = self.read("execution_manifest.json")
         self.assertEqual(manifest["R11_HARNESS_SHA"], IDENTITY["R11_HARNESS_SHA"])
         self.assertTrue(manifest["EXECUTION_AUTHORIZATION_CONSUMED"])
+        self.assertTrue(manifest["CUDA_READINESS_ORACLE_PASS"])
+        self.assertEqual(manifest["CUDA_READINESS_EVIDENCE_SHA256"],
+                         sha256(self.output.with_suffix(".readiness.json").read_bytes()))
         self.assertTrue((self.output / "authorization_consumed.json").exists())
         self.assertEqual(len((self.output / "records.jsonl").read_bytes().splitlines()), 2400)
         self.assertEqual(len((self.output / "indicator_adjudication.jsonl").read_bytes().splitlines()), 2388)
@@ -615,7 +663,7 @@ class ExecutionSoftwareTests(unittest.TestCase):
             data = (self.output / name).read_bytes()
             self.assertEqual(details, {"sha256": sha256(data), "bytes": len(data)})
         calls = fake.cpu_calls
-        with self.assertRaisesRegex(ContractError, "exists"):
+        with self.assertRaisesRegex(readiness.ReadinessError, "exists"):
             self.mocked_execution(fake)
         self.assertEqual(fake.cpu_calls, calls)
 
@@ -687,7 +735,8 @@ class ExecutionSoftwareTests(unittest.TestCase):
         with patch.object(harness, "prepare") as prepare:
             with self.assertRaisesRegex(ContractError, "mandatory"):
                 harness.execute(workload="toy", r4_archive="toy", r4_crossings="toy",
-                                output=self.output, require_gpu=False)
+                                output=self.output, readiness_output=self.output.with_suffix(".ready"),
+                                require_gpu=False)
             prepare.assert_not_called()
 
     def test_harness_identity_drift_rejected_before_science(self):
@@ -697,7 +746,8 @@ class ExecutionSoftwareTests(unittest.TestCase):
                 harness, "repository_identity", return_value={**IDENTITY, "R11_HARNESS_SHA": "c" * 40}):
             with self.assertRaisesRegex(ContractError, "identity changed"):
                 harness.execute(workload="toy", r4_archive="toy", r4_crossings="toy",
-                                output=self.output, require_gpu=True)
+                                output=self.output, readiness_output=self.output.with_suffix(".ready"),
+                                require_gpu=True)
         self.assertEqual(fake.cpu_calls, 0)
 
     def test_evidence_error_retains_consumption_status(self):
@@ -713,6 +763,554 @@ class ExecutionSoftwareTests(unittest.TestCase):
         self.assertTrue(caught.exception.consumed)
         self.assertTrue((self.output / "records.jsonl").exists())
         self.assertTrue((self.output / "authorization_consumed.json").exists())
+
+
+class FakeCudaInfrastructure:
+    """NumPy-backed toy interfaces: no device, CUDA library or scientific implementation."""
+    def __init__(self, *, failure=None, loaded_version=(13, 0), cupy_version=(13, 0),
+                 bad_result=None, cached_kernel=None):
+        self.failure = failure
+        self.loaded_version = loaded_version
+        self.cupy_version = cupy_version
+        self.bad_result = bad_result
+        self.cached_kernel = cached_kernel
+        self.evidence = None
+        self.events = []
+        self.pending = 0
+        self.kernels = []
+        self.compiled_sources = set()
+        api = SimpleNamespace(getDeviceCount=lambda: self.op("device_count", 1),
+            driverGetVersion=lambda: self.op("driver_version", 13000),
+            runtimeGetVersion=lambda: self.op("runtime_version", 13000),
+            getDevice=lambda: self.op("get_device", 0),
+            getDeviceProperties=lambda index: self.op("device_properties", {"name": b"FAKE_TOY_DEVICE"}),
+            deviceSynchronize=self.synchronize)
+        self.cuda = SimpleNamespace(runtime=api,
+            nvrtc=SimpleNamespace(getVersion=lambda: self.op("cupy_nvrtc_version", self.cupy_version)))
+        self.__version__ = "FAKE_SOFTWARE_ONLY"
+        self.float64 = np.float64
+        self.special = SimpleNamespace(
+            gammaln=lambda x: self.numeric("gammaln", [math.log(2.)]),
+            digamma=lambda x: self.numeric("digamma", [1. - .5772156649015329]),
+            polygamma=lambda n, x: self.numeric("polygamma", [math.pi ** 2 / 6. - 1.]),
+            gammainc=lambda a, x: self.numeric("gammainc", [1. - math.exp(-1.)]),
+            gammaincc=lambda a, x: self.numeric("gammaincc", [math.exp(-1.)]),
+            betainc=lambda a, b, x: self.numeric("betainc", [.25]))
+
+    @property
+    def random(self):
+        raise AssertionError("cuRAND must not be accessed")
+
+    @property
+    def linalg(self):
+        raise AssertionError("cuSOLVER must not be accessed")
+
+    def op(self, name, result=None, *, asynchronous=False):
+        stage = self.evidence.get("_stage")
+        self.events.append((stage, name))
+        if stage == self.failure:
+            raise RuntimeError("injected infrastructure failure: " + stage)
+        if asynchronous:
+            self.pending += 1
+        return result
+
+    def numeric(self, name, value):
+        return self.op(name, np.asarray(value, dtype=np.float64), asynchronous=True)
+
+    def asarray(self, values, dtype):
+        return self.op("asarray", np.asarray(values, dtype=dtype), asynchronous=True)
+
+    def sum(self, x, dtype):
+        return self.op("sum", np.asarray(np.sum(x, dtype=dtype)), asynchronous=True)
+
+    def sort(self, x):
+        return self.op("sort", np.sort(x), asynchronous=True)
+
+    def nextafter(self, x, y):
+        return self.op("nextafter", np.nextafter(x, y), asynchronous=True)
+
+    def empty_like(self, x):
+        return self.op("empty_like", np.empty_like(x), asynchronous=True)
+
+    def asnumpy(self, value):
+        if self.pending:
+            raise AssertionError("array read before synchronization")
+        result = self.op("asnumpy", np.asarray(value).copy(), asynchronous=True)
+        if self.evidence.get("_stage") == self.bad_result:
+            result.reshape(-1)[0] = math.nan
+        return result
+
+    def synchronize(self):
+        self.op("synchronize")
+        self.pending = 0
+
+    def RawKernel(self, code, name, backend):
+        self.op("raw_kernel")
+        if self.cached_kernel is not None:
+            return self.cached_kernel
+        owner = self
+        class Kernel:
+            def __init__(self):
+                self.code, self.name, self.backend = code, name, backend
+                self.compiled = False
+                self.cache_hit = None
+
+            def compile(self):
+                owner.op("compile", asynchronous=True)
+                self.cache_hit = self.code in owner.compiled_sources
+                owner.compiled_sources.add(self.code)
+                self.compiled = True
+
+            def __call__(self, grid, block, arguments):
+                if not self.compiled or grid != (1,) or block != (32,):
+                    raise AssertionError("invalid toy launch")
+                owner.op("launch", asynchronous=True)
+                x, y = arguments
+                y[:] = x + 4.
+        kernel = Kernel()
+        self.kernels.append(kernel)
+        return kernel
+
+    def load(self, soname):
+        if soname != "libnvrtc.so.13":
+            raise AssertionError("normal SONAME loader required")
+        self.op("cdll")
+        def version(major, minor):
+            self.op("loaded_nvrtc_version")
+            major._obj.value, minor._obj.value = self.loaded_version
+            return 0
+        return SimpleNamespace(nvrtcVersion=version)
+
+    def import_module(self, name):
+        self.op("import:" + name)
+        if name == "cupy":
+            return self
+        if name == "cupyx.scipy.special":
+            return self.special
+        raise AssertionError("unexpected readiness import: " + name)
+
+    @contextlib.contextmanager
+    def installed(self):
+        probe = readiness._probe
+        def observed_probe(evidence):
+            self.evidence = evidence
+            return probe(evidence)
+        with patch.object(readiness, "_probe", side_effect=observed_probe), patch.object(
+                readiness.importlib, "import_module", side_effect=self.import_module), patch.object(
+                readiness.ctypes, "CDLL", side_effect=self.load):
+            yield self
+
+
+class ReadinessProbeTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory(prefix="r11-mock-readiness-")
+        self.addCleanup(self.directory.cleanup)
+        self.output = Path(self.directory.name) / "ready.json"
+
+    def run_fake(self, fake, output=None):
+        with fake.installed():
+            return readiness.run_readiness(output or self.output, ROOT, IDENTITY)
+
+    def test_complete_surface_metadata_numeric_results_and_synchronization(self):
+        fake = FakeCudaInfrastructure()
+        receipt = self.run_fake(fake)
+        evidence = readiness.require_pass(receipt)
+        expected = {"CUDA_DEVICE_COUNT", "CUDA_RUNTIME_CALLABLE", "LIBNVRTC_SO_13_LOAD",
+            "NVRTC_VERSION", "FLOAT64_ARRAY", "FLOAT64_ELEMENTWISE", "FLOAT64_REDUCTION",
+            "RAWKERNEL_BACKEND", "RAWKERNEL_FRESH_COMPILE", "RAWKERNEL_LAUNCH",
+            "RAWKERNEL_NUMERICAL_RESULT", "CUPYX_SCIPY_GAMMALN", "CUPYX_SCIPY_DIGAMMA",
+            "CUPYX_SCIPY_POLYGAMMA", "CUPYX_SCIPY_GAMMAINC", "CUPYX_SCIPY_GAMMAINCC",
+            "CUPYX_SCIPY_BETAINC", "CUPY_SORT", "CUPY_NEXTAFTER"}
+        self.assertEqual(set(evidence["gates"]), expected)
+        self.assertEqual(set(evidence["gates"].values()), {"PASS"})
+        for name in ("timestamp", "host", "platform", "python", "cupy", "cuda_driver_version",
+                     "cuda_runtime_version", "device_count", "device_identity", "R11_HARNESS_SHA",
+                     "R11_HARNESS_TREE", "effective_CUDA_PATH", "effective_LD_LIBRARY_PATH"):
+            self.assertIn(name, evidence)
+        self.assertEqual(evidence["device_identity"], {"index": 0, "name": "FAKE_TOY_DEVICE"})
+        self.assertEqual(evidence["NVRTC_VERSION"], [13, 0])
+        self.assertEqual(evidence["toy_results"]["RAWKERNEL_NUMERICAL_RESULT"]["observed"], [5., 6., 7.])
+        self.assertEqual(evidence["toy_results"]["CUPY_NEXTAFTER"]["observed"], [math.nextafter(1., 2.)])
+        self.assertTrue(all(row["synchronized"] for row in evidence["toy_results"].values()))
+        self.assertFalse(fake.pending)
+        self.assertEqual(receipt.data, self.output.read_bytes())
+        self.assertEqual(receipt.sha256, sha256(receipt.data))
+        self.assertFalse(evidence["CURAND_REQUIRED_BY_CURRENT_R11"])
+        self.assertFalse(evidence["CUSOLVER_REQUIRED_BY_CURRENT_R11"])
+
+    def test_each_mandatory_gate_failure_publishes_fail_and_stops(self):
+        for name in readiness.REQUIRED_GATES:
+            with self.subTest(gate=name):
+                fake = FakeCudaInfrastructure(failure=name)
+                receipt = self.run_fake(fake, self.output.parent / (name + ".json"))
+                evidence = receipt.evidence()
+                self.assertFalse(evidence["CUDA_READINESS_ORACLE_PASS"])
+                self.assertEqual(evidence["gates"][name], "FAIL")
+                self.assertEqual(evidence["failure"]["stage"], name)
+                self.assertFalse(evidence["EXECUTION_AUTHORIZATION_CONSUMED"])
+                self.assertFalse(evidence["SCIENTIFIC_EXECUTION_STARTED"])
+                self.assertEqual(evidence["SCIENTIFIC_RECORDS_EVALUATED"], 0)
+                with self.assertRaises(readiness.ReadinessFailed):
+                    readiness.require_pass(receipt)
+                # No later surface runs after a failure.
+                stages = [n for n, _ in fake.events if n in readiness.REQUIRED_GATES]
+                self.assertEqual(stages[-1], name)
+
+    def test_each_missing_or_failed_gate_cannot_pass_even_with_global_claim(self):
+        original = self.run_fake(FakeCudaInfrastructure()).evidence()
+        for name in readiness.REQUIRED_GATES:
+            for state in (None, "FAIL", "NOT_RUN", True):
+                with self.subTest(gate=name, state=state):
+                    evidence = copy.deepcopy(original)
+                    if state is None:
+                        del evidence["gates"][name]
+                    else:
+                        evidence["gates"][name] = state
+                    path = self.output.parent / f"forged-{name}-{state}.json"
+                    data = canonical_json(evidence)
+                    path.write_bytes(data)
+                    forged = readiness.ReadinessReceipt(path, data, sha256(data))
+                    with self.assertRaises(readiness.ReadinessFailed):
+                        readiness.require_pass(forged)
+
+    def test_success_and_failure_evidence_are_write_once_before_hardware(self):
+        for failure in (None, "LIBNVRTC_SO_13_LOAD"):
+            path = self.output.parent / ("pass.json" if failure is None else "fail.json")
+            first = self.run_fake(FakeCudaInfrastructure(failure=failure), path)
+            with patch.object(readiness, "_probe") as probe:
+                with self.assertRaisesRegex(readiness.ReadinessError, "overwrite/resume"):
+                    readiness.run_readiness(path, ROOT, IDENTITY)
+                probe.assert_not_called()
+            self.assertEqual(path.read_bytes(), first.data)
+
+    def test_target_cannot_be_inside_repository_or_scientific_output(self):
+        scientific = self.output.parent / "scientific"
+        for path in (ROOT / "forbidden-readiness.json", scientific / "ready.json", scientific):
+            with patch.object(readiness, "_probe") as probe:
+                with self.assertRaises(readiness.ReadinessError):
+                    readiness.run_readiness(path, ROOT, IDENTITY, scientific_output=scientific)
+                probe.assert_not_called()
+        self.assertFalse(scientific.exists())
+
+    def test_evidence_reservation_failure_cannot_touch_hardware(self):
+        with patch.object(Path, "open", side_effect=OSError("publication unavailable")), patch.object(
+                readiness, "_probe") as probe:
+            with self.assertRaisesRegex(OSError, "publication unavailable"):
+                readiness.run_readiness(self.output, ROOT, IDENTITY)
+            probe.assert_not_called()
+
+    def test_environment_not_mutated_or_unrelated_variables_persisted(self):
+        environment = {"LD_LIBRARY_PATH": "SUPERVISOR_CONFIGURED", "CUDA_PATH": "TOY_CONFIGURED",
+                       "UNRELATED_SECRET": "MUST_NOT_BE_EXPORTED"}
+        with patch.dict(os.environ, environment):
+            before = dict(os.environ)
+            evidence = self.run_fake(FakeCudaInfrastructure()).evidence()
+            self.assertEqual(dict(os.environ), before)
+            self.assertEqual(evidence["effective_LD_LIBRARY_PATH"], "SUPERVISOR_CONFIGURED")
+            self.assertEqual(evidence["effective_CUDA_PATH"], "TOY_CONFIGURED")
+            self.assertNotIn("MUST_NOT_BE_EXPORTED", json.dumps(evidence))
+            self.assertNotIn("UNRELATED_SECRET", json.dumps(evidence))
+
+    def test_dynamic_loader_or_cupy_nvrtc_version_mismatch_fails_closed(self):
+        for loaded, cupy in (((12, 9), (13, 0)), ((13, 1), (13, 1)), ((13, 0), (12, 9))):
+            fake = FakeCudaInfrastructure(loaded_version=loaded, cupy_version=cupy)
+            path = self.output.parent / f"version-{loaded}-{cupy}.json"
+            evidence = self.run_fake(fake, path).evidence()
+            self.assertFalse(evidence["CUDA_READINESS_ORACLE_PASS"])
+            self.assertEqual(evidence["gates"]["NVRTC_VERSION"], "FAIL")
+            self.assertFalse(fake.kernels)
+
+    def test_no_device_or_runtime_version_fails_closed(self):
+        for field in ("getDeviceCount", "runtimeGetVersion", "driverGetVersion"):
+            fake = FakeCudaInfrastructure()
+            setattr(fake.cuda.runtime, field, lambda: 0)
+            evidence = self.run_fake(fake, self.output.parent / (field + ".json")).evidence()
+            self.assertFalse(evidence["CUDA_READINESS_ORACLE_PASS"])
+            self.assertFalse(fake.kernels)
+
+    def test_async_error_cannot_be_marked_pass(self):
+        fake = FakeCudaInfrastructure()
+        sync = fake.synchronize
+        def delayed_failure():
+            if fake.evidence.get("_stage") == "CUPY_NEXTAFTER":
+                raise RuntimeError("delayed asynchronous error")
+            sync()
+        fake.cuda.runtime.deviceSynchronize = delayed_failure
+        evidence = self.run_fake(fake).evidence()
+        self.assertFalse(evidence["CUDA_READINESS_ORACLE_PASS"])
+        self.assertEqual(evidence["gates"]["CUPY_NEXTAFTER"], "FAIL")
+        self.assertNotIn("CUPY_NEXTAFTER", evidence["toy_results"])
+
+    def test_numerical_mismatch_on_every_toy_surface_fails_closed(self):
+        names = ("FLOAT64_ARRAY", "FLOAT64_ELEMENTWISE", "FLOAT64_REDUCTION",
+            "RAWKERNEL_NUMERICAL_RESULT", "CUPYX_SCIPY_GAMMALN", "CUPYX_SCIPY_DIGAMMA",
+            "CUPYX_SCIPY_POLYGAMMA", "CUPYX_SCIPY_GAMMAINC", "CUPYX_SCIPY_GAMMAINCC",
+            "CUPYX_SCIPY_BETAINC", "CUPY_SORT", "CUPY_NEXTAFTER")
+        for name in names:
+            with self.subTest(gate=name):
+                evidence = self.run_fake(FakeCudaInfrastructure(bad_result=name),
+                    self.output.parent / (name + ".json")).evidence()
+                self.assertFalse(evidence["CUDA_READINESS_ORACLE_PASS"])
+                self.assertEqual(evidence["gates"][name], "FAIL")
+
+    def test_each_invocation_compiles_new_source_and_persists_its_digest(self):
+        fake = FakeCudaInfrastructure()
+        first = self.run_fake(fake)
+        second = self.run_fake(fake, self.output.parent / "second.json")
+        one, two = first.evidence()["fresh_jit_proof"], second.evidence()["fresh_jit_proof"]
+        self.assertNotEqual(one["invocation_id"], two["invocation_id"])
+        self.assertNotEqual(one["source_sha256"], two["source_sha256"])
+        self.assertEqual(len(fake.kernels), 2)
+        for kernel, proof in zip(fake.kernels, (one, two)):
+            self.assertEqual(proof["source_sha256"], sha256(kernel.code.encode("utf-8")))
+            self.assertEqual(kernel.name, proof["kernel_name"])
+            self.assertEqual(kernel.backend, "nvrtc")
+            self.assertTrue(kernel.compiled)
+            self.assertFalse(kernel.cache_hit)
+            self.assertTrue(proof["compile_called"])
+            self.assertTrue(proof["compile_synchronized"])
+
+    def test_cached_kernel_cannot_substitute_for_fresh_source_or_compile(self):
+        fake = FakeCudaInfrastructure()
+        self.run_fake(fake)
+        cached = fake.kernels[0]
+        forged = FakeCudaInfrastructure(cached_kernel=cached)
+        evidence = self.run_fake(forged, self.output.parent / "cached.json").evidence()
+        self.assertFalse(evidence["CUDA_READINESS_ORACLE_PASS"])
+        self.assertEqual(evidence["gates"]["RAWKERNEL_BACKEND"], "FAIL")
+        self.assertFalse(evidence["fresh_jit_proof"]["compile_called"])
+        failed = self.run_fake(FakeCudaInfrastructure(failure="RAWKERNEL_FRESH_COMPILE"),
+            self.output.parent / "compile-fail.json").evidence()
+        self.assertFalse(failed["CUDA_READINESS_ORACLE_PASS"])
+        self.assertFalse(failed["fresh_jit_proof"]["compile_called"])
+
+    def test_repeated_invocation_identity_rejected_without_cached_launch(self):
+        with patch.object(readiness.uuid, "uuid4", return_value=SimpleNamespace(hex="d" * 32)), patch.object(
+                readiness, "_INVOCATIONS", set()):
+            self.run_fake(FakeCudaInfrastructure())
+            fake = FakeCudaInfrastructure()
+            evidence = self.run_fake(fake, self.output.parent / "repeat.json").evidence()
+            self.assertFalse(evidence["CUDA_READINESS_ORACLE_PASS"])
+            self.assertEqual(evidence["gates"]["RAWKERNEL_FRESH_COMPILE"], "FAIL")
+            self.assertFalse(fake.kernels)
+
+    def test_incomplete_jit_proof_cannot_pass(self):
+        original = self.run_fake(FakeCudaInfrastructure()).evidence()
+        for field in ("compile_called", "compile_synchronized", "backend", "source_sha256", "invocation_id",
+                      "kernel_name", "cache_strategy"):
+            evidence = copy.deepcopy(original)
+            del evidence["fresh_jit_proof"][field]
+            path = self.output.parent / (field + ".json")
+            data = canonical_json(evidence)
+            path.write_bytes(data)
+            with self.assertRaises(readiness.ReadinessFailed):
+                readiness.require_pass(readiness.ReadinessReceipt(path, data, sha256(data)))
+
+    def test_artifact_and_receipt_tampering_rejected(self):
+        receipt = self.run_fake(FakeCudaInfrastructure())
+        self.output.write_bytes(receipt.data + b" ")
+        with self.assertRaisesRegex(readiness.ReadinessError, "persisted readiness evidence changed"):
+            readiness.require_pass(receipt)
+        bad = readiness.ReadinessReceipt(receipt.path, receipt.data, "0" * 64)
+        with self.assertRaisesRegex(readiness.ReadinessError, "digest mismatch"):
+            readiness.require_pass(bad)
+
+    def test_lazy_import_failure_persisted_without_hardware_or_retry(self):
+        with patch.object(readiness.importlib, "import_module", side_effect=ImportError("fake unavailable")) as load:
+            receipt = readiness.run_readiness(self.output, ROOT, IDENTITY)
+            self.assertFalse(receipt.evidence()["CUDA_READINESS_ORACLE_PASS"])
+            self.assertEqual(receipt.evidence()["failure"]["stage"], "cupy_import")
+            load.assert_called_once_with("cupy")
+
+    def test_readiness_is_isolated_without_forbidden_paths_or_host_repair(self):
+        source = Path(readiness.__file__).read_text(encoding="utf-8")
+        self.assertNotIn("ollama", source.lower())
+        tree = ast.parse(source)
+        imports = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imports.extend(alias.name for alias in node.names)
+            if isinstance(node, ast.ImportFrom):
+                imports.append(node.module)
+            if isinstance(node, ast.Attribute):
+                self.assertNotIn(node.attr, {"random", "linalg", "deserialize", "evaluate_cuda_record",
+                                             "evaluate_reference_record"})
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                self.assertNotIn(node.value, {"ldconfig", "curand", "cusolver"})
+        self.assertTrue(all(name.split(".")[0] in {"__future__", "ctypes", "dataclasses", "datetime",
+            "hashlib", "importlib", "json", "math", "os", "pathlib", "platform", "uuid"} for name in imports))
+
+
+class ReadinessIntegrationTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory(prefix="r11-readiness-integration-")
+        self.addCleanup(self.directory.cleanup)
+        self.ready = Path(self.directory.name) / "ready.json"
+        self.scientific = Path(self.directory.name) / "scientific"
+        self.receipt = preflight.PreparedWorkload(ROOT, b"SYNTHETIC_ONLY",
+            canonical_json(toy_workload()), canonical_json(IDENTITY))
+
+    @contextlib.contextmanager
+    def provenance(self):
+        with patch.object(harness, "prepare", return_value=self.receipt), patch.object(
+                harness, "repository_identity", return_value=IDENTITY):
+            yield
+
+    def arguments(self):
+        return dict(workload="MOCK_WORKLOAD", r4_archive="MOCK_ARCHIVE", r4_crossings="MOCK_CROSSINGS",
+                    readiness_output=self.ready, require_gpu=True)
+
+    def cli_arguments(self, mode="--validate-readiness"):
+        args = [mode, "--workload", "MOCK_WORKLOAD", "--r4-archive", "MOCK_ARCHIVE",
+                "--r4-crossings", "MOCK_CROSSINGS", "--readiness-output", str(self.ready), "--require-gpu"]
+        return args + (["--output", str(self.scientific)] if mode == "--execute" else [])
+
+    def test_failure_precedes_runtime_bundle_deserialize_and_consumption(self):
+        fake = FakeCudaInfrastructure(failure="RAWKERNEL_LAUNCH")
+        with self.provenance(), fake.installed(), patch.object(harness, "CanonicalRuntime") as factory, patch.object(
+                harness, "EvidenceBundle") as bundle, patch.object(SamplePayload, "deserialize") as deserialize:
+            with self.assertRaises(readiness.ReadinessFailed) as caught:
+                harness.execute(output=self.scientific, **self.arguments())
+            factory.assert_not_called()
+            bundle.assert_not_called()
+            deserialize.assert_not_called()
+        self.assertFalse(self.scientific.exists())
+        evidence = json.loads(self.ready.read_bytes())
+        self.assertEqual(evidence, caught.exception.evidence)
+        self.assertFalse(evidence["SCIENTIFIC_EXECUTION_STARTED"])
+        self.assertFalse(evidence["SCIENTIFIC_OUTPUT_DIRECTORY_CREATED"])
+        self.assertEqual(evidence["SCIENTIFIC_RECORDS_EVALUATED"], 0)
+        self.assertFalse(evidence["EXECUTION_AUTHORIZATION_CONSUMED"])
+        self.assertFalse(caught.exception.consumed)
+
+    def test_readiness_only_success_never_deserializes_or_constructs_runtime_bundle(self):
+        with self.provenance(), FakeCudaInfrastructure().installed(), patch.object(
+                harness, "CanonicalRuntime") as factory, patch.object(harness, "EvidenceBundle") as bundle, patch.object(
+                SamplePayload, "deserialize") as deserialize:
+            result = harness.validate_readiness(**self.arguments())
+            factory.assert_not_called()
+            bundle.assert_not_called()
+            deserialize.assert_not_called()
+        self.assertTrue(result["CUDA_READINESS_ORACLE_PASS"])
+        self.assertFalse(result["SCIENTIFIC_EXECUTION_STARTED"])
+        self.assertEqual(result["SCIENTIFIC_RECORDS_EVALUATED"], 0)
+        self.assertFalse(result["EXECUTION_AUTHORIZATION_CONSUMED"])
+        self.assertFalse(result["REAL_R11_SAMPLES_EVALUATED"])
+        self.assertEqual(result["CUDA_READINESS_EVIDENCE_SHA256"], sha256(self.ready.read_bytes()))
+        self.assertFalse(self.scientific.exists())
+
+    def test_readiness_only_cli_success_and_execute_failure_report_correct_states(self):
+        for mode, failure in (("--validate-readiness", None), ("--execute", "NVRTC_VERSION")):
+            self.ready = self.ready.with_name(mode[2:] + ".json")
+            stream = io.StringIO()
+            with self.provenance(), FakeCudaInfrastructure(failure=failure).installed(), patch.object(
+                    harness, "CanonicalRuntime") as factory, contextlib.redirect_stdout(stream):
+                code = harness.main(self.cli_arguments(mode))
+                factory.assert_not_called()
+            result = json.loads(stream.getvalue())
+            self.assertEqual(code, 0 if failure is None else 2)
+            self.assertEqual(result["CUDA_READINESS_ORACLE_PASS"], failure is None)
+            self.assertFalse(result["SCIENTIFIC_EXECUTION_STARTED"])
+            self.assertEqual(result["SCIENTIFIC_RECORDS_EVALUATED"], 0)
+            self.assertFalse(result["EXECUTION_AUTHORIZATION_CONSUMED"])
+            self.assertFalse(self.scientific.exists())
+
+    def test_readiness_only_requires_context_gpu_and_rejects_scientific_output(self):
+        original = self.cli_arguments()
+        alternatives = [original + ["--output", str(self.scientific)]]
+        for flag in ("--workload", "--r4-archive", "--r4-crossings", "--readiness-output", "--require-gpu"):
+            index = original.index(flag)
+            alternatives.append(original[:index] + original[index + (1 if flag == "--require-gpu" else 2):])
+        for args in alternatives:
+            with contextlib.redirect_stderr(io.StringIO()), patch.object(harness, "prepare") as prepare:
+                with self.assertRaises(SystemExit):
+                    harness.main(args)
+                prepare.assert_not_called()
+        self.assertFalse(self.ready.exists())
+        self.assertFalse(self.scientific.exists())
+
+    def test_readiness_publication_failure_cli_reports_unstarted_unconsumed_states(self):
+        stream = io.StringIO()
+        with self.provenance(), patch.object(harness, "run_readiness", side_effect=OSError("injected write failure")), patch.object(
+                harness, "CanonicalRuntime") as factory, contextlib.redirect_stdout(stream):
+            code = harness.main(self.cli_arguments("--execute"))
+            factory.assert_not_called()
+        result = json.loads(stream.getvalue())
+        self.assertEqual(code, 2)
+        for name in ("CUDA_READINESS_ORACLE_PASS", "SCIENTIFIC_EXECUTION_STARTED",
+                     "EXECUTION_AUTHORIZATION_CONSUMED", "SCIENTIFIC_OUTPUT_DIRECTORY_CREATED",
+                     "REAL_R11_SAMPLES_EVALUATED"):
+            self.assertFalse(result[name])
+        self.assertEqual(result["SCIENTIFIC_RECORDS_EVALUATED"], 0)
+        self.assertFalse(self.scientific.exists())
+        self.assertFalse(self.ready.exists())
+
+    def test_execute_readiness_output_mandatory_and_separate_before_runtime(self):
+        for path in (None, self.scientific / "ready.json"):
+            with self.provenance(), patch.object(readiness, "_probe") as probe, patch.object(
+                    harness, "CanonicalRuntime") as factory:
+                arguments = {**self.arguments(), "readiness_output": path}
+                with self.assertRaises(readiness.ReadinessError):
+                    harness.execute(output=self.scientific, **arguments)
+                probe.assert_not_called()
+                factory.assert_not_called()
+            self.assertFalse(self.scientific.exists())
+
+    def test_pass_runtime_bundle_cpu_consumption_cuda_order_and_digest_binding(self):
+        events = []
+        class OrderedToy(ToyRuntime):
+            def evaluate(inner, item, sample, payload, capture, before_cuda):
+                events.append("CPU")
+                self.assertFalse((self.scientific / "authorization_consumed.json").exists())
+                def checked_consume():
+                    events.append("CONSUME")
+                    before_cuda()
+                    self.assertTrue((self.scientific / "authorization_consumed.json").exists())
+                result = super().evaluate(item, sample, payload, capture, checked_consume)
+                events.append("CUDA")
+                return result
+        fake = OrderedToy(mode="cuda_exception")
+        def probe(evidence):
+            events.append("READINESS")
+            self.assertFalse(self.scientific.exists())
+            fake_ready(evidence)
+        def factory(repository):
+            events.append("RUNTIME")
+            self.assertTrue(json.loads(self.ready.read_bytes())["CUDA_READINESS_ORACLE_PASS"])
+            self.assertFalse(self.scientific.exists())
+            return fake
+        bundle_type = artifacts.EvidenceBundle
+        def bundle(output, repository):
+            events.append("BUNDLE")
+            self.assertTrue(json.loads(self.ready.read_bytes())["CUDA_READINESS_ORACLE_PASS"])
+            return bundle_type(output, repository)
+        # Return after one toy record; scientific implementation remains mocked.
+        fake.mode = "gate_failure"
+        with self.provenance(), patch.object(readiness, "_probe", side_effect=probe), patch.object(
+                harness, "CanonicalRuntime", side_effect=factory), patch.object(harness, "EvidenceBundle", side_effect=bundle):
+            result = harness.execute(output=self.scientific, **self.arguments())
+        self.assertEqual(events, ["READINESS", "RUNTIME", "BUNDLE", "CPU", "CONSUME", "CUDA"])
+        self.assertTrue(result["EXECUTION_AUTHORIZATION_CONSUMED"])
+        manifest = json.loads((self.scientific / "execution_manifest.json").read_bytes())
+        self.assertTrue(manifest["CUDA_READINESS_ORACLE_PASS"])
+        self.assertEqual(manifest["CUDA_READINESS_EVIDENCE_SHA256"], sha256(self.ready.read_bytes()))
+
+    def test_preflight_and_static_fixture_failure_never_probe(self):
+        with self.provenance(), patch.object(harness, "evaluate_fixtures", return_value=[]), patch.object(
+                readiness, "_probe") as probe:
+            with self.assertRaisesRegex(ContractError, "boundary fixture"):
+                harness.validate_readiness(**self.arguments())
+            probe.assert_not_called()
+        self.assertFalse(self.ready.exists())
+
+    def test_checkout_change_during_readiness_cannot_start_science(self):
+        with self.provenance(), patch.object(readiness, "_probe", side_effect=fake_ready), patch.object(
+                harness, "repository_identity", side_effect=[IDENTITY, {**IDENTITY, "R11_HARNESS_SHA": "c" * 40}]), patch.object(
+                harness, "CanonicalRuntime") as factory:
+            with self.assertRaisesRegex(ContractError, "identity changed"):
+                harness.execute(output=self.scientific, **self.arguments())
+            factory.assert_not_called()
+        self.assertFalse(self.scientific.exists())
 
 
 class StaticAndArtifactTests(unittest.TestCase):
@@ -777,7 +1375,8 @@ assert not any(n.startswith(('cupy', 'cupyx', 'scipy')) for n in sys.modules)
         stream = io.StringIO()
         with patch.object(harness, "execute", side_effect=error), contextlib.redirect_stdout(stream):
             code = harness.main(["--execute", "--workload", "toy", "--r4-archive", "toy",
-                                 "--r4-crossings", "toy", "--output", "toy", "--require-gpu"])
+                                 "--r4-crossings", "toy", "--output", "toy",
+                                 "--readiness-output", "toy-ready", "--require-gpu"])
         self.assertEqual(code, 2)
         self.assertTrue(json.loads(stream.getvalue())["EXECUTION_AUTHORIZATION_CONSUMED"])
 
