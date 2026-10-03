@@ -15,6 +15,7 @@ from .boundary_fixtures import evaluate_fixtures
 from .contract import (ALPHA, B_R11, BUILDER_SHA, BUILDER_TREE, GATES,
                        REFERENCE_WORKLOAD_SHA256, SOURCE_OUTERS, TOTAL_RECORDS)
 from .preflight import ordered_records, prepare, repository_identity
+from .readiness import ReadinessError, ReadinessFailed, require_pass, run_readiness
 from .runtime import CanonicalRuntime
 
 
@@ -111,8 +112,9 @@ def _version(name):
         return "UNAVAILABLE"
 
 
-def execute(*, workload, r4_archive, r4_crossings, output, require_gpu):
-    """Future scientific entry point. Implementation tests replace all runtime dependencies."""
+def _ready_context(workload, r4_archive, r4_crossings, readiness_output, require_gpu,
+                   scientific_output=None):
+    """Provenance/static checks and operational readiness; no sample deserialization."""
     require(require_gpu is True, "--require-gpu mandatory; CPU fallback prohibited")
     receipt = prepare(workload, r4_archive, r4_crossings)
     frozen = receipt.workload()
@@ -120,6 +122,31 @@ def execute(*, workload, r4_archive, r4_crossings, output, require_gpu):
     fixtures = evaluate_fixtures()
     require(len(fixtures) == 12 and all(f["fixture_pass"] for f in fixtures),
             "boundary fixture preflight failure")
+    _verify_checkout(receipt)
+    try:
+        readiness = run_readiness(readiness_output, receipt.repository, receipt.identity(),
+                                  scientific_output=scientific_output)
+        require_pass(readiness)
+    except ReadinessError:
+        raise
+    except Exception as exc:
+        raise ReadinessError("readiness evidence publication failed: " + str(exc)) from exc
+    _verify_checkout(receipt)
+    return receipt, frozen, fixtures, readiness
+
+
+def validate_readiness(*, workload, r4_archive, r4_crossings, readiness_output, require_gpu):
+    """Non-scientific infrastructure validation; never constructs a scientific runtime."""
+    _, _, _, readiness = _ready_context(
+        workload, r4_archive, r4_crossings, readiness_output, require_gpu)
+    return {**require_pass(readiness), "CUDA_READINESS_EVIDENCE_SHA256": readiness.sha256}
+
+
+def execute(*, workload, r4_archive, r4_crossings, output, readiness_output, require_gpu):
+    """Future scientific entry point. Implementation tests replace all runtime dependencies."""
+    receipt, frozen, fixtures, readiness = _ready_context(
+        workload, r4_archive, r4_crossings, readiness_output, require_gpu,
+        scientific_output=output)
     runtime = CanonicalRuntime(receipt.repository)
     runtime.require_gpu()
     environment = {"python": platform.python_version(), "platform": platform.platform(),
@@ -154,6 +181,8 @@ def execute(*, workload, r4_archive, r4_crossings, output, require_gpu):
             **receipt.identity(), "alpha": ALPHA, "B_R11": B_R11, "source_outer_count": SOURCE_OUTERS,
             "required_records": TOTAL_RECORDS, "EXECUTION_AUTHORIZATION_CONSUMED": state.consumed,
             "SAMPLE_REGENERATION": False, "CUDA_CPU_FALLBACK": False,
+            "CUDA_READINESS_ORACLE_PASS": True,
+            "CUDA_READINESS_EVIDENCE_SHA256": readiness.sha256,
             "AUTO_RERUN": False, "AUTO_RESUME": False, "CHECKPOINT_RESUME": False,
             "failure": state.failure,
         }
@@ -191,8 +220,9 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     modes = parser.add_mutually_exclusive_group(required=True)
     modes.add_argument("--validate-static", action="store_true")
+    modes.add_argument("--validate-readiness", action="store_true")
     modes.add_argument("--execute", action="store_true")
-    for flag in ("workload", "r4-archive", "r4-crossings", "output"):
+    for flag in ("workload", "r4-archive", "r4-crossings", "output", "readiness-output"):
         parser.add_argument("--" + flag, type=Path)
     parser.add_argument("--require-gpu", action="store_true")
     return parser
@@ -201,18 +231,32 @@ def build_parser():
 def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
-    paths = (args.workload, args.r4_archive, args.r4_crossings, args.output)
+    paths = (args.workload, args.r4_archive, args.r4_crossings, args.readiness_output)
     if args.validate_static:
-        if any(p is not None for p in paths) or args.require_gpu:
+        if any(p is not None for p in (*paths, args.output)) or args.require_gpu:
             parser.error("--validate-static accepts no execution arguments")
         result = validate_static()
     else:
-        if any(p is None for p in paths) or not args.require_gpu:
-            parser.error("--execute requires all four paths and --require-gpu")
+        if args.validate_readiness and args.output is not None:
+            parser.error("--validate-readiness prohibits scientific --output")
+        if (any(p is None for p in paths) or not args.require_gpu
+                or (args.execute and args.output is None)):
+            parser.error("mode requires provenance paths, --readiness-output and --require-gpu; "
+                         "--execute also requires --output")
         try:
-            result = execute(workload=args.workload, r4_archive=args.r4_archive,
-                             r4_crossings=args.r4_crossings, output=args.output,
+            arguments = dict(workload=args.workload, r4_archive=args.r4_archive,
+                             r4_crossings=args.r4_crossings, readiness_output=args.readiness_output,
                              require_gpu=args.require_gpu)
+            result = (validate_readiness(**arguments) if args.validate_readiness
+                      else execute(output=args.output, **arguments))
+        except ReadinessFailed as exc:
+            result = exc.evidence
+        except ReadinessError as exc:
+            result = {"CUDA_READINESS_ORACLE_PASS": False,
+                      "SCIENTIFIC_EXECUTION_STARTED": False, "SCIENTIFIC_RECORDS_EVALUATED": 0,
+                      "EXECUTION_AUTHORIZATION_CONSUMED": False,
+                      "SCIENTIFIC_OUTPUT_DIRECTORY_CREATED": False,
+                      "REAL_R11_SAMPLES_EVALUATED": False, "failure": _error(exc, "readiness")}
         except Exception as exc:
             result = {"R11_GLOBAL_PASS": False,
                       "EXECUTION_AUTHORIZATION_CONSUMED": getattr(exc, "consumed", False),
@@ -221,4 +265,6 @@ def main(argv=None):
             if isinstance(exc, ExecutionEvidenceError):
                 result["evidence_directory"] = exc.output
     print(encode(result).decode("utf-8"))
-    return 0 if result.get("STATIC_VALIDATION_PASS") or result.get("R11_GLOBAL_PASS") else 2
+    passed = (result.get("STATIC_VALIDATION_PASS") or result.get("R11_GLOBAL_PASS")
+              or (args.validate_readiness and result.get("CUDA_READINESS_ORACLE_PASS") is True))
+    return 0 if passed else 2

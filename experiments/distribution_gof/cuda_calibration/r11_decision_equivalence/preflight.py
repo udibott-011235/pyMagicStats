@@ -10,7 +10,8 @@ from ..r11_reference_workload import oracle
 from ..r11_reference_workload.codec import canonical_json, require, sha256, strict_json
 from .contract import (ARTIFACT_HASHES, BUILDER_PATH, BUILDER_SHA, BUILDER_TREE,
                        PACKAGE_PATH, PROJECT_ROOTS, REFERENCE_WORKLOAD_SHA256,
-                       SCIENTIFIC_SHA, SCIENTIFIC_TREE, SOURCE_PATH, SCHEMA_VERSION)
+                       SCIENTIFIC_SHA, SCIENTIFIC_TREE, SOURCE_PATH, SCHEMA_VERSION,
+                       READINESS_IMPLEMENTATION_BASE_SHA, READINESS_IMPLEMENTATION_BASE_TREE)
 
 
 def git(repository, *args):
@@ -40,10 +41,13 @@ def repository_identity(repository):
     require(not original.intersection(changed), "preexisting scientific code changed")
     require(not git(repository, "diff", "--no-renames", "--name-only", BUILDER_SHA,
                     "HEAD", "--", BUILDER_PATH), "R11 builder surface changed")
-    baseline = set(git(repository, "ls-tree", "-r", "--name-only", BUILDER_SHA).splitlines())
-    delta = set(git(repository, "diff", "--no-renames", "--name-only", BUILDER_SHA, "HEAD").splitlines())
+    require(git(repository, "rev-parse", READINESS_IMPLEMENTATION_BASE_SHA + "^{tree}")
+            == READINESS_IMPLEMENTATION_BASE_TREE, "readiness implementation base tree mismatch")
+    git(repository, "merge-base", "--is-ancestor", READINESS_IMPLEMENTATION_BASE_SHA, "HEAD")
+    delta = set(git(repository, "diff", "--no-renames", "--name-only",
+                    READINESS_IMPLEMENTATION_BASE_SHA, "HEAD").splitlines())
     test_path = "tests/research/test_cp05_c2c_r11_decision_equivalence.py"
-    require(not baseline.intersection(delta) and all(
+    require(all(
         name.startswith(PACKAGE_PATH + "/") or name == test_path for name in delta),
         "harness diff outside authorized isolated scope")
     return {
@@ -51,6 +55,8 @@ def repository_identity(repository):
         "R11_HARNESS_TREE": git(repository, "rev-parse", "HEAD^{tree}"),
         "R11_SCIENTIFIC_BASE_SHA": SCIENTIFIC_SHA, "R11_SCIENTIFIC_BASE_TREE": SCIENTIFIC_TREE,
         "R11_BUILDER_SHA": BUILDER_SHA, "R11_BUILDER_TREE": BUILDER_TREE,
+        "READINESS_IMPLEMENTATION_BASE_SHA": READINESS_IMPLEMENTATION_BASE_SHA,
+        "READINESS_IMPLEMENTATION_BASE_TREE": READINESS_IMPLEMENTATION_BASE_TREE,
         "executing_repository": str(repository), "worktree_clean": True,
         "scientific_files_unchanged": True, "builder_surface_unchanged": True,
     }
