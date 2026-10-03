@@ -1,6 +1,6 @@
 # DEC-028 — CP05-C2C R11 R4 Runtime Oracle Identity Correction
 
-- Status: `proposed`.
+- Status: `accepted`.
 - Date recorded: 2026-10-02.
 - Owner: Project Owner — Ehud Bottaro.
 - Architecture: ChatGPT — statistical/software architecture.
