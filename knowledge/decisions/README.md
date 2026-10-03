@@ -85,8 +85,11 @@ Decisiones iniciales indexadas:
   equivalencia de decisión CPU/CUDA sensible a la frontera `alpha=.05`, bajo
   `DEC-026`, sobre 12 outers MC históricos congelados y `B=199`. Define la
   futura construcción CPU-reference, fixtures deterministas y accounting de
-  empates exactos `DEC-024`; está aceptado, pero no ejecutado, científicamente validado ni completo,
-  y no afirma full-1152, backend productivo, CP05-D ni holdout.
+  empates exactos `DEC-024`; DEC-027 permanece `accepted`. El intento R11 #1
+  inició ejecución, consumió su autorización y terminó
+  `INCONCLUSIVE_INFRASTRUCTURE`, con 0 outers completados y ninguna conclusión
+  de equivalencia científica CPU/CUDA. R11 no está científicamente validado ni
+  completo y no afirma full-1152, backend productivo, CP05-D ni holdout.
 
 - [`DEC-028`](cp05-c2c-r11-r4-runtime-oracle-identity-correction.md):
   `accepted`; acepta formalmente la corrección documental de provenance del
