@@ -85,8 +85,11 @@ Decisiones iniciales indexadas:
   equivalencia de decisión CPU/CUDA sensible a la frontera `alpha=.05`, bajo
   `DEC-026`, sobre 12 outers MC históricos congelados y `B=199`. Define la
   futura construcción CPU-reference, fixtures deterministas y accounting de
-  empates exactos `DEC-024`; está aceptado, pero no ejecutado, científicamente validado ni completo,
-  y no afirma full-1152, backend productivo, CP05-D ni holdout.
+  empates exactos `DEC-024`; DEC-027 permanece `accepted`. El intento R11 #1
+  inició ejecución, consumió su autorización y terminó
+  `INCONCLUSIVE_INFRASTRUCTURE`, con 0 outers completados y ninguna conclusión
+  de equivalencia científica CPU/CUDA. R11 no está científicamente validado ni
+  completo y no afirma full-1152, backend productivo, CP05-D ni holdout.
 
 - [`DEC-028`](cp05-c2c-r11-r4-runtime-oracle-identity-correction.md):
   `accepted`; acepta formalmente la corrección documental de provenance del
@@ -94,5 +97,14 @@ Decisiones iniciales indexadas:
   PASS_EVIDENCE y conserva el digest anterior para el crossings report. No cambia
   el diseño científico R11 ni autoriza builder, construcción del workload,
   harness, GPU, full-1152, CP05-D o holdout.
+
+- [`DEC-029`](cp05-c2c-r11-cuda-execution-readiness-oracle.md):
+  `accepted`; preserva R11 attempt #1 como
+  `INCONCLUSIVE_INFRASTRUCTURE`, con autorización consumida y sin
+  conclusión de equivalencia; prohíbe rerun, resume y reutilización de ese
+  intento. Restablece y generaliza el preflight fuerte NVRTC de DEC-023,
+  exige readiness sintético determinista antes de futura evaluación científica
+  R11 y conserva la ciencia DEC-027 sin cambios. La evidencia Owner/Quantum se
+  atribuye en EV-022; no autoriza attempt #2.
 
 Use [`DECISION_RECORD_TEMPLATE.md`](DECISION_RECORD_TEMPLATE.md).
