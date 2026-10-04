@@ -779,6 +779,7 @@ class FakeCudaInfrastructure:
         self.pending = 0
         self.kernels = []
         self.compiled_sources = set()
+        self.polygamma_orders = []
         api = SimpleNamespace(getDeviceCount=lambda: self.op("device_count", 1),
             driverGetVersion=lambda: self.op("driver_version", 13000),
             runtimeGetVersion=lambda: self.op("runtime_version", 13000),
@@ -789,10 +790,11 @@ class FakeCudaInfrastructure:
             nvrtc=SimpleNamespace(getVersion=lambda: self.op("cupy_nvrtc_version", self.cupy_version)))
         self.__version__ = "FAKE_SOFTWARE_ONLY"
         self.float64 = np.float64
+        self.int32 = np.int32
         self.special = SimpleNamespace(
             gammaln=lambda x: self.numeric("gammaln", [math.log(2.)]),
             digamma=lambda x: self.numeric("digamma", [1. - .5772156649015329]),
-            polygamma=lambda n, x: self.numeric("polygamma", [math.pi ** 2 / 6. - 1.]),
+            polygamma=self.polygamma,
             gammainc=lambda a, x: self.numeric("gammainc", [1. - math.exp(-1.)]),
             gammaincc=lambda a, x: self.numeric("gammaincc", [math.exp(-1.)]),
             betainc=lambda a, b, x: self.numeric("betainc", [.25]))
@@ -816,6 +818,13 @@ class FakeCudaInfrastructure:
 
     def numeric(self, name, value):
         return self.op(name, np.asarray(value, dtype=np.float64), asynchronous=True)
+
+    def polygamma(self, n, x):
+        if not (isinstance(n, np.ndarray) and n.shape == ()
+                and n.dtype == np.dtype(np.int32) and n.item() == 1):
+            raise AssertionError("polygamma order must be a 0-d int32 array with value 1")
+        self.polygamma_orders.append(n)
+        return self.numeric("polygamma", [math.pi ** 2 / 6. - 1.])
 
     def asarray(self, values, dtype):
         return self.op("asarray", np.asarray(values, dtype=dtype), asynchronous=True)
@@ -910,6 +919,36 @@ class ReadinessProbeTests(unittest.TestCase):
     def run_fake(self, fake, output=None):
         with fake.installed():
             return readiness.run_readiness(output or self.output, ROOT, IDENTITY)
+
+    def test_polygamma_device_order_matches_frozen_cuda_candidate(self):
+        fake = FakeCudaInfrastructure()
+        for invalid in (1, np.int32(1), np.asarray([1], dtype=np.int32),
+                        np.asarray(1, dtype=np.int64), np.asarray(2, dtype=np.int32)):
+            with self.subTest(order=repr(invalid)), self.assertRaisesRegex(
+                    AssertionError, "0-d int32 array with value 1"):
+                fake.special.polygamma(invalid, np.asarray([2.], dtype=np.float64))
+        evidence = readiness.require_pass(self.run_fake(fake))
+        self.assertEqual(evidence["gates"]["CUPYX_SCIPY_POLYGAMMA"], "PASS")
+        self.assertEqual(len(fake.polygamma_orders), 1)
+        order = fake.polygamma_orders[0]
+        self.assertIsInstance(order, np.ndarray)
+        self.assertEqual(order.shape, ())
+        self.assertEqual(order.dtype, np.dtype(np.int32))
+        self.assertEqual(order.item(), 1)
+        # Inspect only the frozen source; never import or execute scientific CUDA.
+        candidate = ast.parse((ROOT / "experiments/distribution_gof/cuda_calibration"
+                              / "cuda_candidate.py").read_text(encoding="utf-8"))
+        assignments = [node for node in ast.walk(candidate) if isinstance(node, ast.Assign)
+                       and any(isinstance(target, ast.Name) and target.id == "trigamma_order"
+                               for target in node.targets)]
+        self.assertEqual(len(assignments), 1)
+        self.assertEqual(ast.dump(assignments[0].value),
+                         ast.dump(ast.parse("cp.asarray(1, dtype=cp.int32)", mode="eval").body))
+        calls = [node for node in ast.walk(candidate) if isinstance(node, ast.Call)
+                 and isinstance(node.func, ast.Attribute) and node.func.attr == "polygamma"]
+        self.assertTrue(calls)
+        self.assertTrue(all(isinstance(call.args[0], ast.Name)
+                            and call.args[0].id == "trigamma_order" for call in calls))
 
     def test_complete_surface_metadata_numeric_results_and_synchronization(self):
         fake = FakeCudaInfrastructure()
