@@ -206,11 +206,16 @@ def _probe(evidence):
 
     evidence["_stage"] = "cupyx_special_import"
     special = importlib.import_module("cupyx.scipy.special")
+
+    def probe_polygamma():
+        trigamma_order = cp.asarray(1, dtype=cp.int32)
+        return special.polygamma(trigamma_order, cp.asarray([2.], dtype=cp.float64))
+
     tests = (
         ("GAMMALN", lambda: special.gammaln(cp.asarray([3.], dtype=cp.float64)), [math.log(2.)]),
         ("DIGAMMA", lambda: special.digamma(cp.asarray([2.], dtype=cp.float64)),
          [1. - 0.5772156649015329]),
-        ("POLYGAMMA", lambda: special.polygamma(1, cp.asarray([2.], dtype=cp.float64)),
+        ("POLYGAMMA", probe_polygamma,
          [math.pi ** 2 / 6. - 1.]),
         ("GAMMAINC", lambda: special.gammainc(1., cp.asarray([1.], dtype=cp.float64)),
          [1. - math.exp(-1.)]),
